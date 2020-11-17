@@ -1,0 +1,17 @@
+{
+  "name": "reusing-intent",
+  "private": true,
+  "scripts": {
+      "export": "conda env export --from-history | grep -v '^prefix: ' > intent-env.yml"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/visdesignlab/reusing-intent.git"
+  },
+  "author": "Kiran Gadhave",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/visdesignlab/reusing-intent/issues"
+  },
+  "homepage": "https://github.com/visdesignlab/reusing-intent#readme"
+}
