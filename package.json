@@ -5,5 +5,8 @@
   "repository": "https://github.com/visdesignlab/reusing-intent.git",
   "author": "Kiran Gadhave <kirangadhave2@gmail.com>",
   "license": "MIT",
-  "private": true
+  "private": true,
+  "scripts": {
+    "setup:app": "cd app && yarn install"
+  }
 }
