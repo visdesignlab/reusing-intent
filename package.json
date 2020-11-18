@@ -7,6 +7,10 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "setup:app": "cd app && yarn install"
+    "app": "cd app && yarn install",
+    "core": "echo 'Setting up core' && cd inference-core && poetry install",
+    "server": "echo 'Setting up server' && cd server && poetry install",
+    "setup:python": "yarn core && yarn server",
+    "setup": "echo 'Setting up frontend' && yarn app && yarn setup:python"
   }
 }
