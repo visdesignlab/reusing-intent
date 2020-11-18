@@ -1,9 +1,0 @@
-name: intent
-channels:
-  - defaults
-dependencies:
-  - python=3.8
-  - numpy
-  - scikit-learn
-  - pandas
-  - django
