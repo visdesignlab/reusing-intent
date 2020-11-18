@@ -2,7 +2,8 @@
   "name": "reusing-intent",
   "private": true,
   "scripts": {
-      "export": "conda env export --from-history | grep -v '^prefix: ' > intent-env.yml"
+      "export": "conda env export --from-history | grep -v '^prefix: ' > intent-env.yml",
+      "install": "cd app && yarn install"
   },
   "repository": {
     "type": "git",
