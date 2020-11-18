@@ -1,0 +1,9 @@
+{
+  "name": "reusing-intent",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/visdesignlab/reusing-intent.git",
+  "author": "Kiran Gadhave <kirangadhave2@gmail.com>",
+  "license": "MIT",
+  "private": true
+}
