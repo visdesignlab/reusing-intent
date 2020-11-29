@@ -3,77 +3,77 @@ dataset_name: SLC Housing
 file_name: housing.csv
 label_column: ListNo
 columns:
-    - ListNo:
+     ListNo:
         full: Listing No
         short: A
         unit: null
         type: label
-    - Acres:
+     Acres:
         full: Acres
         short: B
         unit: acres
         type: numeric
-    - BsmntFin:
+     BsmntFin:
         full: Basement Finish
         short: C
         unit: null
         type: numeric
-    - Deck:
+     Deck:
         full: Deck
         short: D
         unit: null
         type: numeric
-    - Style:
+     Style:
         full: Style
         short: E
         unit: null
         type: categorical
-    - EWCoord:
+     EWCoord:
         full: Longitude
         short: F
         unit: null
         type: numeric
-    - GaragCap:
+     GaragCap:
         full: Garage Capacity
         short: G
         unit: null
         type: numeric
-    - HouseNbr:
+     HouseNbr:
         full: House Number
         short: H
         unit: null
         type: numeric
-    - LstPrice:
+     LstPrice:
         full: List Price
         short: I
         unit: $
         type: numeric
-    - NSCoord:
+     NSCoord:
         full: Latitude
         short: J
         unit: null
         type: numeric
-    - Taxes:
+     Taxes:
         full: Taxes
         short: K
         unit: $
         type: numeric
-    - TotBed:
+     TotBed:
         full: Bedrooms
         short: L
         unit: null
         type: numeric
-    - TotBth:
+     TotBth:
         full: Bathrooms
         short: M
         unit: null
         type: numeric
-    - TotSqf:
+     TotSqf:
         full: Total Square Footage
         short: N
         unit: sq. ft.
         type: numeric
-    - YearBlt:
+     YearBlt:
         full: Year Built
         short: O
         unit: null

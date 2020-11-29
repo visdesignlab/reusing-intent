@@ -8,11 +8,9 @@
   "private": true,
   "scripts": {
     "app": "cd app && yarn install",
-    "core": "echo 'Setting up core' && cd inference-core && poetry install",
-    "server": "echo 'Setting up server' && cd server && poetry install",
-    "setup:python": "yarn core && yarn server",
+    "setup:python": "poetry install",
     "setup": "echo 'Setting up frontend' && yarn app && yarn setup:python",
-    "start:server": "cd server && poetry run python server.py",
+    "start:server": "poetry run python run.py",
     "start:app": "cd app && yarn start"
   }
 }
