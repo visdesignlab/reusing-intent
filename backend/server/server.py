@@ -1,9 +1,11 @@
 from flask import Flask
+from flask_cors import CORS
 
 from ..inference_core.core import hello
 from .routes.datasetRoutes import datasetRoute, listAllDatasets
 
 app = Flask(__name__)
+CORS(app)
 app.config["DEBUG"] = True
 app.register_blueprint(datasetRoute)
 
