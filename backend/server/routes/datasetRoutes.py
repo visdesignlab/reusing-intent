@@ -1,4 +1,5 @@
 import os
+from typing import Any, Dict, List
 
 import pandas as pd
 import yaml
@@ -11,12 +12,16 @@ datasetRoot = os.path.abspath("./datasets")
 datasetDict = {}
 
 
-def filter_dict(keys, old_obj):
+def print_string(s: str) -> None:
+    print(s)
+
+
+def filter_dict(keys: List[str], old_obj: Dict[str, Any]) -> Dict[str, Any]:
     return {key: old_obj[key] for key in keys}
 
 
 def listAllDatasets():
-    for base, dirs, files in os.walk(datasetRoot):
+    for base, _, files in os.walk(datasetRoot):
         for file in files:
             if file.endswith(".yml"):
                 completeFilename = os.path.join(base, file)
@@ -30,10 +35,10 @@ def listAllDatasets():
 
 
 @datasetRoute.route("/datasets", methods=["GET"])
-def getAllDatasets():
-    datasets = []
+def getAllDatasets() -> Any:
+    datasets: List[Any] = []
     keys = ["id", "dataset_name"]
-    for k, v in datasetDict.items():
+    for _, v in datasetDict.items():
         info = filter_dict(keys, v)
         datasets.append(info)
     return jsonify(datasets)
