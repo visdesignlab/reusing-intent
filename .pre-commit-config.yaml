@@ -15,6 +15,13 @@ repos:
         entry: poetry run black
         types: [python]
 
+      - id: flake8
+        name: flake8
+        stages: [commit]
+        language: system
+        entry: poetry run flake8
+        types: [python]
+
       - id: mypy
         name: mypy
         stages: [commit]
