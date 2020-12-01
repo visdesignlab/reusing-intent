@@ -5,15 +5,13 @@ import pandas as pd
 import yaml
 from flask import Blueprint, jsonify
 
+from backend.server.database.utils import getDatabasePath
+
+from ..paths import DATABASE_ROOT, DATASETS_ROOT
+
 datasetRoute = Blueprint("dataset", __name__)
 
-datasetRoot = os.path.abspath("./datasets")
-
 datasetDict = {}
-
-
-def print_string(s: str) -> None:
-    print(s)
 
 
 def filter_dict(keys: List[str], old_obj: Dict[str, Any]) -> Dict[str, Any]:
@@ -21,7 +19,7 @@ def filter_dict(keys: List[str], old_obj: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def listAllDatasets():
-    for base, _, files in os.walk(datasetRoot):
+    for base, _, files in os.walk(DATASETS_ROOT):
         for file in files:
             if file.endswith(".yml"):
                 completeFilename = os.path.join(base, file)
@@ -54,4 +52,12 @@ def getDatasetById(id):
     keys = ["id", "dataset_name", "label_column", "columns"]
     dataset = filter_dict(keys, config)
     dataset["data"] = data
-    return jsonify(dataset)
+    return jsonify(DATABASE_ROOT)
+
+
+@datasetRoute.route("/dataset/process/<id>", methods=["POST"])
+def processDataset(id):
+    if id not in datasetDict:
+        return "Dataset does not exist", 500
+
+    return jsonify(getDatabasePath(id))
