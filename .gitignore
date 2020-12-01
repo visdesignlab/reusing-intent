@@ -204,3 +204,4 @@ tags
 # End of https://www.toptal.com/developers/gitignore/api/jupyternotebooks,python,react,web,vim
 yarn.lock
 !app/yarn.lock
+*.db
