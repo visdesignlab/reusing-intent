@@ -27,4 +27,5 @@ repos:
         stages: [commit]
         language: system
         entry: poetry run mypy
+        types: [python]
         pass_filenames: false
