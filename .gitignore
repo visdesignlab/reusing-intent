@@ -205,3 +205,4 @@ tags
 yarn.lock
 !app/yarn.lock
 *.db
+.vscode

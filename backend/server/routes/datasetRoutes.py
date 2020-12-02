@@ -5,8 +5,6 @@ import pandas as pd
 import yaml
 from flask import Blueprint, jsonify
 
-from backend.server.database.utils import getDatabasePath
-
 from ..paths import DATABASE_ROOT, DATASETS_ROOT
 
 datasetRoute = Blueprint("dataset", __name__)
@@ -60,4 +58,4 @@ def processDataset(id):
     if id not in datasetDict:
         return "Dataset does not exist", 500
 
-    return jsonify(getDatabasePath(id))
+    return "Processing Complete"
