@@ -15,9 +15,13 @@ def dropAllTables(id: str):
     Base.metadata.drop_all(engine)  # type: ignore
 
 
-def getDBSession(id: str):
+def initializeDatabase(id: str):
     engine = getEngine(id)
     Base.metadata.create_all(engine)  # type: ignore
+
+
+def getDBSession(id: str):
+    engine = getEngine(id)
     Base.metadata.bind = engine  # type: ignore
     DBSession = sessionmaker(bind=engine)
     sess = DBSession()

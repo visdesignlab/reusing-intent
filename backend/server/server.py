@@ -6,7 +6,7 @@ from flask_cors import CORS
 from backend.server.paths import DATABASE_ROOT
 
 from ..inference_core.core import hello
-from .routes.datasetRoutes import datasetRoute, listAllDatasets
+from .routes.datasetRoutes import datasetRoute
 
 app = Flask(__name__)
 CORS(app)
@@ -31,5 +31,4 @@ def checkAndInitalizeDatabaseFolder():
 
 def start_server():
     checkAndInitalizeDatabaseFolder()
-    listAllDatasets()
     app.run()

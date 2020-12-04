@@ -1,61 +1,59 @@
-import os
 from typing import Any, Dict, List
 
 import pandas as pd
-import yaml
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 
-from ..paths import DATABASE_ROOT, DATASETS_ROOT
+from backend.server.database.process_dataset import process_dataset
+from backend.server.database.schemas.dataset import DatasetMetadata
+from backend.server.database.session import getDBSession, getEngine
 
 datasetRoute = Blueprint("dataset", __name__)
-
-datasetDict = {}
 
 
 def filter_dict(keys: List[str], old_obj: Dict[str, Any]) -> Dict[str, Any]:
     return {key: old_obj[key] for key in keys}
 
 
-def listAllDatasets():
-    for base, _, files in os.walk(DATASETS_ROOT):
-        for file in files:
-            if file.endswith(".yml"):
-                completeFilename = os.path.join(base, file)
-                with open(completeFilename, "r") as f:
-                    datasetConfig = yaml.load(f, Loader=yaml.FullLoader)
-                    datasetConfig["config_path"] = os.path.join(base, completeFilename)
-                    datasetConfig["path"] = os.path.join(
-                        base, datasetConfig["file_name"]
-                    )
-                    datasetDict[datasetConfig["id"]] = datasetConfig
-
-
 @datasetRoute.route("/datasets", methods=["GET"])
 def getAllDatasets() -> Any:
-    datasets: List[Any] = []
-    keys = ["id", "dataset_name"]
-    for _, v in datasetDict.items():
-        info = filter_dict(keys, v)
-        datasets.append(info)
-    return jsonify(datasets)
+    return jsonify([])
 
 
 @datasetRoute.route("/dataset/<id>", methods=["GET"])
 def getDatasetById(id):
-    if id not in datasetDict:
-        return "Dataset does not exist", 500
-    config = datasetDict[id]
-    data = pd.read_csv(config["path"])
-    data = list(data.T.to_dict().values())
-    keys = ["id", "dataset_name", "label_column", "columns"]
-    dataset = filter_dict(keys, config)
-    dataset["data"] = data
-    return jsonify(DATABASE_ROOT)
+    session = getDBSession(id)
+    engine = getEngine(id)
+    dataset = {}
+    try:
+        data = session.query(DatasetMetadata).all()
+        columns = {}
+        for d in data:
+            d = d.toJson()
+            col_name = d["name"]
+            del d["name"]
+            columns[col_name] = d
+        dataset["columns"] = columns
+        data = pd.read_sql("Dataset", con=engine)
+        dataset["values"] = list(data.T.to_dict().values())
+    except Exception as e:
+        return str(e), 500
+    finally:
+        session.close()
+
+    return jsonify(dataset)
 
 
-@datasetRoute.route("/dataset/process/<id>", methods=["POST"])
-def processDataset(id):
-    if id not in datasetDict:
-        return "Dataset does not exist", 500
+@datasetRoute.route("/dataset/process", methods=["POST"])
+def processDataset():
+    if "file" not in request.files:
+        return "No file uploaded", 500
+    file = request.files["file"]
+    columns = None
+    label = None
+    if "label" in request.form:
+        label = request.form["label"]
+    if "columns" in request.files:
+        columns = request.files["columns"]
+    process_dataset(file, columns, label)
 
     return "Processing Complete"
