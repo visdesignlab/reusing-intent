@@ -3,38 +3,38 @@ dataset_name: Gapminder World
 file_name: gapminderworld.csv
 label_column: country
 columns:
-    cmu:
-        full: Child Mortality Rate
-        short: A
-        unit: 0-5 year old dying per 1000 born
-        type: numeric
-    gdp:
-        full: GDP
-        short: B
-        unit: per capita
-        type: numeric
-    life_exp:
-        full: Life Expectancy
-        short: C
-        unit: Years
-        type: numeric
-    tfr:
-        full: Total Fertility Rate
-        short: D
-        unit: babies per woman
-        type: numeric
-    population:
-        full: Population
-        short: E
-        unit: number of people
-        type: numeric
-    continent:
-        full: Continent
-        short: F
-        unit: null
-        type: categorical
-    country:
-        full: Country
-        short: G
-        unit: null
-        type: label
+  cmu:
+    fullname: Child Mortality Rate
+    short: A
+    unit: 0-5 year old dying per 1000 born
+    dataType: numeric
+  gdp:
+    fullname: GDP
+    short: B
+    unit: per capita
+    dataType: numeric
+  life_exp:
+    fullname: Life Expectancy
+    short: C
+    unit: Years
+    dataType: numeric
+  tfr:
+    fullname: Total Fertility Rate
+    short: D
+    unit: babies per woman
+    dataType: numeric
+  population:
+    fullname: Population
+    short: E
+    unit: number of people
+    dataType: numeric
+  continent:
+    fullname: Continent
+    short: F
+    unit: null
+    dataType: categorical
+  country:
+    fullname: Country
+    short: G
+    unit: null
+    dataType: label
