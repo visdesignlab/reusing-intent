@@ -1,9 +1,11 @@
 from typing import Any, Dict, List
 
+import numpy as np
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from backend.server.database.process_dataset import process_dataset
+from backend.server.database.schemas.algorithms.cluster import DBScanCluster
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import getDBSession, getEngine
 
@@ -56,4 +58,9 @@ def processDataset():
         columns = request.files["columns"]
     process_dataset(file, columns, label)
 
-    return "Processing Complete"
+    session = getDBSession("gapminderworld")
+    d = session.query(DBScanCluster).all()
+    session.close()
+    np.random.seed(3)
+    selection = np.random.randint(2, size=184)
+    return jsonify(d[-1].predict(selection))

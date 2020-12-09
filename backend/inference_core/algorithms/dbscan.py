@@ -1,13 +1,23 @@
+import json
+
 import pandas as pd
 from sklearn.cluster import DBSCAN
-from sklearn.preprocessing import MinMaxScaler
+
+from backend.inference_core.utils import robustScaler
 
 
-def DBScanCluster(data: pd.DataFrame, eps: float, min_samples: float):
+def computeDBScanCluster(
+    data: pd.DataFrame, dimensions, eps: float = 0.5, min_samples: float = 5
+):
     dbscan = DBSCAN(eps=eps, min_samples=min_samples)
 
     df = data.dropna()
-    min_max_scaler = MinMaxScaler()
-    scaled = min_max_scaler.fit_transform(df.values)
+    scaled = robustScaler(df.values)
     dbscan.fit(scaled)
-    print(dbscan.labels_)
+    labels = [str(i) for i in list(dbscan.labels_)]
+
+    return {
+        "dimensions": ",".join(dimensions),
+        "output": ",".join(labels),
+        "params": json.dumps(dbscan.get_params()),
+    }
