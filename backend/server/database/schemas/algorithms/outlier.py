@@ -10,18 +10,16 @@ from backend.server.database.schemas.algorithms.intent_base import IntentBase
 from ..base import Base
 
 
-class ClusterBase(IntentBase):
+class OutlierBase(IntentBase):
     def processOutput(self):
         output = list(map(int, self.output.split(",")))
-        unique_vals = list(filter(lambda x: x >= 0, set(output)))
 
-        arr = np.ndarray(shape=(len(output), len(unique_vals)))
-        arr = arr.astype(int)  # type: ignore
+        arr = np.ndarray(shape=(len(output), 2))
 
-        for i, val in enumerate(unique_vals):
-            arr[:, i] = [1 if x == val else 0 for x in output]
+        arr[:, 0] = [1 if x == -1 else 0 for x in output]
+        arr[:, 1] = [1 if x != -1 else 0 for x in output]
 
-        df = pd.DataFrame(arr, columns=[f"{self.description}:{i}" for i in unique_vals])
+        df = pd.DataFrame(arr, columns=["Outlier", "Non_Outliers"])
         return df
 
     def predict(self, selection: List[int]) -> List[Prediction]:
@@ -31,24 +29,24 @@ class ClusterBase(IntentBase):
         preds: List[Prediction] = [
             Prediction(
                 rank=rank_jaccard(vals.values, sels),
-                intent=self.intentType,
+                intent=str(col),
                 memberIds=self.getMemberIds(vals.values),
                 dimensions=self.getDimensionArr(),
                 params=self.getParams(),
                 algorithm=self.algorithm,
             )
-            for _, vals in output.iteritems()
+            for col, vals in output.iteritems()
         ]
 
         return preds
 
 
-class DBScanCluster(Base, ClusterBase):
-    __tablename__ = "DBScanCluster"
+class DBScanOutlier(Base, OutlierBase):
+    __tablename__ = "DBScanOutlier"
 
     @property
     def intentType(self) -> str:
-        return "Cluster"
+        return "Outlier"
 
     @property
     def algorithm(self) -> str:

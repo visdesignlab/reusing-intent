@@ -1,8 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from .base import Base
 from .schemas import *  # noqa: *
+from .schemas.base import Base
 from .utils import getDatabasePath
 
 

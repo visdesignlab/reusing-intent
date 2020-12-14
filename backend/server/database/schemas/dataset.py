@@ -1,7 +1,7 @@
 from sqlalchemy.sql.schema import Column
 from sqlalchemy.sql.sqltypes import Integer, String
 
-from ..base import Base
+from .base import Base
 
 
 class DatasetMetadata(Base):

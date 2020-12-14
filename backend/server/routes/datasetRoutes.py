@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, List
 
 import numpy as np
@@ -6,6 +7,7 @@ from flask import Blueprint, jsonify, request
 
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.algorithms.cluster import DBScanCluster
+from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import getDBSession, getEngine
 
@@ -56,11 +58,20 @@ def processDataset():
         label = request.form["label"]
     if "columns" in request.files:
         columns = request.files["columns"]
-    process_dataset(file, columns, label)
+    filename = os.path.splitext(file.filename)[0]
+    process_dataset(file, filename, columns, label)
+    session = getDBSession(filename)
+    try:
+        np.random.seed(3)
+        selection = np.random.randint(2, size=184)
+        preds = []
+        d = session.query(DBScanOutlier).all()
+        preds.extend(d[700].predict(selection))
+        d = session.query(DBScanCluster).all()
+        preds.extend(d[700].predict(selection))
 
-    session = getDBSession("gapminderworld")
-    d = session.query(DBScanCluster).all()
-    session.close()
-    np.random.seed(3)
-    selection = np.random.randint(2, size=184)
-    return jsonify(d[-1].predict(selection))
+        return jsonify(preds)
+    except Exception as ex:
+        return jsonify(str(ex))
+    finally:
+        session.close()

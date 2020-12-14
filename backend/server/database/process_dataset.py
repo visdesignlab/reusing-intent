@@ -1,11 +1,12 @@
 import itertools
-import os
+from typing import List
 
 import pandas as pd
 import yaml
 
-from backend.inference_core.algorithms.dbscan import computeDBScanCluster
+from backend.inference_core.algorithms.dbscan import computeDBScan
 from backend.server.database.schemas.algorithms.cluster import DBScanCluster
+from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import (
     dropAllTables,
@@ -17,9 +18,11 @@ from backend.server.database.session import (
 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def process_dataset(file, columnsData, label):
-    filename = os.path.splitext(file.filename)[0]
+def process_dataset(file, filename, columnsData, label):
     data = pd.read_csv(file)
+    # TODO: Handle missing at some point
+    data = data.dropna()
+
     data = data.infer_objects()
     # TODO: Maybe convert datatype of df when not matching according to columnsData
     metadata = getMetadata(data, columnsData, label)
@@ -36,21 +39,69 @@ def process_dataset(file, columnsData, label):
     precompute(data, filename)
 
 
-def precompute(data: pd.DataFrame, filename):
+def precompute(data: pd.DataFrame, id: str):
     combinations = getCombinations(data)
-    session = getDBSession(filename)
 
     for combo in combinations:
         subset = data[combo]
-        rets = computeDBScanCluster(subset, combo)
-        obj = DBScanCluster(**rets)
-        session.add(obj)
-    session.commit()
-
-    # precompute_algorithms(data)
+        dimensions = ",".join(combo)
+        precomputeOutliers(subset, dimensions, id)
+        precomputeClusters(subset, dimensions, id)
 
 
-def getCombinations(data: pd.DataFrame, lower_limit=1, upper_limit=-1):
+def precomputeOutliers(data: pd.DataFrame, dimensions: str, id: str):
+    session = getDBSession(id)
+    try:
+        for output, params in computeDBScan(data):
+            dbscan_cluster_result = DBScanOutlier(
+                dimensions=dimensions, output=output, params=params
+            )
+            session.add(dbscan_cluster_result)
+        session.commit()
+    except Exception as ex:
+        raise ex
+    finally:
+        session.close()
+
+
+def precomputeClusters(data: pd.DataFrame, dimensions: str, id: str):
+    session = getDBSession(id)
+    try:
+        for output, params in computeDBScan(data):
+            dbscan_cluster_result = DBScanCluster(
+                dimensions=dimensions, output=output, params=params
+            )
+            session.add(dbscan_cluster_result)
+        session.commit()
+    except Exception as ex:
+        raise ex
+    finally:
+        session.close()
+
+
+def getCombinations(
+    data: pd.DataFrame, lower_limit=1, upper_limit=-1
+) -> List[List[str]]:
+    """Generates all combinations of numeric column names
+
+    Parameters
+    ----------
+
+    data : pd.DataFrame
+        The complete dataset.
+
+    lower_limit : int, optional
+        Lower limit of combinations, by default 1.
+
+    upper_limit : int, optional
+        Upper limit of combinations, -1 is all columns, by default -1.
+
+    Returns
+    -------
+    List[List[str]]
+        List of column combinations
+    """
+
     columns = list(data.select_dtypes("number").columns)
     combinations = []
     ul = upper_limit
@@ -66,6 +117,23 @@ def getCombinations(data: pd.DataFrame, lower_limit=1, upper_limit=-1):
 
 
 def getMetadata(data: pd.DataFrame, columnsData=None, label=None):
+    """Gets metadata for given dataframe
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        The dataset
+
+    columnsData : [type], optional
+        This is the extra data supplied during upload, by default None
+
+    label : [type], optional
+        label column supplied during upload, by default None
+
+    Returns
+    -------
+    Metadata
+    """
     metadata = {}
 
     for count, (column, values) in enumerate(data.iteritems()):
