@@ -57,3 +57,19 @@ class DBScanCluster(Base, ClusterBase):
     @property
     def description(self) -> str:
         return f"{self.intentType}:{self.algorithm}"
+
+
+class KMeansCluster(Base, ClusterBase):
+    __tablename__ = "KMeansCluster"
+
+    @property
+    def intentType(self) -> str:
+        return "Cluster"
+
+    @property
+    def algorithm(self) -> str:
+        return "KMeans"
+
+    @property
+    def description(self) -> str:
+        return f"{self.intentType}:{self.algorithm}"

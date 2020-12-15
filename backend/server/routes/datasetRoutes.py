@@ -6,10 +6,10 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from backend.server.database.process_dataset import process_dataset
-from backend.server.database.schemas.algorithms.cluster import DBScanCluster
-from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
+from backend.server.database.schemas.algorithms.cluster import KMeansCluster
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import getDBSession, getEngine
+from backend.server.paths import DATABASE_ROOT
 
 datasetRoute = Blueprint("dataset", __name__)
 
@@ -20,7 +20,8 @@ def filter_dict(keys: List[str], old_obj: Dict[str, Any]) -> Dict[str, Any]:
 
 @datasetRoute.route("/datasets", methods=["GET"])
 def getAllDatasets() -> Any:
-    return jsonify([])
+    arr = list(map(lambda x: x.split(".")[0], os.listdir(DATABASE_ROOT)))
+    return jsonify(arr)
 
 
 @datasetRoute.route("/dataset/<id>", methods=["GET"])
@@ -59,16 +60,15 @@ def processDataset():
     if "columns" in request.files:
         columns = request.files["columns"]
     filename = os.path.splitext(file.filename)[0]
+    print(filename, label)
     process_dataset(file, filename, columns, label)
     session = getDBSession(filename)
     try:
         np.random.seed(3)
         selection = np.random.randint(2, size=184)
         preds = []
-        d = session.query(DBScanOutlier).all()
-        preds.extend(d[700].predict(selection))
-        d = session.query(DBScanCluster).all()
-        preds.extend(d[700].predict(selection))
+        d = session.query(KMeansCluster).all()
+        preds.extend(d[1].predict(selection))
 
         return jsonify(preds)
     except Exception as ex:

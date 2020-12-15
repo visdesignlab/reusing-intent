@@ -5,7 +5,8 @@ import pandas as pd
 import yaml
 
 from backend.inference_core.algorithms.dbscan import computeDBScan
-from backend.server.database.schemas.algorithms.cluster import DBScanCluster
+from backend.inference_core.algorithms.kmeans import computeKMeansClusters
+from backend.server.database.schemas.algorithms.cluster import KMeansCluster
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import (
@@ -67,11 +68,16 @@ def precomputeOutliers(data: pd.DataFrame, dimensions: str, id: str):
 def precomputeClusters(data: pd.DataFrame, dimensions: str, id: str):
     session = getDBSession(id)
     try:
-        for output, params in computeDBScan(data):
-            dbscan_cluster_result = DBScanCluster(
+        # for output, params in computeDBScan(data):
+        #     dbscan_cluster_result = DBScanCluster(
+        #         dimensions=dimensions, output=output, params=params
+        #     )
+        #     session.add(dbscan_cluster_result)
+        for output, params in computeKMeansClusters(data):
+            kmeans_result = KMeansCluster(
                 dimensions=dimensions, output=output, params=params
             )
-            session.add(dbscan_cluster_result)
+            session.add(kmeans_result)
         session.commit()
     except Exception as ex:
         raise ex
@@ -170,6 +176,7 @@ def uploadMetadata(metadata, filename: str):
     session = getDBSession(filename)
     try:
         for k, v in metadata.items():
+            print(v)
             fullname, unit, short, dataType = v.values()
             d = DatasetMetadata(
                 name=k, fullname=fullname, unit=unit, short=short, dataType=dataType
