@@ -14,6 +14,9 @@ export type DataPoint = { [key in DatasetColumn]: string | number };
 export type Dataset = {
   columns: Columns;
   values: DataPoint[];
+  categoricalColumns: string[];
+  numericColumns: string[];
+  labelColumn: string;
 };
 
 export function getColumns(cols: Columns): string[] {
