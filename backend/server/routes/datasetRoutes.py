@@ -40,6 +40,22 @@ def getDatasetById(id):
         dataset["columns"] = columns
         data = pd.read_sql("Dataset", con=engine)
         dataset["values"] = list(data.T.to_dict().values())
+        labelColumn = ""
+        numericColumns = []
+        categoricalColumns = []
+        allColumns = []
+        for k, v in columns.items():
+            allColumns.append(k)
+            if v["dataType"] == "label" and labelColumn == "":
+                labelColumn = k
+            if v["dataType"] == "numeric":
+                numericColumns.append(k)
+            if v["dataType"] == "categorical":
+                categoricalColumns.append(k)
+        dataset["labelColumn"] = labelColumn
+        dataset["categoricalColumns"] = categoricalColumns
+        dataset["numericColumns"] = numericColumns
+        dataset["allColumns"] = allColumns
     except Exception as e:
         return str(e), 500
     finally:
