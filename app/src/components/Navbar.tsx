@@ -58,7 +58,7 @@ const Navbar: FC = () => {
 
   useEffect(() => {
     if (datasets.length === 0) setDatasets(data);
-  }, [data, datasets]);
+  }, [data, datasets, setDatasets]);
 
   const handleDatasetChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setDataset(event.target.value as string);

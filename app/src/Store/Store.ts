@@ -1,23 +1,22 @@
-import { Provenance, initProvenance, createAction, NodeID } from '@visdesignlab/trrack';
+import { createAction, initProvenance, NodeID, Provenance } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, observable } from 'mobx';
 import { createContext } from 'react';
 
 import { getPlotId } from '../Utils/IDGens';
 
-import { Dataset, getColumns } from './Dataset';
-import { Plot, Plots, ExtendedBrush, ExtendedBrushCollection } from './Plot';
-import { IntentEvents, Predictions } from './Provenance'
-import { IntentState, defaultState, BrushType } from './IntentState'
-
+import { Dataset } from './Dataset';
+import { BrushType, defaultState, IntentState } from './IntentState';
+import { ExtendedBrush, ExtendedBrushCollection, Plot, Plots } from './Plot';
+import { IntentEvents, Predictions } from './Provenance';
 
 export class Store {
   datasets: string[] = [];
   dataset: string | null = null;
-  data: Dataset | null = null;
+  data: Dataset = null as never;
   provenance: Provenance<IntentState, IntentEvents, Predictions>;
   plots: Plots = [];
-  
+
   provenanceActions = {
     addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
       (state: IntentState, plot: Plot) => {
@@ -40,12 +39,13 @@ export class Store {
     });
   }
 
-  reset() {
+  reset = (): void => {
     this.plots = [];
-    this.data = null;
+    this.data = null as never;
     this.dataset = null;
     this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
-  }
+    this.provenance.done();
+  };
 
   setDatasets = (datasets: string[]) => {
     this.datasets = datasets;
@@ -55,18 +55,18 @@ export class Store {
     }
   };
 
-  setDataset = async (datasetId: string) => {
+  setDataset = async (datasetId: string): Promise<void> => {
     Axios.get(`http://127.0.0.1:5000/dataset/${datasetId}`).then(
       action((res: AxiosResponse<Dataset>) => {
         this.reset();
         this.dataset = datasetId;
 
         this.data = res.data;
-        const columns = getColumns(this.data.columns);
+        const numericColumns = this.data.numericColumns;
         const plot1: Plot = {
           id: getPlotId(),
-          x: columns[0],
-          y: columns[1],
+          x: numericColumns[0],
+          y: numericColumns[1],
           brushes: {},
           selectedPoints: [],
         };
@@ -90,11 +90,6 @@ export class Store {
 
   addPlot = (plot: Plot): void => {
     this.plots.push(plot);
-
-    this.provenanceActions.addPlotAction.setLabel(`Add plot: ${plot.x} - ${plot.y}`);
-    this.provenanceActions.addPlotAction.setEventType('Add Plot');
-
-    this.provenance.apply(this.provenanceActions.addPlotAction(plot));
   };
 
   changeCategory = (category: string) => {
@@ -233,7 +228,7 @@ export class Store {
     plot: Plot,
     brushCollection: ExtendedBrushCollection,
     affectedBrush: ExtendedBrush,
-  ) => {
+  ): void => {
     const pointCount = affectedBrush.points.length;
 
     const action = createAction<IntentState, any[], IntentEvents>(
@@ -260,17 +255,9 @@ export class Store {
     this.provenance.apply(action(plot, brushCollection, affectedBrush));
   };
 
-  removeBrush = (
-    plot: Plot,
-    brushCollection: ExtendedBrushCollection,
-    affectedBrush: ExtendedBrush,
-  ) => {
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (
-        state: IntentState,
-        brushCollection: ExtendedBrushCollection,
-        _affectedBrush: ExtendedBrush,
-      ) => {
+  removeBrush = (plot: Plot, brushCollection: ExtendedBrushCollection): void => {
+    const action = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
+      (state: IntentState, plot: Plot, brushCollection: ExtendedBrushCollection) => {
         for (let i = 0; i < state.plots.length; ++i) {
           if (plot.id === state.plots[i].id) {
             state.plots[i].brushes = { ...brushCollection };
@@ -285,7 +272,7 @@ export class Store {
     action.setLabel(`Remove R. Brush`);
     action.setEventType('Remove Brush');
 
-    this.provenance.apply(action(plot, brushCollection, affectedBrush));
+    this.provenance.apply(action(plot, brushCollection));
   };
 
   clearAll = () => {
@@ -303,7 +290,7 @@ export class Store {
     this.provenance.apply(action());
   };
 
-  changeBrushType = (brushType: BrushType) => {
+  changeBrushType = (brushType: BrushType): void => {
     let message = '';
 
     switch (brushType) {
@@ -317,21 +304,22 @@ export class Store {
       default:
         message = 'Brushing disabled';
     }
+    console.log(message);
 
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, brushType: BrushType) => {
-        state.brushType = brushType;
-        // addDummyInteraction(state);
-      },
-    );
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, brushType: BrushType) => {
+    //     state.brushType = brushType;
+    //     // addDummyInteraction(state);
+    //   },
+    // );
 
-    action.setLabel(message);
-    action.setEventType('Switch Brush');
+    // action.setLabel(message);
+    // action.setEventType('Switch Brush');
 
     this.provenance.apply(action(brushType));
   };
 
-  invertSelection = (currentSelected: number[], all: number[]) => {
+  invertSelection = (currentSelected: number[], all: number[]): void => {
     const action = createAction<IntentState, any[], IntentEvents>(
       (state: IntentState, currentSelected: number[], all: number[]) => {
         const newSelection = all.filter((a) => !currentSelected.includes(a));
@@ -344,8 +332,6 @@ export class Store {
           }
           state.plots[i].brushes = {};
         }
-
-        // addInvertSelectionInteraction(state, newSelection);
       },
     );
 
@@ -354,7 +340,6 @@ export class Store {
 
     this.provenance.apply(action(currentSelected, all));
   };
-
 
   //TODO:: Need some extra behaviour before this works
   // lockPrediction = (
@@ -442,7 +427,7 @@ export class Store {
   //   this.provenance.apply(action(brushBehaviour));
   // }
 
-  goToNode = (id: NodeID) => {
+  goToNode = (id: NodeID): void => {
     this.provenance.goToNode(id);
   };
 }

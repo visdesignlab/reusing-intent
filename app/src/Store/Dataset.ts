@@ -7,7 +7,7 @@ export type Column = {
 
 export type Columns = { [key: string]: Column };
 
-export type DatasetColumn = keyof Columns;
+export type DatasetColumn = string;
 
 export type DataPoint = { [key in DatasetColumn]: string | number };
 
@@ -17,8 +17,5 @@ export type Dataset = {
   categoricalColumns: string[];
   numericColumns: string[];
   labelColumn: string;
+  allColumns: string[];
 };
-
-export function getColumns(cols: Columns): string[] {
-  return Object.keys(cols);
-}

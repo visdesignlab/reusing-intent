@@ -1,8 +1,11 @@
-import { createStyles, makeStyles, Paper, Theme } from '@material-ui/core';
+import { createStyles, makeStyles, Paper, Theme, useTheme } from '@material-ui/core';
+import useComponentSize from '@rehooks/component-size';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useContext, useRef } from 'react';
 
 import IntentStore from '../Store/Store';
+
+import Scatterplot from './Scatterplot.tsx/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -15,38 +18,26 @@ const useStyles = makeStyles((theme: Theme) =>
       '& > *': {
         width: props.dimension - theme.spacing(2),
         height: props.dimension - theme.spacing(2),
+        padding: theme.spacing(1),
       },
     }),
   }),
 );
 
 const Visualization: FC = () => {
-  const visRef = useRef<HTMLDivElement>(null);
+  const visRef = useRef(null);
+  const { height, width } = useComponentSize(visRef);
   const { plots } = useContext(IntentStore);
-  const [dimension, setDimension] = useState(-1);
-  const classes = useStyles({ dimension: dimension > 0 ? dimension : 0 });
 
-  useEffect(() => {
-    const { current } = visRef;
-
-    if (!current || plots.length === 0) return;
-    const [height, width] = [current.clientHeight, current.clientWidth];
-
-    let dim = height > width ? width : height;
-
-    if (plots.length > 1) {
-      dim = dim / 2;
-      dim = Math.min(dim, height, width);
-    }
-
-    setDimension(dim);
-  }, [plots]);
+  const spContainerDimension = height > width ? width : height;
+  const classes = useStyles({ dimension: spContainerDimension });
+  const theme = useTheme();
 
   return (
     <div ref={visRef} className={classes.root}>
       {plots.map((plot) => (
         <Paper key={plot.id} elevation={3}>
-          <pre>{JSON.stringify(plot, null, 4)}</pre>
+          <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
         </Paper>
       ))}
     </div>
