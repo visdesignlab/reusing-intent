@@ -115,7 +115,7 @@
     "react/prefer-stateless-function": "warn",
     "react/self-closing-comp": "warn",
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/exhaustive-deps": "error",
     "yoda": "warn"
   }
 }
