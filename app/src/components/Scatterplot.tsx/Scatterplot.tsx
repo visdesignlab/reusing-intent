@@ -7,6 +7,7 @@ import { DatasetColumn } from '../../Store/Dataset';
 import { Plot } from '../../Store/IntentState';
 import IntentStore from '../../Store/Store';
 import translate from '../../Utils/Translate';
+import FreeFormBrush from '../Freeform/FreeFormBrush';
 
 import Axis from './Axis';
 import Marks from './Marks';
@@ -93,6 +94,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         <Marks points={points} xScale={xScale} yScale={yScale} />
+        <FreeFormBrush extents={{ top: 0, left: 0, bottom: sp_dimension, right: sp_dimension }} />
       </g>
     </svg>
   );

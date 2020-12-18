@@ -1,4 +1,4 @@
-import { Brush } from '../components/Brush/Brush';
+import { Brush } from '../components/Brush/Types/Brush';
 import { InteractionHistory, Prediction } from '../contract';
 
 import { DatasetColumn } from './Dataset';

@@ -1,5 +1,6 @@
 import {
   AppBar,
+  Divider,
   FormControl,
   InputLabel,
   makeStyles,
@@ -13,6 +14,8 @@ import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 
 import IntentStore from '../Store/Store';
+
+import AddPlot from './AddPlotComponent/AddPlot';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -68,10 +71,11 @@ const Navbar: FC = () => {
     <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
-          <FormControl className={classes.formControl}>
+          <FormControl className={classes.formControl} variant="outlined">
             <InputLabel id="load-dataset-select-label">Dataset</InputLabel>
             <Select
               id="load-dataset-select"
+              label="Dataset"
               labelId="load-dataset-select-label"
               value={dataset || ''}
               onChange={handleDatasetChange}
@@ -83,6 +87,8 @@ const Navbar: FC = () => {
               ))}
             </Select>
           </FormControl>
+          <Divider orientation="vertical" flexItem />
+          <AddPlot />
         </Toolbar>
       </AppBar>
     </div>

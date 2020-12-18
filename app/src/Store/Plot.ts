@@ -1,4 +1,4 @@
-import { Brush } from '../components/Brush/Brush';
+import { Brush } from '../components/Brush/Types/Brush';
 
 import { DatasetColumn } from './Dataset';
 
