@@ -25,6 +25,9 @@ const useStyles = makeStyles((theme: Theme) => ({
     margin: theme.spacing(1),
     minWidth: 120,
   },
+  formControlwoWidth: {
+    margin: theme.spacing(1),
+  },
 }));
 
 type FetchStatus = 'Idle' | 'Fetching' | 'Fetched';
@@ -116,7 +119,9 @@ const Navbar: FC = () => {
           </FormControl>
           <Divider orientation="vertical" flexItem />
           <AddPlot />
+          <Divider orientation="vertical" flexItem />
           <FormControlLabel
+            className={classes.formControlwoWidth}
             control={
               <Switch
                 checked={showCategories}

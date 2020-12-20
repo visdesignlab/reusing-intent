@@ -68,7 +68,7 @@ export class Store {
         this.dataset = res.data;
         const { numericColumns } = this.dataset;
 
-        for (let i = 0; i < 1; ++i) {
+        for (let i = 0; i < 2; ++i) {
           const plot: Plot = {
             id: getPlotId(),
             x: numericColumns[0],
@@ -88,6 +88,32 @@ export class Store {
 
   addPlot = (plot: Plot): void => {
     this.plots.push(plot);
+  };
+
+  removePlot = (plot: Plot) => {
+    this.plots = this.plots.filter((plt) => plt.id !== plot.id);
+
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, plot: Plot) => {
+    //     const plots: Plots = [];
+
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       const plt = state.plots[i];
+
+    //       if (plt.id !== plot.id) {
+    //         plots.push(plt);
+    //       }
+    //     }
+    //     state.plots = plots;
+
+    //     // removePlotInteraction(state, plot);
+    //   },
+    // );
+
+    // action.setLabel(`Remove plot: ${plot.x} - ${plot.y}`);
+    // action.setEventType('Add Plot');
+
+    // this.provenance.apply(action(plot));
   };
 
   changeCategory = (category: string) => {
@@ -127,30 +153,6 @@ export class Store {
     // action.setEventType('Switch Category Visibility');
 
     // this.provenance.apply(action(show, categories));
-  };
-
-  removePlot = (plot: Plot) => {
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, plot: Plot) => {
-        const plots: Plots = [];
-
-        for (let i = 0; i < state.plots.length; ++i) {
-          const plt = state.plots[i];
-
-          if (plt.id !== plot.id) {
-            plots.push(plt);
-          }
-        }
-        state.plots = plots;
-
-        // removePlotInteraction(state, plot);
-      },
-    );
-
-    action.setLabel(`Remove plot: ${plot.x} - ${plot.y}`);
-    action.setEventType('Add Plot');
-
-    this.provenance.apply(action(plot));
   };
 
   addPointSelection = (plot: Plot, points: number[], isPaintBrush = false) => {
