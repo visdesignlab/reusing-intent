@@ -4,7 +4,6 @@ import { observer } from 'mobx-react';
 import React, { FC, useEffect, useRef, useState } from 'react';
 
 import translate from '../../Utils/Translate';
-import { BrushableRegion } from '../Brush/Types/BrushableRegion';
 
 export type BrushSize = '20';
 
@@ -13,7 +12,9 @@ const useStyles = makeStyles(() => ({
     cursor: 'grabbing',
   },
 }));
+
 export const union_color = 'rgb(244, 106, 15)';
+
 type MousePosition = {
   x: number;
   y: number;
@@ -24,7 +25,10 @@ type BrushMoveHandler = (x: number, y: number, radius: number) => void;
 type BrushEndHandler = (mousePos?: MousePosition) => void;
 
 type Props = {
-  extents: BrushableRegion;
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
   extentPadding?: number;
   onBrushStart?: BrushStartHandler;
   onBrush?: BrushMoveHandler;
@@ -32,7 +36,10 @@ type Props = {
 };
 
 const FreeFormBrush: FC<Props> = ({
-  extents,
+  left = 0,
+  right = 0,
+  top = 0,
+  bottom = 0,
   extentPadding = 0,
   onBrushStart,
   onBrush,
@@ -41,7 +48,6 @@ const FreeFormBrush: FC<Props> = ({
   const { brushStyle } = useStyles();
   const brushRef = useRef<SVGCircleElement>(null);
   const layerRef = useRef<SVGRectElement>(null);
-  const { left = 0, right = 0, top = 0, bottom = 0 } = extents;
 
   const brushSize: BrushSize = '20';
 

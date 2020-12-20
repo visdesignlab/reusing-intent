@@ -35,7 +35,7 @@ function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { data } = useContext(IntentStore);
+  const { dataset: data } = useContext(IntentStore);
   const dt =
     useMemo(() => {
       const points = data?.values.map((d) => ({
@@ -76,7 +76,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
-    data: { labelColumn },
+    dataset: { labelColumn },
   } = useContext(IntentStore);
   const { x, y } = plot;
 
@@ -94,7 +94,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         <Marks points={points} xScale={xScale} yScale={yScale} />
-        <FreeFormBrush extents={{ top: 0, left: 0, bottom: sp_dimension, right: sp_dimension }} />
+        <FreeFormBrush bottom={sp_dimension} left={0} right={sp_dimension} top={0} />
       </g>
     </svg>
   );

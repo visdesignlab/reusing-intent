@@ -1,7 +1,6 @@
-import { createStyles, makeStyles, Paper, Theme, useTheme } from '@material-ui/core';
-import useComponentSize from '@rehooks/component-size';
+import { createStyles, Grid, makeStyles, Paper, Theme, useTheme } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useRef } from 'react';
+import React, { FC, useContext } from 'react';
 
 import IntentStore from '../Store/Store';
 
@@ -9,37 +8,38 @@ import Scatterplot from './Scatterplot.tsx/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: (props: { dimension: number }) => ({
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: theme.spacing(1),
-      '& > *': {
-        width: props.dimension - theme.spacing(2),
-        height: props.dimension - theme.spacing(2),
-        padding: theme.spacing(1),
-      },
-    }),
+    root: {
+      flexGrow: 1,
+      padding: theme.spacing(2),
+      overflow: 'auto',
+    },
+    grid: {
+      height: '100%',
+    },
+    paper: () => ({}),
   }),
 );
 
 const Visualization: FC = () => {
-  const visRef = useRef(null);
-  const { height, width } = useComponentSize(visRef);
   const { plots } = useContext(IntentStore);
 
-  const spContainerDimension = height > width ? width : height;
-  const classes = useStyles({ dimension: spContainerDimension });
+  // const spContainerDimension = height > width ? width : height;
+  const spContainerDimension = plots.length === 1 ? 800 : 650;
+  const classes = useStyles();
   const theme = useTheme();
+  const xs = plots.length === 1 ? 'auto' : 6;
 
   return (
-    <div ref={visRef} className={classes.root}>
-      {plots.map((plot) => (
-        <Paper key={plot.id} elevation={3}>
-          <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
-        </Paper>
-      ))}
+    <div className={classes.root}>
+      <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
+        {plots.map((plot) => (
+          <Grid key={plot.id} xs={xs} item>
+            <Paper elevation={3}>
+              <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
+            </Paper>
+          </Grid>
+        ))}
+      </Grid>
     </div>
   );
 };

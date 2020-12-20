@@ -10,6 +10,12 @@ const useStyles = makeStyles(() => ({
     height: '100vh',
     width: '100vw',
     gridTemplateRows: 'min-content 1fr',
+    overflow: 'hidden',
+  },
+  layout: {
+    display: 'grid',
+    gridTemplateColumns: '5fr 1.5fr',
+    overflow: 'hidden',
   },
 }));
 
@@ -20,7 +26,10 @@ const App: FC = () => {
     <div className={classes.root}>
       <CssBaseline />
       <Navbar />
-      <Visualization />
+      <div className={classes.layout}>
+        <Visualization />
+        <div>Test</div>
+      </div>
     </div>
   );
 };

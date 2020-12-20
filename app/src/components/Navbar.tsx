@@ -2,10 +2,12 @@ import {
   AppBar,
   Divider,
   FormControl,
+  FormControlLabel,
   InputLabel,
   makeStyles,
   MenuItem,
   Select,
+  Switch,
   Theme,
   Toolbar,
 } from '@material-ui/core';
@@ -16,6 +18,7 @@ import React, { FC, useContext, useEffect, useRef, useState } from 'react';
 import IntentStore from '../Store/Store';
 
 import AddPlot from './AddPlotComponent/AddPlot';
+import useDropdown from './Dropdown';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -56,16 +59,40 @@ const useFetch = (url: string | null) => {
 const Navbar: FC = () => {
   const classes = useStyles();
   const intentStore = useContext(IntentStore);
-  const { data } = useFetch('http://127.0.0.1:5000/datasets');
-  const { dataset, datasets, setDataset, setDatasets } = intentStore;
+  const { data: fetchedDatasets } = useFetch('http://127.0.0.1:5000/datasets');
+  const {
+    datasetName,
+    datasets,
+    dataset,
+    showCategories,
+    setDataset,
+    setDatasets,
+    toggleCategories,
+    categoryColumn,
+    changeCategory,
+  } = intentStore;
+
+  const { categoricalColumns = [], columns } = dataset || {};
 
   useEffect(() => {
-    if (datasets.length === 0) setDatasets(data);
-  }, [data, datasets, setDatasets]);
+    setDatasets(fetchedDatasets);
+  }, [fetchedDatasets, setDatasets]);
 
   const handleDatasetChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     setDataset(event.target.value as string);
   };
+
+  const { Dropdown: CategoryDropdown } = useDropdown(
+    'category-dropdown',
+    'Select Category Column',
+    '',
+    categoricalColumns.map((col) => ({
+      key: col,
+      desc: `${columns[col].fullname}`,
+    })),
+    categoryColumn,
+    changeCategory,
+  );
 
   return (
     <div>
@@ -77,7 +104,7 @@ const Navbar: FC = () => {
               id="load-dataset-select"
               label="Dataset"
               labelId="load-dataset-select-label"
-              value={dataset || ''}
+              value={datasetName || ''}
               onChange={handleDatasetChange}
             >
               {datasets.map((d) => (
@@ -89,6 +116,16 @@ const Navbar: FC = () => {
           </FormControl>
           <Divider orientation="vertical" flexItem />
           <AddPlot />
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showCategories}
+                onChange={() => toggleCategories(!showCategories, categoricalColumns)}
+              />
+            }
+            label="Show Categories"
+          />
+          {showCategories && <CategoryDropdown />}
         </Toolbar>
       </AppBar>
     </div>

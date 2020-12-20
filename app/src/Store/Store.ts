@@ -12,10 +12,12 @@ import { IntentEvents, Predictions } from './Provenance';
 
 export class Store {
   datasets: string[] = [];
-  dataset: string | null = null;
-  data: Dataset = null as never;
+  datasetName: string | null = null;
+  dataset: Dataset = null as never;
   provenance: Provenance<IntentState, IntentEvents, Predictions>;
   plots: Plots = [];
+  showCategories = false;
+  categoryColumn = '';
 
   provenanceActions = {
     addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
@@ -28,10 +30,12 @@ export class Store {
   constructor() {
     this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
     makeAutoObservable(this, {
-      dataset: observable,
+      datasetName: observable,
       provenance: observable,
-      data: observable,
+      dataset: observable,
       plots: observable,
+      showCategories: observable,
+      categoryColumn: observable,
       setDataset: action,
       setDatasets: action,
       addPlot: action,
@@ -41,8 +45,8 @@ export class Store {
 
   reset = (): void => {
     this.plots = [];
-    this.data = null as never;
-    this.dataset = null;
+    this.dataset = null as never;
+    this.datasetName = null;
     this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
     this.provenance.done();
   };
@@ -50,7 +54,7 @@ export class Store {
   setDatasets = (datasets: string[]) => {
     this.datasets = datasets;
 
-    if (this.datasets.length > 0 && this.dataset !== this.datasets[0]) {
+    if (this.datasets.length > 0 && this.datasetName !== this.datasets[0]) {
       this.setDataset(this.datasets[0]);
     }
   };
@@ -59,27 +63,21 @@ export class Store {
     Axios.get(`http://127.0.0.1:5000/dataset/${datasetId}`).then(
       action((res: AxiosResponse<Dataset>) => {
         this.reset();
-        this.dataset = datasetId;
+        this.datasetName = datasetId;
 
-        this.data = res.data;
-        const numericColumns = this.data.numericColumns;
-        const plot1: Plot = {
-          id: getPlotId(),
-          x: numericColumns[0],
-          y: numericColumns[1],
-          brushes: {},
-          selectedPoints: [],
-        };
-        this.addPlot(plot1);
+        this.dataset = res.data;
+        const { numericColumns } = this.dataset;
 
-        // const plot2: Plot = {
-        //   id: getPlotId(),
-        //   x: columns[0],
-        //   y: columns[1],
-        //   brushes: {},
-        //   selectedPoints: [],
-        // };
-        // this.addPlot(plot2);
+        for (let i = 0; i < 1; ++i) {
+          const plot: Plot = {
+            id: getPlotId(),
+            x: numericColumns[0],
+            y: numericColumns[1],
+            brushes: {},
+            selectedPoints: [],
+          };
+          this.addPlot(plot);
+        }
       }),
     );
   };
@@ -108,23 +106,27 @@ export class Store {
   };
 
   toggleCategories = (show: boolean, categories: string[] = []) => {
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, show: boolean, categories: string[]) => {
-        state.showCategories = show;
+    this.showCategories = show;
 
-        if (categories.length > 0 && state.categoryColumn === '') {
-          state.categoryColumn = categories[0];
-        }
+    if (this.categoryColumn === '') this.categoryColumn = categories[0];
 
-        //TODO:: wat
-        //addDummyInteraction(state);
-      },
-    );
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, show: boolean, categories: string[]) => {
+    //     state.showCategories = show;
 
-    action.setLabel(`${show ? 'Show' : 'Hide'} Categories`);
-    action.setEventType('Switch Category Visibility');
+    //     if (categories.length > 0 && state.categoryColumn === '') {
+    //       state.categoryColumn = categories[0];
+    //     }
 
-    this.provenance.apply(action(show, categories));
+    //     //TODO:: wat
+    //     //addDummyInteraction(state);
+    //   },
+    // );
+
+    // action.setLabel(`${show ? 'Show' : 'Hide'} Categories`);
+    // action.setEventType('Switch Category Visibility');
+
+    // this.provenance.apply(action(show, categories));
   };
 
   removePlot = (plot: Plot) => {

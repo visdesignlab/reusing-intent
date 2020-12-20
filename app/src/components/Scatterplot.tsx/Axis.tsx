@@ -15,7 +15,7 @@ type Props = {
 const Axis: FC<Props> = ({ scale, transform = '', type, columnName }: Props) => {
   const gRef = useRef<SVGGElement>(null);
   const {
-    data: { columns },
+    dataset: { columns },
   } = useContext(IntentStore);
 
   const axis = useMemo(() => {
