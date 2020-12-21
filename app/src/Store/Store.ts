@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createAction, initProvenance, NodeID, Provenance } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, observable } from 'mobx';
+import { action, makeAutoObservable } from 'mobx';
 import { createContext } from 'react';
 
 import { getPlotId } from '../Utils/IDGens';
@@ -18,6 +19,7 @@ export class Store {
   plots: Plots = [];
   showCategories = false;
   categoryColumn = '';
+  isLoadingData = true;
 
   provenanceActions = {
     addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
@@ -29,18 +31,24 @@ export class Store {
 
   constructor() {
     this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
-    makeAutoObservable(this, {
-      datasetName: observable,
-      provenance: observable,
-      dataset: observable,
-      plots: observable,
-      showCategories: observable,
-      categoryColumn: observable,
-      setDataset: action,
-      setDatasets: action,
-      addPlot: action,
-      reset: action,
+    makeAutoObservable(this);
+  }
+
+  setFreeformSelection = (plot: Plot, points: number[]) => {
+    this.plots.forEach((plt) => {
+      if (plt.id === plot.id)
+        plot.selectedPoints = Array.from(new Set([...plot.selectedPoints, ...points]));
     });
+  };
+
+  get selectedPoints() {
+    const selectedPoints: number[] = [];
+
+    this.plots.forEach((plot) => {
+      selectedPoints.push(...plot.selectedPoints);
+    });
+
+    return Array.from(new Set(selectedPoints));
   }
 
   reset = (): void => {
@@ -55,11 +63,12 @@ export class Store {
     this.datasets = datasets;
 
     if (this.datasets.length > 0 && this.datasetName !== this.datasets[0]) {
-      this.setDataset(this.datasets[0]);
+      this.setDataset(this.datasets[1]);
     }
   };
 
   setDataset = async (datasetId: string): Promise<void> => {
+    this.isLoadingData = true;
     Axios.get(`http://127.0.0.1:5000/dataset/${datasetId}`).then(
       action((res: AxiosResponse<Dataset>) => {
         this.reset();
@@ -68,7 +77,7 @@ export class Store {
         this.dataset = res.data;
         const { numericColumns } = this.dataset;
 
-        for (let i = 0; i < 2; ++i) {
+        for (let i = 0; i < 1; ++i) {
           const plot: Plot = {
             id: getPlotId(),
             x: numericColumns[0],
@@ -78,6 +87,8 @@ export class Store {
           };
           this.addPlot(plot);
         }
+
+        this.isLoadingData = false;
       }),
     );
   };
@@ -91,7 +102,8 @@ export class Store {
   };
 
   removePlot = (plot: Plot) => {
-    this.plots = this.plots.filter((plt) => plt.id !== plot.id);
+    this.plots = this.plots.filter((p) => p.id !== plot.id);
+    // this.plots = this.plots.filter((plt) => plt.id !== plot.id);
 
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (state: IntentState, plot: Plot) => {
@@ -158,44 +170,41 @@ export class Store {
   addPointSelection = (plot: Plot, points: number[], isPaintBrush = false) => {
     if (points.length === 0) return;
 
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, plot: Plot, points: number[]) => {
-        for (let i = 0; i < state.plots.length; ++i) {
-          if (plot.id === state.plots[i].id) {
-            const pts = state.plots[i].selectedPoints;
-            state.plots[i].selectedPoints = [...pts, ...points];
-            break;
-          }
-        }
-        // addPointSelectionInteraction(state, plot, points);
-      },
-    );
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, plot: Plot, points: number[]) => {
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       if (plot.id === state.plots[i].id) {
+    //         const pts = state.plots[i].selectedPoints;
+    //         state.plots[i].selectedPoints = [...pts, ...points];
+    //         break;
+    //       }
+    //     }
+    // addPointSelectionInteraction(state, plot, points);
+    //   },
+    // );
 
-    action.setLabel(isPaintBrush ? `P. Brush: ${points.length}` : `Add Point Selection`);
-    action.setEventType('Point Selection');
+    // action.setLabel(isPaintBrush ? `P. Brush: ${points.length}` : `Add Point Selection`);
+    // action.setEventType('Point Selection');
 
-    this.provenance.apply(action(plot, points));
+    // this.provenance.apply(action(plot, points));
   };
 
   removePointSelection = (plot: Plot, points: number[]) => {
     // addPointSelectionInteraction(state, plot, points);
-
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, plot: Plot, points: number[]) => {
-        for (let i = 0; i < state.plots.length; ++i) {
-          if (plot.id === state.plots[i].id) {
-            const pts = state.plots[i].selectedPoints;
-            state.plots[i].selectedPoints = [...pts, ...points];
-            break;
-          }
-        }
-      },
-    );
-
-    action.setLabel(`Unselect points`);
-    action.setEventType('Point Deselection');
-
-    this.provenance.apply(action(plot, points));
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, plot: Plot, points: number[]) => {
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       if (plot.id === state.plots[i].id) {
+    //         const pts = state.plots[i].selectedPoints;
+    //         state.plots[i].selectedPoints = [...pts, ...points];
+    //         break;
+    //       }
+    //     }
+    //   },
+    // );
+    // action.setLabel(`Unselect points`);
+    // action.setEventType('Point Deselection');
+    // this.provenance.apply(action(plot, points));
   };
 
   addBrush = (
@@ -203,29 +212,25 @@ export class Store {
     brushCollection: ExtendedBrushCollection,
     affectedBrush: ExtendedBrush,
   ) => {
-    const pointCount = affectedBrush.points.length;
-
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (
-        state: IntentState,
-        brushCollection: ExtendedBrushCollection,
-        _affectedBrush: ExtendedBrush,
-      ) => {
-        for (let i = 0; i < state.plots.length; ++i) {
-          if (plot.id === state.plots[i].id) {
-            state.plots[i].brushes = { ...brushCollection };
-            break;
-          }
-        }
-
-        // brushInteraction(state, plot, affectedBrush);
-      },
-    );
-
-    action.setLabel(`Add R. Brush: ${pointCount} points`);
-    action.setEventType('Add Brush');
-
-    this.provenance.apply(action(plot, brushCollection, affectedBrush));
+    // const pointCount = affectedBrush.points.length;
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (
+    //     state: IntentState,
+    //     brushCollection: ExtendedBrushCollection,
+    //     _affectedBrush: ExtendedBrush,
+    //   ) => {
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       if (plot.id === state.plots[i].id) {
+    //         state.plots[i].brushes = { ...brushCollection };
+    //         break;
+    //       }
+    //     }
+    //     // brushInteraction(state, plot, affectedBrush);
+    //   },
+    // );
+    // action.setLabel(`Add R. Brush: ${pointCount} points`);
+    // action.setEventType('Add Brush');
+    // this.provenance.apply(action(plot, brushCollection, affectedBrush));
   };
 
   changeBrush = (
@@ -233,116 +238,100 @@ export class Store {
     brushCollection: ExtendedBrushCollection,
     affectedBrush: ExtendedBrush,
   ): void => {
-    const pointCount = affectedBrush.points.length;
-
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (
-        state: IntentState,
-        brushCollection: ExtendedBrushCollection,
-        _affectedBrush: ExtendedBrush,
-      ) => {
-        let i = 0;
-
-        for (i = 0; i < state.plots.length; ++i) {
-          if (plot.id === state.plots[i].id) {
-            state.plots[i].brushes = { ...brushCollection };
-            break;
-          }
-        }
-        // brushInteraction(state, plot, affectedBrush);
-      },
-    );
-
-    action.setLabel(`Change R. Brush: ${pointCount}`);
-    action.setEventType('Edit Brush');
-
-    this.provenance.apply(action(plot, brushCollection, affectedBrush));
+    // const pointCount = affectedBrush.points.length;
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (
+    //     state: IntentState,
+    //     brushCollection: ExtendedBrushCollection,
+    //     _affectedBrush: ExtendedBrush,
+    //   ) => {
+    //     let i = 0;
+    //     for (i = 0; i < state.plots.length; ++i) {
+    //       if (plot.id === state.plots[i].id) {
+    //         state.plots[i].brushes = { ...brushCollection };
+    //         break;
+    //       }
+    //     }
+    //     // brushInteraction(state, plot, affectedBrush);
+    //   },
+    // );
+    // action.setLabel(`Change R. Brush: ${pointCount}`);
+    // action.setEventType('Edit Brush');
+    // this.provenance.apply(action(plot, brushCollection, affectedBrush));
   };
 
   removeBrush = (plot: Plot, brushCollection: ExtendedBrushCollection): void => {
-    const action = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
-      (state: IntentState, plot: Plot, brushCollection: ExtendedBrushCollection) => {
-        for (let i = 0; i < state.plots.length; ++i) {
-          if (plot.id === state.plots[i].id) {
-            state.plots[i].brushes = { ...brushCollection };
-            break;
-          }
-        }
-
-        // removeBrushInteraction(state, plot, affectedBrush);
-      },
-    );
-
-    action.setLabel(`Remove R. Brush`);
-    action.setEventType('Remove Brush');
-
-    this.provenance.apply(action(plot, brushCollection));
+    // const action = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
+    //   (state: IntentState, plot: Plot, brushCollection: ExtendedBrushCollection) => {
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       if (plot.id === state.plots[i].id) {
+    //         state.plots[i].brushes = { ...brushCollection };
+    //         break;
+    //       }
+    //     }
+    //     // removeBrushInteraction(state, plot, affectedBrush);
+    //   },
+    // );
+    // action.setLabel(`Remove R. Brush`);
+    // action.setEventType('Remove Brush');
+    // this.provenance.apply(action(plot, brushCollection));
   };
 
   clearAll = () => {
-    const action = createAction<IntentState, any[], IntentEvents>((state: IntentState) => {
-      for (let i = 0; i < state.plots.length; ++i) {
-        state.plots[i].selectedPoints = [];
-        state.plots[i].brushes = {};
-      }
-      // clearSelectionInteraction(state);
-    });
-
-    action.setLabel(`Clear all`);
-    action.setEventType('Clear All');
-
-    this.provenance.apply(action());
+    // const action = createAction<IntentState, any[], IntentEvents>((state: IntentState) => {
+    //   for (let i = 0; i < state.plots.length; ++i) {
+    //     state.plots[i].selectedPoints = [];
+    //     state.plots[i].brushes = {};
+    //   }
+    //   // clearSelectionInteraction(state);
+    // });
+    // action.setLabel(`Clear all`);
+    // action.setEventType('Clear All');
+    // this.provenance.apply(action());
   };
 
   changeBrushType = (brushType: BrushType): void => {
-    let message = '';
-
-    switch (brushType) {
-      case 'Rectangular':
-      case 'Freeform Small':
-      case 'Freeform Medium':
-      case 'Freeform Large':
-        message = `${brushType === 'Rectangular' ? 'Rectangular' : 'Paint'} brush`;
-        break;
-      case 'None':
-      default:
-        message = 'Brushing disabled';
-    }
-    console.log(message);
-
-    // const action = createAction<IntentState, any[], IntentEvents>(
-    //   (state: IntentState, brushType: BrushType) => {
-    //     state.brushType = brushType;
-    //     // addDummyInteraction(state);
-    //   },
-    // );
-
-    // action.setLabel(message);
-    // action.setEventType('Switch Brush');
-
-    this.provenance.apply(action(brushType));
+    // let message = '';
+    // switch (brushType) {
+    //   case 'Rectangular':
+    //   case 'Freeform Small':
+    //   case 'Freeform Medium':
+    //   case 'Freeform Large':
+    //     message = `${brushType === 'Rectangular' ? 'Rectangular' : 'Paint'} brush`;
+    //     break;
+    //   case 'None':
+    //   default:
+    //     message = 'Brushing disabled';
+    // }
+    // console.log(message);
+    // // const action = createAction<IntentState, any[], IntentEvents>(
+    // //   (state: IntentState, brushType: BrushType) => {
+    // //     state.brushType = brushType;
+    // //     // addDummyInteraction(state);
+    // //   },
+    // // );
+    // // action.setLabel(message);
+    // // action.setEventType('Switch Brush');
+    // this.provenance.apply(action(brushType));
   };
 
   invertSelection = (currentSelected: number[], all: number[]): void => {
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, currentSelected: number[], all: number[]) => {
-        const newSelection = all.filter((a) => !currentSelected.includes(a));
-
-        for (let i = 0; i < state.plots.length; ++i) {
-          if (i === 0) {
-            state.plots[i].selectedPoints = newSelection;
-          } else {
-            state.plots[i].selectedPoints = [];
-          }
-          state.plots[i].brushes = {};
-        }
-      },
-    );
-
-    action.setLabel(`Invert selection`);
-    action.setEventType('Invert');
-
-    this.provenance.apply(action(currentSelected, all));
+    // const action = createAction<IntentState, any[], IntentEvents>(
+    //   (state: IntentState, currentSelected: number[], all: number[]) => {
+    //     const newSelection = all.filter((a) => !currentSelected.includes(a));
+    //     for (let i = 0; i < state.plots.length; ++i) {
+    //       if (i === 0) {
+    //         state.plots[i].selectedPoints = newSelection;
+    //       } else {
+    //         state.plots[i].selectedPoints = [];
+    //       }
+    //       state.plots[i].brushes = {};
+    //     }
+    //   },
+    // );
+    // action.setLabel(`Invert selection`);
+    // action.setEventType('Invert');
+    // this.provenance.apply(action(currentSelected, all));
   };
 
   //TODO:: Need some extra behaviour before this works

@@ -2,22 +2,30 @@ import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
+import useScatterplotStyle from './styles';
+
 type Props = {
   points: { x: number; y: number; label: string }[];
+  selectedPoints: number[];
   xScale: ScaleLinear<number, number>;
   yScale: ScaleLinear<number, number>;
 };
 
-const Marks: FC<Props> = ({ points, xScale, yScale }: Props) => {
+const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale }: Props) => {
+  const classes = useScatterplotStyle();
+
   return (
     <>
-      {points.map((point) => {
+      {points.map((point, i) => {
         return (
           <circle
             key={point.label}
+            className={`marks ${
+              selectedPoints.includes(i) ? classes.unionMark : classes.regularMark
+            }`}
             cx={xScale(point.x as number)}
             cy={yScale(point.y as number)}
-            fill="black"
+            id={`mark${i}`}
             opacity="0.5"
             r="5"
           />

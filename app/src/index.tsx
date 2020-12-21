@@ -1,8 +1,13 @@
+import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
 import './index.css';
+
+whyDidYouRender(React, {
+  trackAllPureComponents: true,
+});
 
 ReactDOM.render(<App />, document.getElementById('root'));
 // ReactDOM.render(

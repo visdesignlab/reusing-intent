@@ -1,7 +1,7 @@
 import { Brush } from '../components/Brush/Types/Brush';
 import { InteractionHistory, Prediction } from '../contract';
 
-import { DatasetColumn } from './Dataset';
+import { Plot, Plots } from './Plot';
 
 export type MultiBrushBehaviour = 'Union' | 'Intersection';
 
@@ -24,14 +24,6 @@ export const BrushSize: { [key: string]: number } = {
   'Freeform Large': 50,
 };
 
-export type Plot = {
-  id: string;
-  x: DatasetColumn;
-  y: DatasetColumn;
-  brushes: ExtendedBrushCollection;
-  selectedPoints: number[];
-};
-
 export function getDefaultPlot(): Plot {
   return {
     id: '',
@@ -41,8 +33,6 @@ export function getDefaultPlot(): Plot {
     selectedPoints: [],
   };
 }
-
-export type Plots = Plot[];
 
 export type IntentState = {
   dataset: string;

@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core';
-import { select } from 'd3';
+import { quadtree, ScaleLinear, select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import translate from '../../Utils/Translate';
 
@@ -10,19 +10,28 @@ export type BrushSize = '20';
 const useStyles = makeStyles(() => ({
   brushStyle: {
     cursor: 'grabbing',
+    stroke: 'gray',
+    opacity: 1,
+    transition: 'opacity 0.5s',
+  },
+  brushDown: {
+    stroke: 'rgb(244, 106, 15)',
+  },
+  brushHide: {
+    opacity: 0,
+    transition: 'opacity 0.5s',
   },
 }));
 
-export const union_color = 'rgb(244, 106, 15)';
+export const union_color = '';
+export type FreeformBrushEvent = 'Start' | 'Brushing' | 'End';
+export type FreeformBrushAction = 'Selection' | 'Deselection';
 
-type MousePosition = {
-  x: number;
-  y: number;
-};
-
-type BrushStartHandler = (x: number, y: number, radius: number) => void;
-type BrushMoveHandler = (x: number, y: number, radius: number) => void;
-type BrushEndHandler = (mousePos?: MousePosition) => void;
+type BrushHandler = (
+  points: number[],
+  event: FreeformBrushEvent,
+  action: FreeformBrushAction,
+) => void;
 
 type Props = {
   left: number;
@@ -30,10 +39,71 @@ type Props = {
   top: number;
   bottom: number;
   extentPadding?: number;
-  onBrushStart?: BrushStartHandler;
-  onBrush?: BrushMoveHandler;
-  onBrushEnd?: BrushEndHandler;
+  xScale: ScaleLinear<number, number>;
+  yScale: ScaleLinear<number, number>;
+  onBrush: BrushHandler;
+  data: { x: number; y: number; id: number }[];
 };
+
+function isInCircle(
+  center: { x: number; y: number },
+  radius: number,
+  point: { x: number; y: number },
+) {
+  const x_sq = Math.pow(point.x - center.x, 2);
+  const y_sq = Math.pow(point.y - center.y, 2);
+  const distance = Math.sqrt(x_sq + y_sq);
+
+  return distance <= radius;
+}
+
+function useQuadSearch(
+  searchArea: { left: number; top: number; width: number; height: number },
+  data: { x: number; y: number; id: number }[],
+  xScale: ScaleLinear<number, number>,
+  yScale: ScaleLinear<number, number>,
+) {
+  const { left, top, width, height } = searchArea;
+  const quadTree = useMemo(() => {
+    const qt = quadtree()
+      .extent([
+        [left - 1, top - 1],
+        [width + 1, height + 1],
+      ])
+      .x((d: any) => xScale(d.x))
+      .y((d: any) => yScale(d.y))
+      .addAll(data as any);
+
+    return qt;
+  }, [left, top, width, height, data, xScale, yScale]);
+
+  const search = (x: number, y: number, radius: number) => {
+    const [x0, x3, y0, y3] = [x - radius, x + radius, y - radius, y + radius];
+    const selectedNodes: number[] = [];
+    quadTree.visit((node: any, x1, y1, x2, y2) => {
+      if (!node.length) {
+        do {
+          const {
+            data: d,
+            data: { x: cx, y: cy },
+          } = node;
+
+          const isSelected = isInCircle({ x, y }, radius, { x: xScale(cx), y: yScale(cy) });
+
+          if (isSelected) {
+            selectedNodes.push(d.id);
+          }
+        } while ((node = node.next));
+      }
+
+      return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
+    });
+
+    return selectedNodes;
+  };
+
+  return { search };
+}
 
 const FreeFormBrush: FC<Props> = ({
   left = 0,
@@ -41,13 +111,15 @@ const FreeFormBrush: FC<Props> = ({
   top = 0,
   bottom = 0,
   extentPadding = 0,
-  onBrushStart,
   onBrush,
-  onBrushEnd,
+  xScale,
+  yScale,
+  data = [],
 }: Props) => {
-  const { brushStyle } = useStyles();
+  const { brushStyle, brushDown, brushHide } = useStyles();
   const brushRef = useRef<SVGCircleElement>(null);
   const layerRef = useRef<SVGRectElement>(null);
+  const selectedPointsRef = useRef<number[]>([]);
 
   const brushSize: BrushSize = '20';
 
@@ -61,30 +133,27 @@ const FreeFormBrush: FC<Props> = ({
     Math.abs(left - extentPadding - (right + extentPadding)),
   ];
 
+  const { search } = useQuadSearch({ left, top, width, height }, data, xScale, yScale);
+
   function handleMouseDown(event: React.MouseEvent<SVGElement, MouseEvent>) {
     const targetNode = layerRef.current;
 
     if (targetNode) {
       const target = targetNode.getBoundingClientRect();
       const [x, y] = [event.clientX - target.left, event.clientY - target.top];
-
-      if (onBrushStart) {
-        onBrushStart(x, y, radius);
-      }
+      const selectedPoints = search(x, y, radius);
+      selectedPointsRef.current = selectedPoints;
+      onBrush(selectedPoints, 'Start', 'Selection');
     }
     setMouseDown(true);
   }
 
-  function handleMouseUp(event: MouseEvent) {
+  function handleMouseUp() {
     const targetNode = layerRef.current;
 
     if (targetNode) {
-      const target = targetNode.getBoundingClientRect();
-      const [x, y] = [event.clientX - target.left, event.clientY - target.top];
-
-      if (onBrushEnd) {
-        onBrushEnd({ x, y });
-      }
+      onBrush(selectedPointsRef.current, 'End', 'Selection');
+      selectedPointsRef.current = [];
     }
     setMouseDown(false);
   }
@@ -107,8 +176,10 @@ const FreeFormBrush: FC<Props> = ({
 
       if (!edgeY) nodeSelection.attr('cy', y);
 
-      if (onBrush && mouseDown) {
-        onBrush(x, y, radius);
+      if (mouseDown) {
+        const selectedPoints = search(x, y, radius);
+        selectedPointsRef.current.push(...selectedPoints);
+        onBrush(selectedPoints, 'Brushing', 'Selection');
       }
     }
   }
@@ -129,8 +200,6 @@ const FreeFormBrush: FC<Props> = ({
     return removeEvent;
   });
 
-  const strokeColor = mouseDown ? union_color : 'gray';
-
   return (
     <g
       transform={translate(-extentPadding, -extentPadding)}
@@ -143,11 +212,10 @@ const FreeFormBrush: FC<Props> = ({
       <rect ref={layerRef} fill="none" height={height} pointerEvents="all" width={width} />
       <circle
         ref={brushRef}
-        className={brushStyle}
+        className={`${brushStyle} ${mouseDown ? brushDown : ''} ${!mouseIn ? brushHide : ''}`}
         fill="none"
         pointerEvents={mouseDown ? 'all' : 'initial'}
         r={radius}
-        stroke={strokeColor}
         strokeWidth="2"
       />
     </g>

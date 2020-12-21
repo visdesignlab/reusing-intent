@@ -1,4 +1,5 @@
 import {
+  CircularProgress,
   createStyles,
   Grid,
   IconButton,
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Visualization: FC = () => {
-  const { plots, removePlot } = useContext(IntentStore);
+  const { plots, removePlot, isLoadingData } = useContext(IntentStore);
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = plots.length === 1 ? 800 : 650;
@@ -43,18 +44,20 @@ const Visualization: FC = () => {
   return (
     <div className={classes.root}>
       <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
-        {plots.map((plot) => (
-          <Grid key={plot.id} xs={xs} item>
-            <Paper elevation={3}>
-              {plots.length > 1 && (
-                <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
-                  <CloseIcon />
-                </IconButton>
-              )}
-              <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
-            </Paper>
-          </Grid>
-        ))}
+        {isLoadingData && <CircularProgress />}
+        {!isLoadingData &&
+          plots.map((plot) => (
+            <Grid key={plot.id} xs={xs} item>
+              <Paper elevation={3}>
+                {plots.length > 1 && (
+                  <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
+                    <CloseIcon />
+                  </IconButton>
+                )}
+                <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
+              </Paper>
+            </Grid>
+          ))}
       </Grid>
     </div>
   );

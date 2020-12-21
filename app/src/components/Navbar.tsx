@@ -59,7 +59,7 @@ const useFetch = (url: string | null) => {
   return { data, status };
 };
 
-const Navbar: FC = () => {
+const Navbar: FC<{ style: any }> = ({ style }) => {
   const classes = useStyles();
   const intentStore = useContext(IntentStore);
   const { data: fetchedDatasets } = useFetch('http://127.0.0.1:5000/datasets');
@@ -87,7 +87,7 @@ const Navbar: FC = () => {
 
   const { Dropdown: CategoryDropdown } = useDropdown(
     'category-dropdown',
-    'Select Category Column',
+    'Category Column',
     '',
     categoricalColumns.map((col) => ({
       key: col,
@@ -98,7 +98,7 @@ const Navbar: FC = () => {
   );
 
   return (
-    <div>
+    <div style={style}>
       <AppBar color="transparent" position="static">
         <Toolbar>
           <FormControl className={classes.formControl} variant="outlined">
@@ -125,6 +125,7 @@ const Navbar: FC = () => {
             control={
               <Switch
                 checked={showCategories}
+                color="primary"
                 onChange={() => toggleCategories(!showCategories, categoricalColumns)}
               />
             }
@@ -137,4 +138,7 @@ const Navbar: FC = () => {
   );
 };
 
+(Navbar as any).whyDidYouRender = {
+  logOnDifferentValues: true,
+};
 export default observer(Navbar);

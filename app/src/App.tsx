@@ -1,4 +1,5 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
+import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
 import Navbar from './components/Navbar';
@@ -25,7 +26,7 @@ const App: FC = () => {
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <Navbar />
+      <Navbar style={{ widthh: '100' }} />
       <div className={classes.layout}>
         <Visualization />
         <div>Test</div>
@@ -34,4 +35,4 @@ const App: FC = () => {
   );
 };
 
-export default App;
+export default observer(App);
