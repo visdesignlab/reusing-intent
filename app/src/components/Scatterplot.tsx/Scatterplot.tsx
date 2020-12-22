@@ -1,13 +1,14 @@
 import { createStyles, makeStyles, useTheme } from '@material-ui/core';
-import { extent, ScaleLinear, scaleLinear, select } from 'd3';
+import { select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext, useMemo } from 'react';
+import React, { FC, useCallback, useContext } from 'react';
 
-import { DatasetColumn } from '../../Store/Dataset';
 import { Plot } from '../../Store/Plot';
 import IntentStore from '../../Store/Store';
 import translate from '../../Utils/Translate';
 import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Freeform/FreeFormBrush';
+import { useScale } from '../Hooks/useScale';
+import { useScatterplotData } from '../Hooks/useScatterplot';
 
 import Axis from './Axis';
 import Marks from './Marks';
@@ -26,52 +27,6 @@ type Props = {
   plot: Plot;
   size: number;
 };
-
-function useScatterplotData(
-  x: DatasetColumn,
-  y: DatasetColumn,
-  label: DatasetColumn,
-): {
-  points: { x: number; y: number; label: string; id: number }[];
-  x_extents: [number, number];
-  y_extents: [number, number];
-} {
-  const { dataset: data } = useContext(IntentStore);
-  const dt =
-    useMemo(() => {
-      const points = data?.values.map((d, id) => ({
-        id,
-        x: d[x] as number,
-        y: d[y] as number,
-        label: d[label] as string,
-      }));
-      const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
-      const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
-
-      return { points, x_extents, y_extents };
-    }, [data, x, y, label]) || [];
-
-  return dt;
-}
-
-function useScale(
-  domain: [number, number],
-  range: [number, number],
-  nice = true,
-): ScaleLinear<number, number> {
-  const [d0, d1] = domain;
-  const [r0, r1] = range;
-
-  const scale = useMemo(() => {
-    const scale = scaleLinear().domain([d0, d1]).range([r0, r1]);
-
-    if (nice) scale.nice();
-
-    return scale;
-  }, [d0, d1, r0, r1, nice]);
-
-  return scale;
-}
 
 const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   const theme = useTheme();
@@ -119,6 +74,15 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     [plot, setFreeformSelection, classes],
   );
 
+  // const onRectBrush = useCallback(
+  //   (brush: Brush) => {
+  //     const { brushes } = plot;
+  //     brushes[brush.id] = brush as any;
+  //     setBrush(plot, brushes);
+  //   },
+  //   [plot, setBrush],
+  // );
+
   return (
     <svg className={root} id={plot.id}>
       <g transform={translate(margin)}>
@@ -135,6 +99,17 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
           yScale={yScale}
           onBrush={freeFormBrushHandler}
         />
+        {/* <BrushComponent
+          bottom={sp_dimension}
+          brushes={plot.brushes}
+          left={0}
+          right={sp_dimension}
+          top={0}
+          onBrush={onRectBrush}
+          // onBrushUpdate={(brushes, affectedBrush, affectType) => {
+          //   console.log(brushes, affectedBrush, affectType);
+          // }}
+        /> */}
       </g>
     </svg>
   );

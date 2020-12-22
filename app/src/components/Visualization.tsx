@@ -33,31 +33,33 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Visualization: FC = () => {
-  const { plots, removePlot, isLoadingData } = useContext(IntentStore);
+  const { plots, removePlot, isLoadingData, n_plots } = useContext(IntentStore);
 
   // const spContainerDimension = height > width ? width : height;
-  const spContainerDimension = plots.length === 1 ? 800 : 650;
+  const spContainerDimension = n_plots === 1 ? 800 : 650;
   const classes = useStyles();
   const theme = useTheme();
-  const xs = plots.length === 1 ? 'auto' : 6;
+  const xs = n_plots === 1 ? 'auto' : 6;
+
+  const loader = <CircularProgress />;
+
+  const scatterPlots = plots.map((plot) => (
+    <Grid key={plot.id} xs={xs} item>
+      <Paper elevation={3}>
+        {n_plots > 1 && (
+          <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
+            <CloseIcon />
+          </IconButton>
+        )}
+        <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
+      </Paper>
+    </Grid>
+  ));
 
   return (
     <div className={classes.root}>
       <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
-        {isLoadingData && <CircularProgress />}
-        {!isLoadingData &&
-          plots.map((plot) => (
-            <Grid key={plot.id} xs={xs} item>
-              <Paper elevation={3}>
-                {plots.length > 1 && (
-                  <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
-                    <CloseIcon />
-                  </IconButton>
-                )}
-                <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
-              </Paper>
-            </Grid>
-          ))}
+        {isLoadingData ? loader : scatterPlots}
       </Grid>
     </div>
   );

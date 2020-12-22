@@ -41,6 +41,12 @@ export class Store {
     });
   };
 
+  setBrush = (plot: Plot, brushes: ExtendedBrushCollection) => {
+    this.plots.forEach((plt) => {
+      if (plt.id === plot.id) plot.brushes = brushes;
+    });
+  };
+
   get selectedPoints() {
     const selectedPoints: number[] = [];
 
@@ -49,6 +55,10 @@ export class Store {
     });
 
     return Array.from(new Set(selectedPoints));
+  }
+
+  get n_plots() {
+    return this.plots.length;
   }
 
   reset = (): void => {
