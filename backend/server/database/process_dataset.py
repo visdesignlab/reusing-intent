@@ -2,11 +2,14 @@ import itertools
 from typing import List
 
 import pandas as pd
-import yaml
 
 from backend.inference_core.algorithms.dbscan import computeDBScan
 from backend.inference_core.algorithms.kmeans import computeKMeansClusters
-from backend.server.database.schemas.algorithms.cluster import KMeansCluster
+from backend.inference_core.algorithms.linear_regression import computeLR
+from backend.server.database.schemas.algorithms.cluster import (
+    DBScanCluster,
+    KMeansCluster,
+)
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.dataset import DatasetMetadata
 from backend.server.database.session import (
@@ -19,8 +22,7 @@ from backend.server.database.session import (
 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def process_dataset(file, filename, columnsData, label):
-    data = pd.read_csv(file)
+def process_dataset(data, filename, columnsData, label):
     # TODO: Handle missing at some point
     data = data.dropna()
 
@@ -37,7 +39,8 @@ def process_dataset(file, filename, columnsData, label):
     # Upload metadata
     uploadMetadata(metadata, filename)
     # Precompute
-    precompute(data, filename)
+    # precompute(data, filename)
+    print("Done")
 
 
 def precompute(data: pd.DataFrame, id: str):
@@ -48,6 +51,23 @@ def precompute(data: pd.DataFrame, id: str):
         dimensions = ",".join(combo)
         precomputeOutliers(subset, dimensions, id)
         precomputeClusters(subset, dimensions, id)
+        # precomputeLR(subset, dimensions, id)
+
+
+def precomputeLR(data: pd.DataFrame, dimensions: str, id: str):
+    computeLR(data)
+    # session = getDBSession(id)
+    # try:
+    #     for output, params in computeDBScan(data):
+    #         dbscan_cluster_result = DBScanOutlier(
+    #             dimensions=dimensions, output=output, params=params
+    #         )
+    #         session.add(dbscan_cluster_result)
+    #     session.commit()
+    # except Exception as ex:
+    #     raise ex
+    # finally:
+    #     session.close()
 
 
 def precomputeOutliers(data: pd.DataFrame, dimensions: str, id: str):
@@ -68,11 +88,11 @@ def precomputeOutliers(data: pd.DataFrame, dimensions: str, id: str):
 def precomputeClusters(data: pd.DataFrame, dimensions: str, id: str):
     session = getDBSession(id)
     try:
-        # for output, params in computeDBScan(data):
-        #     dbscan_cluster_result = DBScanCluster(
-        #         dimensions=dimensions, output=output, params=params
-        #     )
-        #     session.add(dbscan_cluster_result)
+        for output, params in computeDBScan(data):
+            dbscan_cluster_result = DBScanCluster(
+                dimensions=dimensions, output=output, params=params
+            )
+            session.add(dbscan_cluster_result)
         for output, params in computeKMeansClusters(data):
             kmeans_result = KMeansCluster(
                 dimensions=dimensions, output=output, params=params
@@ -159,8 +179,7 @@ def getMetadata(data: pd.DataFrame, columnsData=None, label=None):
         metadata[column] = desc
 
     if columnsData:
-        cols = yaml.full_load(columnsData)
-        for col, val in cols["columns"].items():
+        for col, val in columnsData["columns"].items():
             for k, v in val.items():
                 metadata[col][k] = v
 
@@ -176,7 +195,6 @@ def uploadMetadata(metadata, filename: str):
     session = getDBSession(filename)
     try:
         for k, v in metadata.items():
-            print(v)
             fullname, unit, short, dataType = v.values()
             d = DatasetMetadata(
                 name=k, fullname=fullname, unit=unit, short=short, dataType=dataType
