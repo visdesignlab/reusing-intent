@@ -1,15 +1,26 @@
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 
 import App from './App';
+import Upload from './components/Upload/Upload';
 import './index.css';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
 });
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const app = (
+  <BrowserRouter>
+    <Switch>
+      <Route component={App} path="/" exact />
+      <Route component={Upload} path="/upload" exact />
+    </Switch>
+  </BrowserRouter>
+);
+
+ReactDOM.render(app, document.getElementById('root'));
 // ReactDOM.render(
 //   <React.StrictMode>
 //     <App />

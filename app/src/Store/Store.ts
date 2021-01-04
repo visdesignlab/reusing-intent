@@ -20,6 +20,7 @@ export class Store {
   showCategories = false;
   categoryColumn = '';
   isLoadingData = true;
+  predictions: any[] = [];
 
   provenanceActions = {
     addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
@@ -39,6 +40,21 @@ export class Store {
       if (plt.id === plot.id)
         plot.selectedPoints = Array.from(new Set([...plot.selectedPoints, ...points]));
     });
+
+    const dimensions: string[] = [];
+    Object.values(this.plots).forEach((plt) => {
+      dimensions.push(...[plt.x, plt.y]);
+    });
+
+    Axios.post('http://127.0.0.1:5000/gapminderworld/predict', {
+      selections: this.selectedPoints,
+      dimensions,
+    }).then(
+      action((response: any) => {
+        const { data = [] } = response;
+        this.predictions = data;
+      }),
+    );
   };
 
   setBrush = (plot: Plot, brushes: ExtendedBrushCollection) => {
@@ -73,7 +89,7 @@ export class Store {
     this.datasets = datasets;
 
     if (this.datasets.length > 0 && this.datasetName !== this.datasets[0]) {
-      this.setDataset(this.datasets[1]);
+      this.setDataset(this.datasets[0]);
     }
   };
 
