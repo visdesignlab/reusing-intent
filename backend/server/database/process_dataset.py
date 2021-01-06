@@ -210,8 +210,10 @@ def getMetadata(data, sourceMetadata=None):
 
     for count, (column, values) in enumerate(data.iteritems()):
         dataType = values.dtype
-        if label == column:
+        if column == label:
             dataType = "label"
+        if column == "id":
+            dataType = "id"
         elif dataType == "object":
             dataType = "categorical"
         elif "int" in str(dataType) or "float" in str(dataType):

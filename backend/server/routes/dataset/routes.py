@@ -4,6 +4,7 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from backend.server.database.process_dataset import process_dataset
+from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
     getEngine,
@@ -56,7 +57,45 @@ def getDatasetByKey(project: str, key: str):
             record = session.query(DatasetRecord).filter(DatasetRecord.key == key).one()
             dataset_table_name = f"Dataset_{record.id}"
             data = pd.read_sql(dataset_table_name, con=connection)
-            return jsonify(list(data.T.to_dict().values()))
+            data = list(data.T.to_dict().values())
+
+            columnMetadata = (
+                session.query(DatasetMetadata)
+                .filter(DatasetMetadata.record_id == record.id)
+                .all()
+            )
+            columnMetadata = list(map(lambda x: x.toJSON(), columnMetadata))
+            columnInfo = {}
+            for column in columnMetadata:
+                col_name = column["name"]
+                del column["name"]
+                columnInfo[col_name] = column
+
+            columns = []
+            categoricalColumns = []
+            numericColumns = []
+            labelColumn = None
+
+            for col_name, col_info in columnInfo.items():
+                dataType = col_info["dataType"]
+                columns.append(col_name)
+                if dataType == "label":
+                    labelColumn = col_name
+                if dataType == "numeric":
+                    numericColumns.append(col_name)
+                if dataType == "categorical":
+                    categoricalColumns.append(col_name)
+
+            dataset = {
+                "columnInfo": columnInfo,
+                "labelColumn": labelColumn,
+                "categoricalColumns": categoricalColumns,
+                "numericColumns": numericColumns,
+                "columns": columns,
+                "values": data,
+            }
+
+            return jsonify(dataset)
 
 
 # @datasetRoute.route("/dataset/<id>", methods=["GET"])
