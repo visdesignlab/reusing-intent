@@ -1,21 +1,23 @@
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import App from './App';
-import Upload from './components/Upload/Upload';
+import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
+  exclude: [/XGrid|RowCells/g],
 });
 
 const app = (
   <BrowserRouter>
     <Switch>
-      <Route component={App} path="/" exact />
-      <Route component={Upload} path="/upload" exact />
+      <Redirect from="/" to="/project" exact />
+      <Route component={App} path="/explore" exact />
+      <Route component={ProjectHome} path="/project" exact />
     </Switch>
   </BrowserRouter>
 );

@@ -12,7 +12,7 @@ import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { FC, useContext } from 'react';
 
-import IntentStore from '../Store/Store';
+import Store from '../Store/Store';
 
 import Scatterplot from './Scatterplot.tsx/Scatterplot';
 
@@ -33,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Visualization: FC = () => {
-  const { plots, removePlot, isLoadingData, n_plots } = useContext(IntentStore);
+  const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 650;

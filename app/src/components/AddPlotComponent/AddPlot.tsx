@@ -13,7 +13,7 @@ import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext, useState } from 'react';
 
 import { Plot } from '../../Store/Plot';
-import IntentStore from '../../Store/Store';
+import Store from '../../Store/Store';
 import { getPlotId } from '../../Utils/IDGens';
 import useDropdown from '../Dropdown';
 
@@ -28,12 +28,12 @@ const useStyles = makeStyles((theme: Theme) =>
 const AddPlot: FC = () => {
   const classes = useStyles();
   const [isAdding, setIsAdding] = useState(false);
-  const { dataset, addPlot } = useContext(IntentStore);
+  const { dataset, addPlot } = useContext(Store).exploreStore;
 
   const columns =
     dataset?.numericColumns.map((col) => ({
       key: col,
-      desc: `${dataset?.columns[col].fullname || ''} (${dataset?.columns[col].unit || ''})`,
+      desc: `${dataset?.columnInfo[col].fullname || ''} (${dataset?.columnInfo[col].unit || ''})`,
     })) || [];
 
   const { selected: xCol, Dropdown: XDropdown, setSelected: setX } = useDropdown(

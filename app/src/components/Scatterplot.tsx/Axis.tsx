@@ -2,7 +2,7 @@ import { axisBottom, axisLeft, axisRight, axisTop, ScaleLinear, select } from 'd
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect, useMemo, useRef } from 'react';
 
-import IntentStore from '../../Store/Store';
+import Store from '../../Store/Store';
 import translate from '../../Utils/Translate';
 
 type Props = {
@@ -15,8 +15,8 @@ type Props = {
 const Axis: FC<Props> = ({ scale, transform = '', type, columnName }: Props) => {
   const gRef = useRef<SVGGElement>(null);
   const {
-    dataset: { columns },
-  } = useContext(IntentStore);
+    dataset: { columnInfo },
+  } = useContext(Store).exploreStore;
 
   const axis = useMemo(() => {
     let axis = null;
@@ -70,7 +70,7 @@ const Axis: FC<Props> = ({ scale, transform = '', type, columnName }: Props) => 
     }
   }, [scale, type]);
 
-  const column = columns[columnName];
+  const column = columnInfo[columnName];
 
   return (
     <g transform={transform}>

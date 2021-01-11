@@ -2,7 +2,7 @@ import { extent } from 'd3';
 import { useContext, useMemo } from 'react';
 
 import { DatasetColumn } from '../../Store/Dataset';
-import IntentStore from '../../Store/Store';
+import Store from '../../Store/Store';
 
 export function useScatterplotData(
   x: DatasetColumn,
@@ -13,15 +13,16 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { dataset: data } = useContext(IntentStore);
+  const { dataset: data } = useContext(Store).exploreStore;
   const dt =
     useMemo(() => {
-      const points = data?.values.map((d, id) => ({
-        id,
-        x: d[x] as number,
-        y: d[y] as number,
-        label: d[label] as string,
-      }));
+      const points =
+        data?.values.map((d, id) => ({
+          id,
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[label] as string,
+        })) || [];
       const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
       const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
 

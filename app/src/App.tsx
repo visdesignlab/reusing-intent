@@ -13,12 +13,15 @@ import {
 } from '@material-ui/core';
 import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useEffect } from 'react';
+import { Redirect } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import useScatterplotStyle from './components/Scatterplot.tsx/styles';
 import Visualization from './components/Visualization';
-import IntentStore from './Store/Store';
+import { Plot } from './Store/Plot';
+import Store from './Store/Store';
+import { getPlotId } from './Utils/IDGens';
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -38,7 +41,25 @@ const useStyles = makeStyles(() => ({
 const App: FC = () => {
   const classes = useStyles();
   const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
-  const { predictions } = useContext(IntentStore);
+  const {
+    exploreStore: { predictions, n_plots, addPlot, setMatchLegendVisibility },
+    projectStore: { loadedDataset },
+  } = useContext(Store);
+
+  useEffect(() => {
+    if (n_plots > 0 || !loadedDataset) return;
+    const { numericColumns } = loadedDataset;
+    const plot: Plot = {
+      id: getPlotId(),
+      x: numericColumns[0],
+      y: numericColumns[1],
+      brushes: {},
+      selectedPoints: [],
+    };
+    addPlot(plot);
+  });
+
+  if (!loadedDataset) return <Redirect to="/project" />;
 
   return (
     <div className={classes.root}>
@@ -61,6 +82,7 @@ const App: FC = () => {
                     <TableRow
                       key={i}
                       onMouseOut={() => {
+                        setMatchLegendVisibility(false);
                         selectAll('.marks')
                           .classed(regularForceMark, false)
                           .classed(matches, false)
@@ -68,6 +90,7 @@ const App: FC = () => {
                           .classed(ipns, false);
                       }}
                       onMouseOver={() => {
+                        setMatchLegendVisibility(true);
                         const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.stats;
                         selectAll('.marks').classed(regularForceMark, true);
 

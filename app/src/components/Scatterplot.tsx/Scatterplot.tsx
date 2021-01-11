@@ -4,13 +4,14 @@ import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext } from 'react';
 
 import { Plot } from '../../Store/Plot';
-import IntentStore from '../../Store/Store';
+import Store from '../../Store/Store';
 import translate from '../../Utils/Translate';
 import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
 
 import Axis from './Axis';
+import Legend from './Legend';
 import Marks from './Marks';
 import useScatterplotStyle from './styles';
 
@@ -36,7 +37,8 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     dataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
-  } = useContext(IntentStore);
+    showMatchesLegend,
+  } = useContext(Store).exploreStore;
 
   const { x, y } = plot;
 
@@ -89,6 +91,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
+        {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
         <FreeFormBrush
           bottom={sp_dimension}
           data={points as any}

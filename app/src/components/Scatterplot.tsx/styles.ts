@@ -1,14 +1,16 @@
 import { makeStyles } from '@material-ui/core';
 
+import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from './../ColorSpecs';
+
 const useScatterplotStyle = makeStyles({
   regularMark: {
     fill: 'black',
   },
   nonUnionMark: {
-    fill: 'rgb(44, 127, 184)',
+    fill: NON_UNION,
   },
   unionMark: {
-    fill: 'rgb(244,106,15)',
+    fill: UNION,
   },
   regularForceMark: {
     fill: 'black !important',
@@ -18,15 +20,15 @@ const useScatterplotStyle = makeStyles({
     fill: 'red',
   },
   matches: {
-    fill: '#9dab86 !important',
+    fill: `${MATCHES} !important`,
     opacity: 1,
   },
   isnp: {
-    fill: '#db6400 !important',
+    fill: `${ISNP} !important`,
     opacity: 1,
   },
   ipns: {
-    fill: '#fdb827 !important',
+    fill: `${IPNS} !important`,
     opacity: 1,
   },
 });
