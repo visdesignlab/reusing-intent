@@ -1,4 +1,4 @@
-id: gapminder_world
+id: gapminderworld
 dataset_name: Gapminder World
 file_name: gapminderworld.csv
 label_column: country
