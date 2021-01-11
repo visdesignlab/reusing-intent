@@ -4,6 +4,11 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from backend.server.database.process_dataset import process_dataset
+from backend.server.database.schemas.algorithms.cluster import (
+    DBScanCluster,
+    KMeansCluster,
+)
+from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
@@ -42,11 +47,16 @@ def uploadDataset(project: str):
         sourceMetadata = request.files["metadata"]
 
     dataset_hash = getUIDForFile(dataset)
-    process_dataset(
-        project, dataset, dataset_hash, version, description, sourceMetadata
-    )
+    try:
+        process_dataset(
+            project, dataset, dataset_hash, version, description, sourceMetadata
+        )
+    except Exception as ex:
+        return handle_exception(ex)
 
-    return f"Test {project} {dataset_hash}"
+    return jsonify(
+        {"message": "Dataset uploaded successfully", "datasetKey": dataset_hash}
+    )
 
 
 @datasetRoute.route("/<project>/dataset/<key>", methods=["GET"])
@@ -98,123 +108,120 @@ def getDatasetByKey(project: str, key: str):
             return jsonify(dataset)
 
 
-# @datasetRoute.route("/dataset/<id>", methods=["GET"])
-# def getDatasetById(id):
-#     session = getDBSession(id)
-#     engine = getEngine(id)
-#     dataset = {}
-#     try:
-#         data = session.query(DatasetMetadata).all()
-#         columns = {}
-#         for d in data:
-#             d = d.toJson()
-#             col_name = d["name"]
-#             del d["name"]
-#             columns[col_name] = d
-#         dataset["columns"] = columns
-#         data = pd.read_sql("Dataset", con=engine)
-#         dataset["values"] = list(data.T.to_dict().values())
-#         labelColumn = ""
-#         numericColumns = []
-#         categoricalColumns = []
-#         allColumns = []
-#         for k, v in columns.items():
-#             allColumns.append(k)
-#             if v["dataType"] == "label" and labelColumn == "":
-#                 labelColumn = k
-#             if v["dataType"] == "numeric":
-#                 numericColumns.append(k)
-#             if v["dataType"] == "categorical":
-#                 categoricalColumns.append(k)
-#         dataset["labelColumn"] = labelColumn
-#         dataset["categoricalColumns"] = categoricalColumns
-#         dataset["numericColumns"] = numericColumns
-#         dataset["allColumns"] = allColumns
-#     except Exception as e:
-#         return str(e), 500
-#     finally:
-#         session.close()
+@datasetRoute.route("/<project>/dataset/predict/<key>", methods=["POST"])
+def predict(project: str, key: str):
+    sels = request.json["selections"]
+    dimensions = sorted(request.json["dimensions"])
+    engine = getEngine(project)
+    with engine.begin() as conn:
+        with getSessionScopeFromEngine(conn) as session:
+            predictions = []
 
-#     return jsonify(dataset)
+            dataset_record = (
+                session.query(DatasetRecord).filter(DatasetRecord.key == key).one()
+            )
+            if not dataset_record:
+                return handle_exception(
+                    Exception(422, "NO_DATASET", "This dataset does not exist")
+                )
 
+            dataset = pd.read_sql(f"Dataset_{dataset_record.id}", con=conn)
 
-# @datasetRoute.route("/dataset/process", methods=["POST"])
-# def processDataset():
-#     if "file" not in request.files:
-#         return "No file uploaded", 500
-#     file = request.files["file"]
-#     columns: Any = None
-#     label = None
-#     if "label" in request.form:
-#         label = request.form["label"]
-#     if "columns" in request.files:
-#         columns = request.files["columns"]
-#     filename = os.path.splitext(file.filename)[0]
-#     columnsData = yaml.full_load(columns)
+            selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
+            # np.random.seed(2)
+            # selections = np.random.choice(
+            #     [0, 1], size=dataset.shape[0], p=[0.6, 0.4]
+            # ).tolist()
+            # sels = [i for i, x in enumerate(selections) if x == 1]
 
-#     data = pd.read_csv(file)
+            kmeanscluster = (
+                session.query(KMeansCluster)
+                .filter(KMeansCluster.dimensions == ",".join(dimensions))
+                .distinct(KMeansCluster.output)
+                .all()
+            )
+            dbscancluster = (
+                session.query(DBScanCluster)
+                .filter(DBScanCluster.dimensions == ",".join(dimensions))
+                .distinct(DBScanCluster.output)
+                .all()
+            )
+            dbscanoutlier = (
+                session.query(DBScanOutlier)
+                .filter(DBScanOutlier.dimensions == ",".join(dimensions))
+                .distinct(DBScanOutlier.output)
+                .all()
+            )
 
-#     task = process.apply_async(args=[data.to_json(), filename, columnsData, label])  # type: ignore
+            algs = []
+            algs.extend(kmeanscluster)
+            algs.extend(dbscancluster)
+            algs.extend(dbscanoutlier)
 
-#     return jsonify({"hello": "World", "result": task.id})
+            for a in algs:
+                predictions.extend(a.predict(selections))
 
+            predictions = list(
+                sorted(predictions, key=lambda x: x["rank"], reverse=True)
+            )
 
-# @datasetRoute.route("/<id>/predict", methods=["POST"])
-# def predict(id: str):
-#     sels = request.json["selections"]
-#     dimensions = sorted(request.json["dimensions"])
-#     session = getDBSession(id)
-#     engine = getEngine(id)
-#     try:
-#         preds = []
-#         dataset = pd.read_sql("Dataset", con=engine)
-#         selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
+            for pred in predictions:
+                pred["stats"] = getStats(pred["memberIds"], sels)
 
-#         kmeanscluster = (
-#             session.query(KMeansCluster)
-#             .filter(KMeansCluster.dimensions == ",".join(dimensions))
-#             .distinct(KMeansCluster.output)
-#             .all()
-#         )
-#         dbscancluster = (
-#             session.query(DBScanCluster)
-#             .filter(DBScanCluster.dimensions == ",".join(dimensions))
-#             .distinct(DBScanCluster.output)
-#             .all()
-#         )
-#         dbscanoutlier = (
-#             session.query(DBScanOutlier)
-#             .filter(DBScanOutlier.dimensions == ",".join(dimensions))
-#             .distinct(DBScanOutlier.output)
-#             .all()
-#         )
+            return jsonify(predictions)
 
-#         algs = []
-#         algs.extend(kmeanscluster)
-#         algs.extend(dbscancluster)
-#         algs.extend(dbscanoutlier)
+    # session = getDBSession(id)
+    # engine = getEngine(id)
+    # try:
+    #     preds = []
+    #     dataset = pd.read_sql("Dataset", con=engine)
+    #     selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
 
-#         for a in algs:
-#             preds.extend(a.predict(selections))
+    #     kmeanscluster = (
+    #         session.query(KMeansCluster)
+    #         .filter(KMeansCluster.dimensions == ",".join(dimensions))
+    #         .distinct(KMeansCluster.output)
+    #         .all()
+    #     )
+    #     dbscancluster = (
+    #         session.query(DBScanCluster)
+    #         .filter(DBScanCluster.dimensions == ",".join(dimensions))
+    #         .distinct(DBScanCluster.output)
+    #         .all()
+    #     )
+    #     dbscanoutlier = (
+    #         session.query(DBScanOutlier)
+    #         .filter(DBScanOutlier.dimensions == ",".join(dimensions))
+    #         .distinct(DBScanOutlier.output)
+    #         .all()
+    #     )
 
-#         preds = filter(lambda x: x["rank"] > 0.05, preds)
-#         preds = list(sorted(preds, key=lambda x: x["rank"], reverse=True))
+    #     algs = []
+    #     algs.extend(kmeanscluster)
+    #     algs.extend(dbscancluster)
+    #     algs.extend(dbscanoutlier)
 
-#         for pred in preds:
-#             pred["stats"] = getStats(pred["memberIds"], sels)
+    #     for a in algs:
+    #         preds.extend(a.predict(selections))
 
-#         return jsonify(preds)
-#     except Exception as ex:
-#         return jsonify(str(ex))
-#     finally:
-#         session.close()
+    #     preds = filter(lambda x: x["rank"] > 0.05, preds)
+    #     preds = list(sorted(preds, key=lambda x: x["rank"], reverse=True))
+
+    #     for pred in preds:
+    #         pred["stats"] = getStats(pred["memberIds"], sels)
+
+    #     return jsonify(preds)
+    # except Exception as ex:
+    #     return jsonify(str(ex))
+    # finally:
+    #     session.close()
 
 
-# def getStats(members, sels):
-#     stats = {
-#         "ipns": list(set(members) - set(sels)),
-#         "isnp": list(set(sels) - set(members)),
-#         "matches": list(set(sels).intersection(set(members))),
-#     }
+def getStats(members, sels):
+    stats = {
+        "ipns": list(set(members) - set(sels)),
+        "isnp": list(set(sels) - set(members)),
+        "matches": list(set(sels).intersection(set(members))),
+    }
 
-#     return stats
+    return stats

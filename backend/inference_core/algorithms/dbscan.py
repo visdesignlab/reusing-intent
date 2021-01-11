@@ -9,7 +9,7 @@ from backend.inference_core.utils import robustScaler
 # https://towardsdatascience.com/how-to-use-dbscan-effectively-ed212c02e62
 
 
-def get_params(size: int = 100):
+def get_params(size: int = 10):
     eps = [0.1, 0.2, 0.5, 0.7, 1]
     min_samples = []
 

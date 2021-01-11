@@ -1,7 +1,5 @@
 import hashlib
 
-import pandas as pd
-
 
 def getUIDForFile(file) -> str:
     md5Hash = hashlib.md5()
@@ -13,5 +11,6 @@ def getUIDForFile(file) -> str:
     return f"{md5Hash.hexdigest()}-{blake2b.hexdigest()}"
 
 
-def getUIDForPandasRow(row):
-    return pd.util.hash_pandas_object(row, index=False)  # type: ignore
+def getUIDForString(toHash: str):
+    md5 = hashlib.md5(toHash.encode())
+    return md5.hexdigest()

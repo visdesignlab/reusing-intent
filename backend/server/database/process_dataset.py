@@ -7,7 +7,6 @@ import yaml
 
 from backend.inference_core.algorithms.dbscan import computeDBScan
 from backend.inference_core.algorithms.kmeans import computeKMeansClusters
-from backend.inference_core.algorithms.linear_regression import computeLR
 from backend.server.database.schemas.algorithms.cluster import (
     DBScanCluster,
     KMeansCluster,
@@ -15,13 +14,8 @@ from backend.server.database.schemas.algorithms.cluster import (
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
-from backend.server.database.session import (
-    dropAllTables,
-    getDBSession,
-    getEngine,
-    getSessionScopeFromEngine,
-    initializeDatabase,
-)
+from backend.server.database.session import getEngine, getSessionScopeFromEngine
+from backend.utils.hash import getUIDForString
 
 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -32,7 +26,16 @@ def process_dataset(
     dataset_df: pd.DataFrame = pd.read_csv(dataset)  # type: ignore
     dataset_df.dropna(inplace=True)
 
-    dataset_df.set_index(pd.util.hash_pandas_object(dataset_df), inplace=True, verify_integrity=True)  # type: ignore
+    sorted_cols = sorted(dataset_df.columns)
+
+    dataset_df = dataset_df[sorted_cols]  # type: ignore
+    dataset_df.set_index(
+        dataset_df.apply(
+            lambda row: getUIDForString("_".join(row.values.astype(str))), axis=1
+        ),
+        inplace=True,
+        verify_integrity=True,
+    )
     dataset_df.reset_index(level=0, inplace=True)
     dataset_df.rename(columns={"index": "id"}, inplace=True)
     dataset_df["id"] = dataset_df["id"].astype(str)  # type: ignore
@@ -45,6 +48,16 @@ def process_dataset(
 
     with engine.begin() as conn:
         with getSessionScopeFromEngine(conn) as session:
+            records = session.query(DatasetRecord).all()
+
+            for rec in records:
+                if dataset_hash == rec.key:
+                    raise Exception(
+                        422,
+                        "DATASET_PRESENT",
+                        f"This dataset already exists with version: {rec.version}",
+                    )
+
             record = DatasetRecord(
                 key=dataset_hash,
                 version=version,
@@ -60,91 +73,41 @@ def process_dataset(
 
             uploadMetadata(dataset_df, metadata, session, dataset_record_id)
             uploadDataset(dataset_df, f"Dataset_{dataset_record_id}", conn)
+            precompute(dataset_df, session)
             session.commit()
             return f"{record.id}"
 
 
-def process_dataset_(data, filename, columnsData, label):
-    # TODO: Handle missing at some point
-    data = data.dropna()
-
-    data = data.infer_objects()
-    # TODO: Maybe convert datatype of df when not matching according to columnsData
-    # metadata = getMetadata(data, columnsData, label)
-
-    # Drop all tables
-    dropAllTables(filename)
-    # Initialize database
-    initializeDatabase(filename)
-    # Upload dataset
-    # uploadDataset(data, filename)
-    # Upload metadata
-    # uploadMetadata(metadata, filename)
-    # Precompute
-    # precompute(data, filename)
-    # print("Done")
-
-
-def precompute(data: pd.DataFrame, id: str):
+def precompute(data, session):
     combinations = getCombinations(data)
 
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
-        precomputeOutliers(subset, dimensions, id)
-        precomputeClusters(subset, dimensions, id)
+        precomputeOutliers(subset, dimensions, session)
+        precomputeClusters(subset, dimensions, session)
         # precomputeLR(subset, dimensions, id)
 
 
-def precomputeLR(data: pd.DataFrame, dimensions: str, id: str):
-    computeLR(data)
-    # session = getDBSession(id)
-    # try:
-    #     for output, params in computeDBScan(data):
-    #         dbscan_cluster_result = DBScanOutlier(
-    #             dimensions=dimensions, output=output, params=params
-    #         )
-    #         session.add(dbscan_cluster_result)
-    #     session.commit()
-    # except Exception as ex:
-    #     raise ex
-    # finally:
-    #     session.close()
+def precomputeOutliers(data, dimensions: str, session):
+    for output, params in computeDBScan(data):
+        dbscan_cluster_result = DBScanOutlier(
+            dimensions=dimensions, output=output, params=params
+        )
+        session.add(dbscan_cluster_result)
 
 
-def precomputeOutliers(data: pd.DataFrame, dimensions: str, id: str):
-    session = getDBSession(id)
-    try:
-        for output, params in computeDBScan(data):
-            dbscan_cluster_result = DBScanOutlier(
-                dimensions=dimensions, output=output, params=params
-            )
-            session.add(dbscan_cluster_result)
-        session.commit()
-    except Exception as ex:
-        raise ex
-    finally:
-        session.close()
-
-
-def precomputeClusters(data: pd.DataFrame, dimensions: str, id: str):
-    session = getDBSession(id)
-    try:
-        for output, params in computeDBScan(data):
-            dbscan_cluster_result = DBScanCluster(
-                dimensions=dimensions, output=output, params=params
-            )
-            session.add(dbscan_cluster_result)
-        for output, params in computeKMeansClusters(data):
-            kmeans_result = KMeansCluster(
-                dimensions=dimensions, output=output, params=params
-            )
-            session.add(kmeans_result)
-        session.commit()
-    except Exception as ex:
-        raise ex
-    finally:
-        session.close()
+def precomputeClusters(data: pd.DataFrame, dimensions: str, session):
+    for output, params in computeDBScan(data):
+        dbscan_cluster_result = DBScanCluster(
+            dimensions=dimensions, output=output, params=params
+        )
+        session.add(dbscan_cluster_result)
+    for output, params in computeKMeansClusters(data):
+        kmeans_result = KMeansCluster(
+            dimensions=dimensions, output=output, params=params
+        )
+        session.add(kmeans_result)
 
 
 def getCombinations(
@@ -247,7 +210,7 @@ def uploadMetadata(data, metadata, session, record_id):
             if dataType == "numeric":
                 info = values.describe().to_json()
             if dataType == "categorical":
-                info = json.dumps({"unique_values": list(values.unique())})
+                info = json.dumps(values.value_counts().to_dict())
 
             d = DatasetMetadata(
                 record_id=record_id,

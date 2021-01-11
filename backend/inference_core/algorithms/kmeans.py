@@ -21,7 +21,7 @@ def computeKMeansClusters(data: pd.DataFrame):
         kmeans.fit(scaled_data)
 
     rets = [
-        (",".join(map(str, kmeans.labels_)), json.dumps(kmeans.get_params()))
+        (",".join(map(str, kmeans.labels_)), json.dumps(kmeans.get_params()))  # type: ignore
         for kmeans in kmeansClusterers
     ]
     return rets
