@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
+from backend.server.celery.init import celery
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.algorithms.cluster import (
     DBScanCluster,
@@ -12,9 +13,11 @@ from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
+    dropAllTables,
     getEngine,
     getSessionScopeFromEngine,
     getSessionScopeFromId,
+    initializeDatabase,
 )
 from backend.server.routes.utils import handle_exception
 from backend.utils.hash import getUIDForFile
@@ -39,24 +42,43 @@ def getAllDatasets(project: str) -> Any:
 def uploadDataset(project: str):
     if "dataset" not in request.files:
         return handle_exception(Exception(400, "MISSING_FILE", "No file uploaded"))
+
     version = request.form["version"]
     description = request.form["description"]
     dataset = request.files["dataset"]
     sourceMetadata = None
+
     if "metadata" in request.files:
         sourceMetadata = request.files["metadata"]
 
     dataset_hash = getUIDForFile(dataset)
     try:
-        process_dataset(
+        trackers = process_dataset(
             project, dataset, dataset_hash, version, description, sourceMetadata
         )
     except Exception as ex:
         return handle_exception(ex)
 
     return jsonify(
-        {"message": "Dataset uploaded successfully", "datasetKey": dataset_hash}
+        {
+            "message": "Dataset uploaded successfully",
+            "datasetKey": dataset_hash,
+            "trackers": trackers,
+        }
     )
+
+
+@datasetRoute.route("/dataset/status", methods=["POST"])
+def getStatus():
+    trackers = request.json["trackers"]
+    if not trackers:
+        return "Need ids"
+    status = []
+    for tracker in trackers:
+        res = celery.AsyncResult(tracker["id"])  # type: ignore
+        status.append({"type": tracker["type"], "info": res.info, "status": res.state})
+
+    return jsonify(status)
 
 
 @datasetRoute.route("/<project>/dataset/<key>", methods=["GET"])
@@ -65,8 +87,9 @@ def getDatasetByKey(project: str, key: str):
     with engine.begin() as connection:
         with getSessionScopeFromEngine(connection) as session:
             record = session.query(DatasetRecord).filter(DatasetRecord.key == key).one()
-            dataset_table_name = f"Dataset_{record.id}"
-            data = pd.read_sql(dataset_table_name, con=connection)
+            data = pd.read_sql("Dataset", con=connection)
+            data = data[data["record_id"] == str(record.id)]
+            data = data.drop(columns=["record_id"])
             data = list(data.T.to_dict().values())
 
             columnMetadata = (
@@ -125,7 +148,11 @@ def predict(project: str, key: str):
                     Exception(422, "NO_DATASET", "This dataset does not exist")
                 )
 
-            dataset = pd.read_sql(f"Dataset_{dataset_record.id}", con=conn)
+            record_id = dataset_record.id
+
+            dataset = pd.read_sql(f"Dataset", con=conn)
+            dataset = dataset[dataset["record_id"] == str(record_id)]
+            dataset = dataset.drop(columns=["record_id"])
 
             selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
             # np.random.seed(2)
@@ -136,18 +163,21 @@ def predict(project: str, key: str):
 
             kmeanscluster = (
                 session.query(KMeansCluster)
+                .filter(KMeansCluster.record_id == record_id)
                 .filter(KMeansCluster.dimensions == ",".join(dimensions))
                 .distinct(KMeansCluster.output)
                 .all()
             )
             dbscancluster = (
                 session.query(DBScanCluster)
+                .filter(DBScanCluster.record_id == record_id)
                 .filter(DBScanCluster.dimensions == ",".join(dimensions))
                 .distinct(DBScanCluster.output)
                 .all()
             )
             dbscanoutlier = (
                 session.query(DBScanOutlier)
+                .filter(DBScanOutlier.record_id == record_id)
                 .filter(DBScanOutlier.dimensions == ",".join(dimensions))
                 .distinct(DBScanOutlier.output)
                 .all()
