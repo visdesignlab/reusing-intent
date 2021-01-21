@@ -10,6 +10,11 @@ def get_params():
     return list(range(2, 21))
 
 
+def get_kmeans_count():
+    n_clusters = get_params()
+    return len(n_clusters)
+
+
 def computeKMeansClusters(data: pd.DataFrame):
     n_clusters = get_params()
 

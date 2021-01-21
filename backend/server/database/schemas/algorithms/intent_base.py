@@ -9,6 +9,7 @@ from sqlalchemy.sql.sqltypes import Integer, String
 
 class IntentBase(ABC):
     id = Column(Integer, primary_key=True)
+    record_id = Column(Integer, nullable=False)
     params = Column(String, nullable=False)
     dimensions = Column(String, nullable=False)
     output = Column(String, nullable=False)

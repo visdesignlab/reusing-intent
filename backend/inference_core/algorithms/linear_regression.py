@@ -1,21 +1,94 @@
+import json
+
+import numpy as np
 import pandas as pd
+from sklearn.linear_model import LinearRegression
 
-
-def get_params():
-    return [0.05, 0.08, 1]
+from backend.inference_core.utils import robustScaler2
 
 
 def computeLR(data: pd.DataFrame):
-    print("Test")
-    # thresholds = get_params()
-    # vs = data.values
-    # numDims = np.size(vs, 1)
+    reg = LinearRegression()
+    values = data.values
 
-    # X = vs[:, 0 : numDims - 1]
-    # y = vs[:, numDims - 1].reshape(-1, 1)
+    numDims = np.size(values, 1)
 
-    # X_scaled = robustScaler(X)
-    # y_scaled = robustScaler(y).flatten()
+    X = values[:, 0 : numDims - 1]
+    Y = values[:, numDims - 1].reshape(-1, 1)
 
-    # for threshold in thresholds:
-    #     lr = LinearRegression()
+    X_scaler = robustScaler2(X)
+    Y_scaler = robustScaler2(Y)
+
+    X_scaled = X_scaler.transform(X)
+    Y_scaled = Y_scaler.transform(Y)
+
+    ndf = data.copy(deep=True)
+    ndf["X"] = X_scaled
+    ndf["Y"] = Y_scaled
+    ndf["Filter"] = True
+    prev_length = 0
+    within = None
+    m = 0
+    for i in range(10):
+        curr_idx = ndf.index[ndf.loc[:, "Filter"]]  # type: ignore
+        curr = ndf.iloc[curr_idx, :]
+        if prev_length == curr.shape[0]:
+            break
+
+        prev_length = curr.shape[0]
+
+        x, y = curr["X"].values.reshape(-1, 1), curr["Y"].values
+
+        reg.fit(x, y)
+        ts = reg.predict(X_scaled)
+
+        residuals = ts - Y_scaled
+        residuals = np.absolute(residuals)
+
+        inlier_residuals = np.absolute(reg.predict(x) - y)
+
+        m = np.median(inlier_residuals)
+
+        within = residuals < (5 * m)
+
+        ndf["Filter"] = within
+
+    within = ndf["Filter"]
+    result = pd.concat([within, within ^ 1], axis=1)  # type: ignore
+
+    result.columns = ["LR:within", "LR:outside"]
+
+    within_idx = result.index[result.loc[:, "LR:within"]].tolist()  # type: ignore
+    outside_idx = result.index[result.loc[:, "LR:outside"]].tolist()  # type: ignore
+
+    coeffs = X_scaler.inverse_transform(np.array(reg.coef_).reshape(-1, 1))[0].tolist()  # type: ignore
+    intercept = Y_scaler.inverse_transform(np.array(reg.intercept_).reshape(-1, 1))[0][  # type: ignore
+        0
+    ]
+
+    threshold = 3 * Y_scaler.inverse_transform(np.array(m).reshape(-1, 1))[0][0]  # type: ignore
+
+    return [
+        (
+            ",".join(map(str, within_idx)),
+            json.dumps(
+                {
+                    "threshold": threshold,
+                    "coeff": coeffs,
+                    "intercept": intercept,
+                    "type": "within",
+                }
+            ),
+        ),
+        (
+            ",".join(map(str, outside_idx)),
+            json.dumps(
+                {
+                    "threshold": threshold,
+                    "coeff": coeffs,
+                    "intercept": intercept,
+                    "type": "outside",
+                }
+            ),
+        ),
+    ]

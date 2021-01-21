@@ -5,13 +5,11 @@ from typing import List
 import pandas as pd
 import yaml
 
-from backend.inference_core.algorithms.dbscan import computeDBScan
-from backend.inference_core.algorithms.kmeans import computeKMeansClusters
-from backend.server.database.schemas.algorithms.cluster import (
-    DBScanCluster,
-    KMeansCluster,
+from backend.server.celery.tasks import (
+    precomputeClusters,
+    precomputeLR,
+    precomputeOutliers,
 )
-from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import getEngine, getSessionScopeFromEngine
@@ -42,9 +40,11 @@ def process_dataset(
 
     if sourceMetadata:
         sourceMetadata = yaml.full_load(sourceMetadata)
-    metadata = getMetadata(dataset_df, sourceMetadata)
+    metadata, dataset_df = getMetadata(dataset_df, sourceMetadata)
 
     engine = getEngine(project)
+
+    dataset_record_id = None
 
     with engine.begin() as conn:
         with getSessionScopeFromEngine(conn) as session:
@@ -68,83 +68,38 @@ def process_dataset(
             session.add(record)
             session.flush()
             dataset_record_id = record.id
+
             if dataset_record_id is None:
                 raise Exception()
 
+            dataset_df["record_id"] = str(dataset_record_id)
+
             uploadMetadata(dataset_df, metadata, session, dataset_record_id)
-            uploadDataset(dataset_df, f"Dataset_{dataset_record_id}", conn)
-            precompute(dataset_df, session)
-            session.commit()
-            return f"{record.id}"
+            uploadDataset(dataset_df, "Dataset", conn)
+
+    dimensions = list(dataset_df.select_dtypes("number").columns)
+    combinations = getCombinations(dimensions)[0:10]
+
+    task_trackers = precompute(dataset_df, combinations, project, dataset_record_id)
+    return task_trackers
 
 
-def precompute(data, session):
-    combinations = getCombinations(data)
+def precompute(data, combinations, project, record_id):
+    outlier_task = precomputeOutliers.delay(
+        data.to_json(), combinations, record_id, project
+    )
+    cluster_task = precomputeClusters.delay(
+        data.to_json(), combinations, record_id, project
+    )
+    linear_regression_task = precomputeLR.delay(
+        data.to_json(), combinations, record_id, project
+    )
 
-    for combo in combinations:
-        subset = data[combo]
-        dimensions = ",".join(combo)
-        precomputeOutliers(subset, dimensions, session)
-        precomputeClusters(subset, dimensions, session)
-        # precomputeLR(subset, dimensions, id)
-
-
-def precomputeOutliers(data, dimensions: str, session):
-    for output, params in computeDBScan(data):
-        dbscan_cluster_result = DBScanOutlier(
-            dimensions=dimensions, output=output, params=params
-        )
-        session.add(dbscan_cluster_result)
-
-
-def precomputeClusters(data: pd.DataFrame, dimensions: str, session):
-    for output, params in computeDBScan(data):
-        dbscan_cluster_result = DBScanCluster(
-            dimensions=dimensions, output=output, params=params
-        )
-        session.add(dbscan_cluster_result)
-    for output, params in computeKMeansClusters(data):
-        kmeans_result = KMeansCluster(
-            dimensions=dimensions, output=output, params=params
-        )
-        session.add(kmeans_result)
-
-
-def getCombinations(
-    data: pd.DataFrame, lower_limit=1, upper_limit=-1
-) -> List[List[str]]:
-    """Generates all combinations of numeric column names
-
-    Parameters
-    ----------
-
-    data : pd.DataFrame
-        The complete dataset.
-
-    lower_limit : int, optional
-        Lower limit of combinations, by default 1.
-
-    upper_limit : int, optional
-        Upper limit of combinations, -1 is all columns, by default -1.
-
-    Returns
-    -------
-    List[List[str]]
-        List of column combinations
-    """
-
-    columns = list(data.select_dtypes("number").columns)
-    combinations = []
-    ul = upper_limit
-    if ul == -1:
-        ul = len(columns) + 1
-
-    for length in range(lower_limit, ul):
-        subset = list(itertools.combinations(columns, length))
-        combinations.extend(subset)
-    combinations = [sorted(list(s)) for s in combinations]
-
-    return combinations
+    return [
+        {"type": "Outlier", "id": outlier_task.task_id},
+        {"type": "Cluster", "id": cluster_task.task_id},
+        {"type": "Linear Regression", "id": linear_regression_task.task_id},
+    ]
 
 
 def getMetadata(data, sourceMetadata=None):
@@ -175,6 +130,7 @@ def getMetadata(data, sourceMetadata=None):
         dataType = values.dtype
         if column == label:
             dataType = "label"
+            data[column] = data[column].astype(str)
         if column == "id":
             dataType = "id"
         elif dataType == "object":
@@ -194,11 +150,11 @@ def getMetadata(data, sourceMetadata=None):
             for k, v in val.items():
                 metadata[col][k] = v
 
-    return metadata
+    return metadata, data
 
 
 def uploadDataset(data, tableName: str, session):
-    data.to_sql(tableName, con=session, if_exists="replace", index=False)
+    data.to_sql(tableName, con=session, if_exists="append", index=False)
 
 
 def uploadMetadata(data, metadata, session, record_id):
@@ -224,3 +180,41 @@ def uploadMetadata(data, metadata, session, record_id):
             session.add(d)
     except Exception as e:
         raise e
+
+
+def getCombinations(
+    dimensions: List[str],
+    lower_limit=1,
+    upper_limit=-1,
+) -> List[List[str]]:
+    """Generates all combinations of numeric column names
+
+    Parameters
+    ----------
+
+    dimensions : List[str]
+        dimensions to create combinations from
+
+    lower_limit : int, optional
+        Lower limit of combinations, by default 1.
+
+    upper_limit : int, optional
+        Upper limit of combinations, -1 is all columns, by default -1.
+
+    Returns
+    -------
+    List[List[str]]
+        List of column combinations
+    """
+
+    combinations = []
+    ul = upper_limit
+    if ul == -1:
+        ul = len(dimensions) + 1
+
+    for length in range(lower_limit, ul):
+        subset = list(itertools.combinations(dimensions, length))
+        combinations.extend(subset)
+    combinations = [sorted(list(s)) for s in combinations]
+
+    return combinations

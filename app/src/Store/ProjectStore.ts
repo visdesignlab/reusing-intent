@@ -73,7 +73,7 @@ export class ProjectStore {
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
 
-        if (this.rootStore.debug) {
+        if (this.rootStore.debug && response.data.length > 0) {
           this.loadDataset(response.data[0].key);
         }
       }),

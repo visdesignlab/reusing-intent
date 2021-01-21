@@ -21,6 +21,8 @@ function useDataGridFormat(data: Dataset | null, headerHeight = 56) {
       renderHeader: (params) => {
         const { width } = params.colDef;
 
+        if (headerHeight) return <div>{params.field}</div>;
+
         return (
           <div>
             <HeaderDistribution column={columnInfo[col]} height={headerHeight} width={width} />
@@ -37,7 +39,7 @@ function useDataGridFormat(data: Dataset | null, headerHeight = 56) {
 
 const DatasetTable = () => {
   const ref = useRef<HTMLDivElement>(null);
-  const headerHeight = 100;
+  const headerHeight = 56;
   const { loadedDataset } = useContext(Store).projectStore;
   const { rows, columns } = useDataGridFormat(loadedDataset, headerHeight);
 

@@ -26,6 +26,12 @@ def get_params(size: int = 10):
     return eps, min_samples
 
 
+def get_dbscan_count(data: pd.DataFrame):
+    eps, min_samples = get_params(data.shape[0])
+    params = [(e, m) for e in eps for m in min_samples]
+    return len(params)
+
+
 def computeDBScan(data: pd.DataFrame):
     eps, min_samples = get_params(data.shape[0])
     params = [(e, m) for e in eps for m in min_samples]
