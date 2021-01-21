@@ -114,6 +114,8 @@ const BrushComponent: FC<Props> = ({
 
       activeBrush.extents = correctBrushExtents({ x1, x2, y1, y2 });
 
+      console.log(activeBrush.extents)
+
       onBrush(activeBrush);
     }
 

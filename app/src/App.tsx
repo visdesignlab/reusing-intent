@@ -15,6 +15,7 @@ import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
+import { ProvVis, EventConfig } from '@visdesignlab/trrack-vis';
 
 import Navbar from './components/Navbar';
 import useScatterplotStyle from './components/Scatterplot.tsx/styles';
@@ -22,6 +23,34 @@ import Visualization from './components/Visualization';
 import { Plot } from './Store/Plot';
 import Store from './Store/Store';
 import { getPlotId } from './Utils/IDGens';
+import { IntentEvents } from './Store/Provenance';
+import {
+  AddBrush,
+  AddPlot,
+  ChangeBrush,
+  ChangeBrushSize,
+  ChangeBrushType,
+  ChangeCategory,
+  ClearAll,
+  Invert,
+  LoadDataset,
+  LockPrediction,
+  MultiBrush,
+  PointDeselection,
+  PointSelection,
+  RemoveBrush,
+  SwitchCategoryVisibility,
+  TurnPrediction,
+} from './components/Icons';
+
+export type Bundle = {
+  metadata: any;
+  bundleLabel: string;
+  bunchedNodes: string[];
+};
+
+export type BundleMap = { [key: string]: Bundle };
+
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -33,10 +62,111 @@ const useStyles = makeStyles(() => ({
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 1.5fr',
+    gridTemplateColumns: '5fr 1.5fr 1.3fr .1fr',
     overflow: 'hidden',
   },
 }));
+
+const eventConfig: EventConfig<IntentEvents> = {
+  'Load Dataset': {
+    backboneGlyph: <LoadDataset size={22} />,
+    currentGlyph: <LoadDataset fill="#2185d0" size={22} />,
+    regularGlyph: <LoadDataset size={16} />,
+    bundleGlyph: <LoadDataset fill="#2185d0" size={22} />,
+  },
+  MultiBrush: {
+    backboneGlyph: <MultiBrush size={22} />,
+    currentGlyph: <MultiBrush fill="#2185d0" size={22} />,
+    regularGlyph: <MultiBrush size={16} />,
+    bundleGlyph: <MultiBrush fill="#2185d0" size={22} />,
+  },
+  'Switch Category Visibility': {
+    backboneGlyph: <SwitchCategoryVisibility size={22} />,
+    currentGlyph: <SwitchCategoryVisibility fill="#2185d0" size={22} />,
+    regularGlyph: <SwitchCategoryVisibility size={16} />,
+    bundleGlyph: <SwitchCategoryVisibility fill="#2185d0" size={22} />,
+  },
+  'Change Category': {
+    backboneGlyph: <ChangeCategory size={22} />,
+    currentGlyph: <ChangeCategory fill="#2185d0" size={22} />,
+    regularGlyph: <ChangeCategory size={16} />,
+    bundleGlyph: <ChangeCategory fill="#2185d0" size={22} />,
+  },
+  'Add Plot': {
+    backboneGlyph: <AddPlot size={22} />,
+    currentGlyph: <AddPlot fill="#2185d0" size={22} />,
+    regularGlyph: <AddPlot size={16} />,
+    bundleGlyph: <AddPlot fill="#2185d0" size={22} />,
+  },
+  'Point Selection': {
+    backboneGlyph: <PointSelection size={22} />,
+    currentGlyph: <PointSelection fill="#2185d0" size={22} />,
+    regularGlyph: <PointSelection size={16} />,
+    bundleGlyph: <PointSelection fill="#2185d0" size={22} />,
+  },
+  'Point Deselection': {
+    backboneGlyph: <PointDeselection size={22} />,
+    currentGlyph: <PointDeselection fill="#2185d0" size={22} />,
+    regularGlyph: <PointDeselection size={16} />,
+    bundleGlyph: <PointDeselection fill="#2185d0" size={22} />,
+  },
+  'Add Brush': {
+    backboneGlyph: <AddBrush size={22} />,
+    currentGlyph: <AddBrush fill="#2185d0" size={22} />,
+    regularGlyph: <AddBrush size={16} />,
+    bundleGlyph: <AddBrush fill="#2185d0" size={22} />,
+  },
+  'Lock Prediction': {
+    backboneGlyph: <LockPrediction size={22} />,
+    currentGlyph: <LockPrediction fill="#2185d0" size={22} />,
+    regularGlyph: <LockPrediction size={16} />,
+    bundleGlyph: <LockPrediction fill="rgb(248, 191, 132)" size={22} />,
+  },
+  'Turn Prediction': {
+    backboneGlyph: <TurnPrediction size={22} />,
+    currentGlyph: <TurnPrediction fill="#2185d0" size={22} />,
+    regularGlyph: <TurnPrediction size={16} />,
+    bundleGlyph: <TurnPrediction fill="#2185d0" size={22} />,
+  },
+  Invert: {
+    backboneGlyph: <Invert size={22} />,
+    currentGlyph: <Invert fill="#2185d0" size={22} />,
+    regularGlyph: <Invert size={16} />,
+    bundleGlyph: <Invert fill="#2185d0" size={22} />,
+  },
+  'Change Brush': {
+    backboneGlyph: <ChangeBrush size={22} />,
+    currentGlyph: <ChangeBrush fill="#2185d0" size={22} />,
+    regularGlyph: <ChangeBrush size={16} />,
+    bundleGlyph: <ChangeBrush fill="#2185d0" size={22} />,
+  },
+  'Remove Brush': {
+    backboneGlyph: <RemoveBrush size={22} />,
+    currentGlyph: <RemoveBrush fill="#2185d0" size={22} />,
+    regularGlyph: <RemoveBrush size={16} />,
+    bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
+  },
+  'Clear All': {
+    backboneGlyph: <ClearAll size={22} />,
+    currentGlyph: <ClearAll fill="#2185d0" size={22} />,
+    regularGlyph: <ClearAll size={16} />,
+    bundleGlyph: <ClearAll fill="#ccc" size={22} />,
+  },
+  'Change Brush Type': {
+    backboneGlyph: <ChangeBrushType size={22} />,
+    currentGlyph: <ChangeBrushType fill="#2185d0" size={22} />,
+    regularGlyph: <ChangeBrushType size={16} />,
+    bundleGlyph: <ChangeBrushType fill="#2185d0" size={22} />,
+  },
+  'Change Brush Size': {
+    backboneGlyph: <ChangeBrushSize size={22} />,
+    currentGlyph: <ChangeBrushSize fill="#2185d0" size={22} />,
+    regularGlyph: <ChangeBrushSize size={16} />,
+    bundleGlyph: <ChangeBrushSize fill="#2185d0" size={22} />,
+  },
+};
+
+
 
 const App: FC = () => {
   const classes = useStyles();
@@ -61,10 +191,34 @@ const App: FC = () => {
 
   if (!loadedDataset) return <Redirect to="/project" />;
 
+  const { provenance, bundledNodes } = useContext(IntentStore)
+
+  const bundle: BundleMap = {}
+
+  console.log(JSON.parse(JSON.stringify(bundledNodes)))
+
+  for(const j of bundledNodes){
+    if (j.length === 0 )
+    {
+      continue;
+    }
+    console.log(j)
+    bundle[j[0]] = {
+      metadata: '',
+      bundleLabel: '',
+      bunchedNodes: j
+    }
+  }
+
+  console.log(bundle);
+
+  console.log(provenance.graph)
+
   return (
     <div className={classes.root}>
+
       <CssBaseline />
-      <Navbar style={{ widthh: 1 }} />
+      <Navbar style={{ width: 1 }} />
       <div className={classes.layout}>
         <Visualization />
         {predictions.length > 0 && (
@@ -124,6 +278,17 @@ const App: FC = () => {
             </TableContainer>
           </div>
         )}
+        <ProvVis
+          bundleMap={bundle}
+          changeCurrent={(nodeID) => provenance.goToNode(nodeID)}
+          current={provenance.graph.current}
+          ephemeralUndo={false}
+          eventConfig={eventConfig}
+          nodeMap={provenance.graph.nodes}
+          prov={provenance}
+          root={provenance.graph.root}
+          undoRedoButtons
+        />
       </div>
     </div>
   );

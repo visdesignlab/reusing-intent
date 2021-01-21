@@ -56,6 +56,5 @@ export const defaultState: IntentState = {
   plots: [],
   interactionHistory: [],
   brushType: 'Freeform Medium',
-
   lockedPrediction: null,
 };

@@ -1,4 +1,4 @@
-import { Prediction} from '../contract';
+import { Prediction } from '../contract';
 
 export type IntentEvents =
   | "Load Dataset"
@@ -15,6 +15,7 @@ export type IntentEvents =
   | "Edit Brush"
   | "Remove Brush"
   | "Clear All"
-  | "Change Selected Brush";
+  | "Change Selected Brush"
+  | "Change Dataset";
 
 export type Predictions = Prediction[]

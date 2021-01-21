@@ -14,6 +14,7 @@ import React, { FC, useContext } from 'react';
 
 import Store from '../Store/Store';
 
+
 import Scatterplot from './Scatterplot.tsx/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -31,6 +32,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }),
 );
+
+
 
 const Visualization: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
@@ -56,11 +59,14 @@ const Visualization: FC = () => {
     </Grid>
   ));
 
+  // console.log(prov);
+
   return (
     <div className={classes.root}>
       <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
         {isLoadingData ? loader : scatterPlots}
       </Grid>
+
     </div>
   );
 };
