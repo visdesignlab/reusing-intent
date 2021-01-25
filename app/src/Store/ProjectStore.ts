@@ -30,7 +30,9 @@ export class ProjectStore {
   currentProject: Project | null = null;
   projects: ProjectList = [];
   loadedDatasetKey: string | null = null;
+  comparisonDatasetKey: string | null = null;
   loadedDataset: Dataset | null = null;
+  comparisonDataset: Dataset | null = null;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -85,8 +87,21 @@ export class ProjectStore {
 
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
+        this.rootStore.exploreStore.changeDataset(datasetKey);
         this.loadedDatasetKey = datasetKey;
         this.loadedDataset = response.data;
+      }),
+    );
+  };
+
+  loadComparisonDataset = (datasetKey: string) => {
+    if (!this.currentProject) return;
+
+    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
+      action((response: AxiosResponse<Dataset>) => {
+        this.rootStore.exploreStore.changeDataset(datasetKey);
+        this.comparisonDatasetKey = datasetKey;
+        this.comparisonDataset = response.data;
       }),
     );
   };

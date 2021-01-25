@@ -1,4 +1,4 @@
-import { AppBar, Button, createStyles, makeStyles, Toolbar, Typography } from '@material-ui/core';
+import { AppBar, Button, createStyles, makeStyles, Toolbar, Typography, Switch } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { observer } from 'mobx-react';
@@ -8,12 +8,22 @@ import { Link } from 'react-router-dom';
 import Store from '../../Store/Store';
 import useDropdown from '../Dropdown';
 
-import DatasetTable from './DatasetTable';
+import {DatasetTable, ComparisonTable} from './DatasetTable';
 import UploadDatasetDialog from './UploadDatasetDialog';
 
 const useStyles = makeStyles(() =>
   createStyles({
+    colorClass: {},
     root: {
+      '& .red': {
+        background: '#ff8080',
+      },
+      '& .green': {
+        backgroundColor: '#90EE90',
+      },
+      '& .yellow': {
+        backgroundColor: '#ffff8b',
+      },
       flexGrow: 1,
       display: 'grid',
       height: '100vh',
@@ -24,9 +34,11 @@ const useStyles = makeStyles(() =>
 
 const ProjectView = () => {
   const classes = useStyles();
-  const { currentProject, loadedDatasetKey, loadDataset } = useContext(Store).projectStore;
+  const { currentProject, comparisonDatasetKey, loadedDatasetKey, loadDataset, loadComparisonDataset } = useContext(Store).projectStore;
 
   const [openUploadDatasetDialog, setOpenUploadDatasetDialog] = useState(false);
+  const [comparisonView, setComparisonView] = useState(false);
+
 
   const datasetOptions = useMemo(() => {
     const opts =
@@ -47,16 +59,30 @@ const ProjectView = () => {
     loadDataset,
   );
 
+  const { Dropdown: ComparisonDropdown } = useDropdown(
+    'dataset-dropdown',
+    'Comparison Dataset',
+    '',
+    datasetOptions,
+    comparisonDatasetKey || '',
+    loadComparisonDataset,
+  );
+
   if (!currentProject) return <div>Unloaded</div>;
 
   return (
     <div className={classes.root}>
-      <AppBar color="transparent" position="static">
+      <AppBar
+        color="transparent"
+        position="static"
+        style={{ gridColumnStart: 1, gridColumnEnd: 3 }}
+      >
         <Toolbar>
           <Typography variant="h6" noWrap>
             {currentProject.name}
           </Typography>
           <DatasetDropdown />
+          {comparisonView ? <ComparisonDropdown /> : null}
           <Button
             color="primary"
             startIcon={<AddIcon />}
@@ -74,9 +100,16 @@ const ProjectView = () => {
           >
             Load Dataset
           </Button>
+          <Switch
+            checked={comparisonView}
+            inputProps={{ 'aria-label': 'secondary checkbox' }}
+            name="checkedA"
+            onChange={() => setComparisonView(!comparisonView)}
+          />
         </Toolbar>
       </AppBar>
-      <DatasetTable />
+      <DatasetTable  columnNum={comparisonView ? 1 : 2}/>
+      {comparisonView ? <ComparisonTable /> : null}
       <UploadDatasetDialog
         handleClose={() => setOpenUploadDatasetDialog(false)}
         open={openUploadDatasetDialog}

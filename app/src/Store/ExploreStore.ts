@@ -20,18 +20,15 @@ export class ExploreStore {
   predictions: any[] = [];
   showMatchesLegend = false;
 
-  provenanceActions = {
-    addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
-      (state: IntentState, plot: Plot) => {
-        state.plots.push(plot);
-      },
-    ),
-  };
-
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
-    this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
-    makeAutoObservable(this);
+    this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState, {
+      loadFromUrl: false,
+    });
+    this.provenance.done();
+    makeAutoObservable(this, {
+      provenance: false,
+    });
   }
 
   setMatchLegendVisibility = (visible: boolean) => {
@@ -55,6 +52,8 @@ export class ExploreStore {
   }
 
   setFreeformSelection = (plot: Plot, points: number[]) => {
+    this.addPointSelection(plot, points, true);
+
     this.plots.forEach((plt) => {
       if (plt.id === plot.id)
         plot.selectedPoints = Array.from(new Set([...plot.selectedPoints, ...points]));
@@ -101,8 +100,6 @@ export class ExploreStore {
 
   reset = (): void => {
     this.plots = [];
-    this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
-    this.provenance.done();
   };
 
   get dataset() {
@@ -113,16 +110,33 @@ export class ExploreStore {
     return dataset;
   }
 
-  resetProvenance = () => {
-    this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState);
-  };
-
   addPlot = (plot: Plot): void => {
     this.plots.push(plot);
+    this.rootStore.provenanceActions.addPlotAction.setLabel('Add Plot');
+    this.provenance.apply(this.rootStore.provenanceActions.addPlotAction(plot));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
+  changeDataset = (dataset: string) => {
+    this.rootStore.bundledNodes.push(this.rootStore.currentNodes);
+    this.rootStore.currentNodes = [];
+
+    this.rootStore.provenanceActions.changeDatasetActon.setLabel(`Change Dataset: ${dataset}`);
+    this.provenance.apply(this.rootStore.provenanceActions.changeDatasetActon(dataset));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
   removePlot = (plot: Plot) => {
     this.plots = this.plots.filter((p) => p.id !== plot.id);
+
+    this.rootStore.provenanceActions.removePlotAction.setLabel(
+      `Remove plot: ${plot.x} - ${plot.y}`,
+    );
+    this.provenance.apply(this.rootStore.provenanceActions.removePlotAction(plot));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // this.plots = this.plots.filter((plt) => plt.id !== plot.id);
 
     // const action = createAction<IntentState, any[], IntentEvents>(
@@ -149,24 +163,23 @@ export class ExploreStore {
   };
 
   changeCategory = (category: string) => {
-    const action = createAction<IntentState, any[], IntentEvents>(
-      (state: IntentState, category: string) => {
-        state.categoryColumn = category;
-        //TODO:: wat
-        //addDummyInteraction(state);
-      },
-    );
+    this.rootStore.provenanceActions.changeCategoryAction.setLabel(`Category: ${category}`);
+    this.provenance.apply(this.rootStore.provenanceActions.changeCategoryAction(category));
 
-    action.setLabel(`Category: ${category}`);
-    action.setEventType('Change Category');
-
-    this.provenance.apply(action(category));
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
   toggleCategories = (show: boolean, categories: string[] = []) => {
     this.showCategories = show;
 
     if (this.categoryColumn === '') this.categoryColumn = categories[0];
+
+    this.rootStore.provenanceActions.toggleCategoryAction.setLabel(
+      `${show ? 'Show' : 'Hide'} Categories`,
+    );
+    this.provenance.apply(this.rootStore.provenanceActions.toggleCategoryAction(show, categories));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
 
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (state: IntentState, show: boolean, categories: string[]) => {
@@ -190,6 +203,13 @@ export class ExploreStore {
   addPointSelection = (plot: Plot, points: number[], isPaintBrush = false) => {
     if (points.length === 0) return;
 
+    this.rootStore.provenanceActions.addPointSelectionAction.setLabel(
+      isPaintBrush ? `P. Brush: ${points.length}` : `Add Point Selection`,
+    );
+    this.provenance.apply(this.rootStore.provenanceActions.addPointSelectionAction(plot, points));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (state: IntentState, plot: Plot, points: number[]) => {
     //     for (let i = 0; i < state.plots.length; ++i) {
@@ -210,6 +230,12 @@ export class ExploreStore {
   };
 
   removePointSelection = (plot: Plot, points: number[]) => {
+    this.rootStore.provenanceActions.removePointSelectionAction.setLabel('Unselect Points');
+    this.provenance.apply(
+      this.rootStore.provenanceActions.removePointSelectionAction(plot, points),
+    );
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // addPointSelectionInteraction(state, plot, points);
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (state: IntentState, plot: Plot, points: number[]) => {
@@ -232,6 +258,14 @@ export class ExploreStore {
     brushCollection: ExtendedBrushCollection,
     affectedBrush: ExtendedBrush,
   ) => {
+    this.rootStore.provenanceActions.addBrushAction.setLabel(
+      `Add R. Brush: ${affectedBrush.points.length} points`,
+    );
+    this.provenance.apply(
+      this.rootStore.provenanceActions.addBrushAction(plot, brushCollection, affectedBrush),
+    );
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // const pointCount = affectedBrush.points.length;
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (
@@ -258,6 +292,14 @@ export class ExploreStore {
     brushCollection: ExtendedBrushCollection,
     affectedBrush: ExtendedBrush,
   ): void => {
+    this.rootStore.provenanceActions.changeBrushAction.setLabel(
+      `Change R. Brush: ${affectedBrush.points.length}`,
+    );
+    this.provenance.apply(
+      this.rootStore.provenanceActions.changeBrushAction(plot, brushCollection, affectedBrush),
+    );
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // const pointCount = affectedBrush.points.length;
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (
@@ -281,6 +323,12 @@ export class ExploreStore {
   };
 
   removeBrush = (plot: Plot, brushCollection: ExtendedBrushCollection): void => {
+    this.rootStore.provenanceActions.removeBrushAction.setLabel(`Remove R. Brush`);
+    this.provenance.apply(
+      this.rootStore.provenanceActions.removeBrushAction(plot, brushCollection),
+    );
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // const action = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
     //   (state: IntentState, plot: Plot, brushCollection: ExtendedBrushCollection) => {
     //     for (let i = 0; i < state.plots.length; ++i) {
@@ -298,6 +346,10 @@ export class ExploreStore {
   };
 
   clearAll = () => {
+    this.rootStore.provenanceActions.clearAllAction.setLabel(`Clear All`);
+    this.provenance.apply(this.rootStore.provenanceActions.clearAllAction());
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // const action = createAction<IntentState, any[], IntentEvents>((state: IntentState) => {
     //   for (let i = 0; i < state.plots.length; ++i) {
     //     state.plots[i].selectedPoints = [];
@@ -311,6 +363,24 @@ export class ExploreStore {
   };
 
   changeBrushType = (brushType: BrushType): void => {
+    let message = '';
+
+    switch (brushType) {
+      case 'Rectangular':
+      case 'Freeform Small':
+      case 'Freeform Medium':
+      case 'Freeform Large':
+        message = `${brushType === 'Rectangular' ? 'Rectangular' : 'Paint'} brush`;
+        break;
+      case 'None':
+      default:
+        message = 'Brushing disabled';
+    }
+
+    this.rootStore.provenanceActions.changeBrushTypeAction.setLabel(message);
+    this.provenance.apply(this.rootStore.provenanceActions.changeBrushTypeAction(brushType));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // let message = '';
     // switch (brushType) {
     //   case 'Rectangular':
@@ -336,6 +406,12 @@ export class ExploreStore {
   };
 
   invertSelection = (currentSelected: number[], all: number[]): void => {
+    this.rootStore.provenanceActions.changeBrushTypeAction.setLabel('Invert Selection');
+    this.provenance.apply(
+      this.rootStore.provenanceActions.changeBrushTypeAction(currentSelected, all),
+    );
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
     // const action = createAction<IntentState, any[], IntentEvents>(
     //   (state: IntentState, currentSelected: number[], all: number[]) => {
     //     const newSelection = all.filter((a) => !currentSelected.includes(a));

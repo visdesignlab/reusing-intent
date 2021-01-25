@@ -54,15 +54,25 @@ export type BundleMap = { [key: string]: Bundle };
 
 const useStyles = makeStyles(() => ({
   root: {
+    '.red': {
+      backgroundColor: '#ff8080',
+    },
+    '.green': {
+      backgroundColor: '#90EE90',
+    },
+    '.yellow': {
+      backgroundColor: '#ffff8b',
+    },
     display: 'grid',
     height: '100vh',
     width: '100vw',
     gridTemplateRows: 'min-content 1fr',
     overflow: 'hidden',
+    gridTemplateColumns: '2fr 2fr',
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 1.5fr 1.3fr .1fr',
+    gridTemplateColumns: '5fr 1.5fr 1.3fr',
     overflow: 'hidden',
   },
 }));
@@ -189,9 +199,10 @@ const App: FC = () => {
     addPlot(plot);
   });
 
-  if (!loadedDataset) return <Redirect to="/project" />;
+  const { provenance } = useContext(Store).exploreStore;
+  const { bundledNodes } = useContext(Store);
 
-  const { provenance, bundledNodes } = useContext(IntentStore)
+  if (!loadedDataset) return <Redirect to="/project" />;
 
   const bundle: BundleMap = {}
 
@@ -216,71 +227,68 @@ const App: FC = () => {
 
   return (
     <div className={classes.root}>
-
       <CssBaseline />
       <Navbar style={{ width: 1 }} />
       <div className={classes.layout}>
-        <Visualization />
-        {predictions.length > 0 && (
-          <div style={{ overflow: 'scroll', padding: '1em' }}>
-            <TableContainer component={Paper}>
-              <Table style={{ tableLayout: 'auto' }}>
-                <TableHead>
-                  <TableRow>
-                    <TableCell width="30%">Intent</TableCell>
-                    <TableCell width="70%">Rank</TableCell>
+      <Visualization />
+        <div style={{ overflow: 'scroll', padding: '1em' }}>
+          <TableContainer component={Paper}>
+            <Table style={{ tableLayout: 'auto' }}>
+              <TableHead>
+                <TableRow>
+                  <TableCell width="30%">Intent</TableCell>
+                  <TableCell width="70%">Rank</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {predictions.map((pred, i) => (
+                  <TableRow
+                    key={i}
+                    onMouseOut={() => {
+                      setMatchLegendVisibility(false);
+                      selectAll('.marks')
+                        .classed(regularForceMark, false)
+                        .classed(matches, false)
+                        .classed(isnp, false)
+                        .classed(ipns, false);
+                    }}
+                    onMouseOver={() => {
+                      setMatchLegendVisibility(true);
+                      const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.stats;
+                      selectAll('.marks').classed(regularForceMark, true);
+
+                      if (matchIds.length > 0)
+                        selectAll(matchIds.map((m: any) => `#mark${m}`).join(',')).classed(
+                          matches,
+                          true,
+                        );
+
+                      if (isnpIds.length > 0)
+                        selectAll(isnpIds.map((m: any) => `#mark${m}`).join(',')).classed(
+                          isnp,
+                          true,
+                        );
+
+                      if (ipnsIds.length > 0)
+                        selectAll(ipnsIds.map((m: any) => `#mark${m}`).join(',')).classed(
+                          ipns,
+                          true,
+                        );
+                    }}
+                  >
+                    <Tooltip title={JSON.stringify(pred.params, null, 2)}>
+                      <TableCell width="30%">{pred.intent}</TableCell>
+                    </Tooltip>
+                    <TableCell width="70%">{pred.rank}</TableCell>
                   </TableRow>
-                </TableHead>
-                <TableBody>
-                  {predictions.map((pred, i) => (
-                    <TableRow
-                      key={i}
-                      onMouseOut={() => {
-                        setMatchLegendVisibility(false);
-                        selectAll('.marks')
-                          .classed(regularForceMark, false)
-                          .classed(matches, false)
-                          .classed(isnp, false)
-                          .classed(ipns, false);
-                      }}
-                      onMouseOver={() => {
-                        setMatchLegendVisibility(true);
-                        const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.stats;
-                        selectAll('.marks').classed(regularForceMark, true);
-
-                        if (matchIds.length > 0)
-                          selectAll(matchIds.map((m: any) => `#mark${m}`).join(',')).classed(
-                            matches,
-                            true,
-                          );
-
-                        if (isnpIds.length > 0)
-                          selectAll(isnpIds.map((m: any) => `#mark${m}`).join(',')).classed(
-                            isnp,
-                            true,
-                          );
-
-                        if (ipnsIds.length > 0)
-                          selectAll(ipnsIds.map((m: any) => `#mark${m}`).join(',')).classed(
-                            ipns,
-                            true,
-                          );
-                      }}
-                    >
-                      <Tooltip title={JSON.stringify(pred.params, null, 2)}>
-                        <TableCell width="30%">{pred.intent}</TableCell>
-                      </Tooltip>
-                      <TableCell width="70%">{pred.rank}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </div>
-        )}
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </div>
         <ProvVis
           bundleMap={bundle}
-          changeCurrent={(nodeID) => provenance.goToNode(nodeID)}
+          changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
           ephemeralUndo={false}
           eventConfig={eventConfig}
