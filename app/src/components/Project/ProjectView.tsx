@@ -1,4 +1,12 @@
-import { AppBar, Button, createStyles, makeStyles, Toolbar, Typography, Switch } from '@material-ui/core';
+import {
+  AppBar,
+  Button,
+  createStyles,
+  makeStyles,
+  Switch,
+  Toolbar,
+  Typography,
+} from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { observer } from 'mobx-react';
@@ -8,7 +16,7 @@ import { Link } from 'react-router-dom';
 import Store from '../../Store/Store';
 import useDropdown from '../Dropdown';
 
-import {DatasetTable, ComparisonTable} from './DatasetTable';
+import { ComparisonTable, DatasetTable } from './DatasetTable';
 import UploadDatasetDialog from './UploadDatasetDialog';
 
 const useStyles = makeStyles(() =>
@@ -35,11 +43,16 @@ const useStyles = makeStyles(() =>
 
 const ProjectView = () => {
   const classes = useStyles();
-  const { currentProject, comparisonDatasetKey, loadedDatasetKey, loadDataset, loadComparisonDataset } = useContext(Store).projectStore;
+  const {
+    currentProject,
+    comparisonDatasetKey,
+    loadedDatasetKey,
+    loadDataset,
+    loadComparisonDataset,
+  } = useContext(Store).projectStore;
 
   const [openUploadDatasetDialog, setOpenUploadDatasetDialog] = useState(false);
   const [comparisonView, setComparisonView] = useState(false);
-
 
   const datasetOptions = useMemo(() => {
     const opts =
@@ -106,15 +119,14 @@ const ProjectView = () => {
             color="primary"
             inputProps={{ 'aria-label': 'secondary checkbox' }}
             name="checkedA"
-            onChange={() => 
-              {
-                setComparisonView(!comparisonView)
-              }}
+            onChange={() => {
+              setComparisonView(!comparisonView);
+            }}
           />
         </Toolbar>
       </AppBar>
-      <DatasetTable  columnNum={comparisonView ? 1 : 2}/>
-      {comparisonView ? <ComparisonTable /> : null}
+      <DatasetTable columnNum={comparisonView ? 1 : 2} />
+      {comparisonView && <ComparisonTable />}
       <UploadDatasetDialog
         handleClose={() => setOpenUploadDatasetDialog(false)}
         open={openUploadDatasetDialog}

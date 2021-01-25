@@ -1,12 +1,25 @@
-import { ColDef, XGrid, ValueFormatterParams, CellClassParams } from '@material-ui/x-grid';
-import React, { useContext, useMemo, useRef } from 'react';
+import { CellClassParams, ColDef, ValueFormatterParams, XGrid } from '@material-ui/x-grid';
+import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
 import { Dataset } from '../../Store/Dataset';
 import Store from '../../Store/Store';
 
- import HeaderDistribution from './HeaderDistribution';
+import HeaderDistribution from './HeaderDistribution';
 
-function useDataGridFormat(data: Dataset | null, comparisonDataset: Dataset | null, headerHeight = 56, firstTable: boolean) {
+function useDataGridFormat(
+  data: Dataset | null,
+  comparisonDataset: Dataset | null,
+  headerHeight = 56,
+  firstTable: boolean,
+) {
+  const st = useCallback((background) => {
+    return {
+      padding: 0,
+      width: '100%',
+      background,
+    };
+  }, []);
+
   const { rows = [], columns = [] } = useMemo(() => {
     if (!data) return { rows: [], columns: [] };
     // console.log(toJS(data));
@@ -30,51 +43,32 @@ function useDataGridFormat(data: Dataset | null, comparisonDataset: Dataset | nu
       },
 
       renderCell: (params: ValueFormatterParams) => {
-        console.log(params);
-
-        if (comparisonDataset === null)
-        {
+        if (comparisonDataset === null) {
           return <div>{params.value}</div>;
         }
 
-        const label = params.row.Label
-
-        console.log(JSON.parse(JSON.stringify(comparisonDataset)));
-        console.log(JSON.parse(JSON.stringify(params.row)));
+        const label = params.row.Label;
 
         const row = comparisonDataset.values.filter((d) => d.Label === label);
 
+        let color = 'none';
 
-        let color = 'none'
-
-        if(row.length === 0)
-        {
+        if (row.length === 0) {
           color = firstTable ? '#ff8080' : '#90EE90';
-        }
-        else if (!firstTable)
-        {
+        } else if (!firstTable) {
           const valueChange = params.getValue(params.field) !== row[0][params.field];
 
           // console.log(params.getValue(params.field));
           // console.log(row[0][params.field]);
 
-          if(valueChange) color = '#ffff8b';
+          if (valueChange) color = '#ffff8b';
         }
 
-
-        return (
-          <div style={{padding: 0, width: '100%', background: color }}>
-            {params.value}
-          </div>
-        );
-
+        return <div style={st(color)}>{params.value}</div>;
       },
       cellClassName: (params: CellClassParams) => {
         if (comparisonDataset === null) return 'none';
         const label = params.row.Label;
-
-        console.log(JSON.parse(JSON.stringify(comparisonDataset)));
-        console.log(JSON.parse(JSON.stringify(params.row)));
 
         const row = comparisonDataset.values.filter((d) => d.Label === label);
 
@@ -92,27 +86,27 @@ function useDataGridFormat(data: Dataset | null, comparisonDataset: Dataset | nu
         }
 
         return color;
-      }
+      },
     }));
 
     return { rows: values as any, columns: cols };
-  }, [data, comparisonDataset, headerHeight, firstTable]);
+  }, [data, comparisonDataset, headerHeight, firstTable, st]);
 
   return { rows, columns };
 }
 
 type paramType = {
-  columnNum:number;
-}
+  columnNum: number;
+};
 
-export const DatasetTable = (p:paramType) => {
+export const DatasetTable = (p: paramType) => {
   const ref = useRef<HTMLDivElement>(null);
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
   const { rows, columns } = useDataGridFormat(loadedDataset, comparisonDataset, headerHeight, true);
 
   return (
-    <div style={{gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum}}>
+    <div style={{ gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum }}>
       <XGrid
         ref={ref}
         columns={columns}
@@ -129,10 +123,15 @@ export const ComparisonTable = () => {
   const ref = useRef<HTMLDivElement>(null);
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
-  const { rows, columns } = useDataGridFormat(comparisonDataset, loadedDataset, headerHeight, false);
+  const { rows, columns } = useDataGridFormat(
+    comparisonDataset,
+    loadedDataset,
+    headerHeight,
+    false,
+  );
 
   return (
-    <div style={{gridColumnStart: 2, gridColumnEnd: 3}}>
+    <div style={{ gridColumnStart: 2, gridColumnEnd: 3 }}>
       <XGrid
         ref={ref}
         columns={columns}

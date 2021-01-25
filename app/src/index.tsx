@@ -9,7 +9,7 @@ import './index.css';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
-  exclude: [/XGrid|RowCells/g],
+  exclude: [/XGrid|RowCells|GridCell/],
 });
 
 const app = (
