@@ -10,14 +10,13 @@ from backend.server.database.schemas.algorithms.cluster import (
     KMeansCluster,
 )
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
+from backend.server.database.schemas.algorithms.regression import LinearRegression
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
-    dropAllTables,
     getEngine,
     getSessionScopeFromEngine,
     getSessionScopeFromId,
-    initializeDatabase,
 )
 from backend.server.routes.utils import handle_exception
 from backend.utils.hash import getUIDForFile
@@ -150,16 +149,11 @@ def predict(project: str, key: str):
 
             record_id = dataset_record.id
 
-            dataset = pd.read_sql(f"Dataset", con=conn)
+            dataset = pd.read_sql("Dataset", con=conn)
             dataset = dataset[dataset["record_id"] == str(record_id)]
             dataset = dataset.drop(columns=["record_id"])
 
             selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
-            # np.random.seed(2)
-            # selections = np.random.choice(
-            #     [0, 1], size=dataset.shape[0], p=[0.6, 0.4]
-            # ).tolist()
-            # sels = [i for i, x in enumerate(selections) if x == 1]
 
             kmeanscluster = (
                 session.query(KMeansCluster)
@@ -182,11 +176,19 @@ def predict(project: str, key: str):
                 .distinct(DBScanOutlier.output)
                 .all()
             )
+            linearregression = (
+                session.query(LinearRegression)
+                .filter(LinearRegression.record_id == record_id)
+                .filter(LinearRegression.dimensions == ",".join(dimensions))
+                .distinct(LinearRegression.output)
+                .all()
+            )
 
             algs = []
             algs.extend(kmeanscluster)
             algs.extend(dbscancluster)
             algs.extend(dbscanoutlier)
+            algs.extend(linearregression)
 
             for a in algs:
                 predictions.extend(a.predict(selections))
@@ -199,52 +201,6 @@ def predict(project: str, key: str):
                 pred["stats"] = getStats(pred["memberIds"], sels)
 
             return jsonify(predictions)
-
-    # session = getDBSession(id)
-    # engine = getEngine(id)
-    # try:
-    #     preds = []
-    #     dataset = pd.read_sql("Dataset", con=engine)
-    #     selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
-
-    #     kmeanscluster = (
-    #         session.query(KMeansCluster)
-    #         .filter(KMeansCluster.dimensions == ",".join(dimensions))
-    #         .distinct(KMeansCluster.output)
-    #         .all()
-    #     )
-    #     dbscancluster = (
-    #         session.query(DBScanCluster)
-    #         .filter(DBScanCluster.dimensions == ",".join(dimensions))
-    #         .distinct(DBScanCluster.output)
-    #         .all()
-    #     )
-    #     dbscanoutlier = (
-    #         session.query(DBScanOutlier)
-    #         .filter(DBScanOutlier.dimensions == ",".join(dimensions))
-    #         .distinct(DBScanOutlier.output)
-    #         .all()
-    #     )
-
-    #     algs = []
-    #     algs.extend(kmeanscluster)
-    #     algs.extend(dbscancluster)
-    #     algs.extend(dbscanoutlier)
-
-    #     for a in algs:
-    #         preds.extend(a.predict(selections))
-
-    #     preds = filter(lambda x: x["rank"] > 0.05, preds)
-    #     preds = list(sorted(preds, key=lambda x: x["rank"], reverse=True))
-
-    #     for pred in preds:
-    #         pred["stats"] = getStats(pred["memberIds"], sels)
-
-    #     return jsonify(preds)
-    # except Exception as ex:
-    #     return jsonify(str(ex))
-    # finally:
-    #     session.close()
 
 
 def getStats(members, sels):

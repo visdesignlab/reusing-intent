@@ -17,6 +17,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.6",
     "@visdesignlab/trrack": "^2.0.0-alpha.5",
+    "@visdesignlab/trrack-vis": "^2.0.0-alpha.9",
     "@welldone-software/why-did-you-render": "^6.0.3",
     "axios": "^0.21.0",
     "d3": "^6.2.0",
