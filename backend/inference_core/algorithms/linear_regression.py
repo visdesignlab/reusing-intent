@@ -53,13 +53,7 @@ def computeLR(data: pd.DataFrame):
 
         ndf["Filter"] = within
 
-    within = ndf["Filter"]
-    result = pd.concat([within, within ^ 1], axis=1)  # type: ignore
-
-    result.columns = ["LR:within", "LR:outside"]
-
-    within_idx = result.index[result.loc[:, "LR:within"]].tolist()  # type: ignore
-    outside_idx = result.index[result.loc[:, "LR:outside"]].tolist()  # type: ignore
+    within = ndf["Filter"].astype(int)  # type: ignore
 
     coeffs = X_scaler.inverse_transform(np.array(reg.coef_).reshape(-1, 1))[0].tolist()  # type: ignore
     intercept = Y_scaler.inverse_transform(np.array(reg.intercept_).reshape(-1, 1))[0][  # type: ignore
@@ -70,7 +64,7 @@ def computeLR(data: pd.DataFrame):
 
     return [
         (
-            ",".join(map(str, within_idx)),
+            ",".join(map(str, within.tolist())),
             json.dumps(
                 {
                     "threshold": threshold,
@@ -79,16 +73,5 @@ def computeLR(data: pd.DataFrame):
                     "type": "within",
                 }
             ),
-        ),
-        (
-            ",".join(map(str, outside_idx)),
-            json.dumps(
-                {
-                    "threshold": threshold,
-                    "coeff": coeffs,
-                    "intercept": intercept,
-                    "type": "outside",
-                }
-            ),
-        ),
+        )
     ]
