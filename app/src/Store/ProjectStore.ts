@@ -99,7 +99,7 @@ export class ProjectStore {
 
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
-        this.rootStore.exploreStore.changeDataset(datasetKey);
+        // this.rootStore.exploreStore.changeDataset(datasetKey);
         this.comparisonDatasetKey = datasetKey;
         this.comparisonDataset = response.data;
       }),

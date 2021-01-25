@@ -28,6 +28,7 @@ const useStyles = makeStyles(() =>
       display: 'grid',
       height: '100vh',
       gridTemplateRows: 'min-content 1fr',
+      gridTemplateColumns: '2fr 2fr',
     },
   }),
 );
@@ -102,9 +103,13 @@ const ProjectView = () => {
           </Button>
           <Switch
             checked={comparisonView}
+            color="primary"
             inputProps={{ 'aria-label': 'secondary checkbox' }}
             name="checkedA"
-            onChange={() => setComparisonView(!comparisonView)}
+            onChange={() => 
+              {
+                setComparisonView(!comparisonView)
+              }}
           />
         </Toolbar>
       </AppBar>

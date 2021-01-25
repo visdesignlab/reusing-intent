@@ -68,7 +68,6 @@ const useStyles = makeStyles(() => ({
     width: '100vw',
     gridTemplateRows: 'min-content 1fr',
     overflow: 'hidden',
-    gridTemplateColumns: '2fr 2fr',
   },
   layout: {
     display: 'grid',
@@ -228,7 +227,7 @@ const App: FC = () => {
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <Navbar style={{ width: 1 }} />
+      <Navbar style={{ }} />
       <div className={classes.layout}>
       <Visualization />
         <div style={{ overflow: 'scroll', padding: '1em' }}>
