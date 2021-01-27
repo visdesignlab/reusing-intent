@@ -67,3 +67,57 @@ def createProject(key: str):
         return handle_exception(ex)
     finally:
         session.close()
+
+
+@projectRoute.route("/project/<project>/provenance", methods=["POST"])
+def processProvenance(project):
+    graph = request.json
+    nodes = graph["nodes"]
+    current_id = graph["current"]
+
+    interactions = []
+
+    current = nodes[current_id]
+
+    while True:
+        interactions.append(current)
+        if "parent" in current:
+            current = nodes[current["parent"]]
+        else:
+            break
+
+    interactions = list(reversed(interactions))
+
+    actions = []
+
+    for interaction in interactions:
+        if "diffs" in interaction:
+            del interaction["diffs"]
+        label = interaction["label"]
+        if label == "Root" or "Change Dataset" in label:
+            continue
+        state = interaction["state"]
+        if "Add Plot" in label:
+            actions.append(
+                {
+                    "type": "Add Plot",
+                    "x": state["plots"][0]["x"],
+                    "y": state["plots"][0]["y"],
+                }
+            )
+        if "Brush" in label:
+            actions.append(
+                {
+                    "type": "Point Selection",
+                    "selectedPoints": state["plots"][0]["selectedPoints"],
+                }
+            )
+        if "Prediction" in label:
+            actions.append(
+                {
+                    "type": "Prediction Selection",
+                    "prediction": state["selectedPrediction"],
+                }
+            )
+
+    return jsonify(actions)

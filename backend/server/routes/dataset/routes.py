@@ -132,7 +132,7 @@ def getDatasetByKey(project: str, key: str):
 
 @datasetRoute.route("/<project>/dataset/predict/<key>", methods=["POST"])
 def predict(project: str, key: str):
-    sels = request.json["selections"]
+    selectedIds = request.json["selections"]
     dimensions = sorted(request.json["dimensions"])
     engine = getEngine(project)
     with engine.begin() as conn:
@@ -153,7 +153,9 @@ def predict(project: str, key: str):
             dataset = dataset[dataset["record_id"] == str(record_id)]
             dataset = dataset.drop(columns=["record_id"])
 
-            selections = [1 if i in sels else 0 for i in range(dataset.shape[0])]
+            selections = [
+                1 if i in selectedIds else 0 for i in dataset["id"].values.tolist()
+            ]
 
             kmeanscluster = (
                 session.query(KMeansCluster)
@@ -191,14 +193,14 @@ def predict(project: str, key: str):
             algs.extend(linearregression)
 
             for a in algs:
-                predictions.extend(a.predict(selections))
+                predictions.extend(a.predict(selections, dataset["id"]))
 
             predictions = list(
                 sorted(predictions, key=lambda x: x["rank"], reverse=True)
             )
 
             for pred in predictions:
-                pred["stats"] = getStats(pred["memberIds"], sels)
+                pred["stats"] = getStats(pred["memberIds"], selectedIds)
 
             return jsonify(predictions)
 
@@ -209,5 +211,4 @@ def getStats(members, sels):
         "isnp": list(set(sels) - set(members)),
         "matches": list(set(sels).intersection(set(members))),
     }
-
     return stats

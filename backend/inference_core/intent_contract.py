@@ -5,6 +5,6 @@ class Prediction(TypedDict):
     rank: float
     intent: str
     algorithm: str
-    memberIds: List[int]
+    memberIds: List[str]
     dimensions: List[str]
     params: dict

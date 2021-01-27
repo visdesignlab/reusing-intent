@@ -22,7 +22,7 @@ class RegressionBase(IntentBase):
 
         return df
 
-    def predict(self, selection: List[int]):
+    def predict(self, selection: List[int], ids):
         output = self.processOutput()
         sels = np.array(selection)
 
@@ -30,7 +30,7 @@ class RegressionBase(IntentBase):
             Prediction(
                 rank=rank_jaccard(vals.values, sels),
                 intent=str(col),
-                memberIds=self.getMemberIds(vals.values),
+                memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
                 params=self.getParams(),
                 algorithm=self.algorithm,

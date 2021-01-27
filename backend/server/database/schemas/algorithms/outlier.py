@@ -19,10 +19,10 @@ class OutlierBase(IntentBase):
         arr[:, 0] = [1 if x == -1 else 0 for x in output]
         arr[:, 1] = [1 if x != -1 else 0 for x in output]
 
-        df = pd.DataFrame(arr, columns=["Outlier", "Non_Outliers"])
+        df = pd.DataFrame(arr, columns=["Outlier", "NonOutlier"])
         return df
 
-    def predict(self, selection: List[int]) -> List[Prediction]:
+    def predict(self, selection: List[int], ids) -> List[Prediction]:
         output = self.processOutput()
         sels = np.array(selection)
 
@@ -30,7 +30,7 @@ class OutlierBase(IntentBase):
             Prediction(
                 rank=rank_jaccard(vals.values, sels),
                 intent=str(col),
-                memberIds=self.getMemberIds(vals.values),
+                memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
                 params=self.getParams(),
                 algorithm=self.algorithm,
