@@ -208,3 +208,4 @@ yarn.lock
 .vscode
 !.vscode/terminals.json
 dump.rdb
+.eslintcache
