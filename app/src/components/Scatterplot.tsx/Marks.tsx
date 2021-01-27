@@ -5,8 +5,8 @@ import React, { FC } from 'react';
 import useScatterplotStyle from './styles';
 
 type Props = {
-  points: { x: number; y: number; label: string }[];
-  selectedPoints: number[];
+  points: { x: number; y: number; label: string; id: string }[];
+  selectedPoints: string[];
   xScale: ScaleLinear<number, number>;
   yScale: ScaleLinear<number, number>;
 };
@@ -16,16 +16,16 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale }: Props) => 
 
   return (
     <>
-      {points.map((point, i) => {
+      {points.map((point) => {
         return (
           <circle
             key={point.label}
             className={`marks ${
-              selectedPoints.includes(i) ? classes.unionMark : classes.regularMark
+              selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
             }`}
             cx={xScale(point.x as number)}
             cy={yScale(point.y as number)}
-            id={`mark${i}`}
+            id={`mark${point.id}`}
             opacity="0.5"
             r="5"
           />

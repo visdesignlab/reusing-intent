@@ -25,7 +25,7 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-const Navbar: FC<{ style: any }> = ({ style }) => {
+const Navbar: FC = () => {
   const classes = useStyles();
   const store = useContext(Store);
 
@@ -52,7 +52,7 @@ const Navbar: FC<{ style: any }> = ({ style }) => {
   );
 
   return (
-    <div style={style}>
+    <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
           <AddPlot />
@@ -75,6 +75,7 @@ const Navbar: FC<{ style: any }> = ({ style }) => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 (Navbar as any).whyDidYouRender = {
   logOnDifferentValues: true,
 };

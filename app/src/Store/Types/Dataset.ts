@@ -44,7 +44,7 @@ export type ColumnInfo = { [key: string]: Column };
 
 export type DatasetColumn = string;
 
-export type DataPoint = { [key in DatasetColumn]: string | number };
+export type DataPoint = { id: string; [key: string]: string | number };
 
 // export type Dataset = {
 //   columns: Columns;

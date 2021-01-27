@@ -1,15 +1,15 @@
 import { extent } from 'd3';
 import { useContext, useMemo } from 'react';
 
-import { DatasetColumn } from '../../Store/Dataset';
 import Store from '../../Store/Store';
+import { DatasetColumn } from '../../Store/Types/Dataset';
 
 export function useScatterplotData(
   x: DatasetColumn,
   y: DatasetColumn,
   label: DatasetColumn,
 ): {
-  points: { x: number; y: number; label: string; id: number }[];
+  points: { x: number; y: number; label: string; id: string }[];
   x_extents: [number, number];
   y_extents: [number, number];
 } {
@@ -17,8 +17,8 @@ export function useScatterplotData(
   const dt =
     useMemo(() => {
       const points =
-        data?.values.map((d, id) => ({
-          id,
+        data?.values.map((d) => ({
+          id: d['id'] as string,
           x: d[x] as number,
           y: d[y] as number,
           label: d[label] as string,

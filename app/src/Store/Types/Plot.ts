@@ -1,4 +1,4 @@
-import { Brush } from '../components/Brush/Types/Brush';
+import { Brush } from '../../components/Brush/Types/Brush';
 
 import { DatasetColumn } from './Dataset';
 
@@ -13,7 +13,7 @@ export type Plot = {
   x: DatasetColumn;
   y: DatasetColumn;
   brushes: ExtendedBrushCollection;
-  selectedPoints: number[];
+  selectedPoints: string[];
 };
 
 export type Plots = Plot[];

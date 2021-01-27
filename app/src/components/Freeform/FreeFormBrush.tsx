@@ -28,10 +28,12 @@ export type FreeformBrushEvent = 'Start' | 'Brushing' | 'End';
 export type FreeformBrushAction = 'Selection' | 'Deselection';
 
 type BrushHandler = (
-  points: number[],
+  points: string[],
   event: FreeformBrushEvent,
   action: FreeformBrushAction,
 ) => void;
+
+type BrushData = { x: number; y: number; id: string; [other: string]: unknown };
 
 type Props = {
   left: number;
@@ -42,7 +44,7 @@ type Props = {
   xScale: ScaleLinear<number, number>;
   yScale: ScaleLinear<number, number>;
   onBrush: BrushHandler;
-  data: { x: number; y: number; id: number }[];
+  data: BrushData[];
 };
 
 function isInCircle(
@@ -59,41 +61,44 @@ function isInCircle(
 
 function useQuadSearch(
   searchArea: { left: number; top: number; width: number; height: number },
-  data: { x: number; y: number; id: number }[],
+  data: BrushData[],
   xScale: ScaleLinear<number, number>,
   yScale: ScaleLinear<number, number>,
 ) {
   const { left, top, width, height } = searchArea;
   const quadTree = useMemo(() => {
-    const qt = quadtree()
+    const qt = quadtree<BrushData>()
       .extent([
         [left - 1, top - 1],
         [width + 1, height + 1],
       ])
-      .x((d: any) => xScale(d.x))
-      .y((d: any) => yScale(d.y))
-      .addAll(data as any);
+      .x((d) => xScale(d.x))
+      .y((d) => yScale(d.y))
+      .addAll(data);
 
     return qt;
   }, [left, top, width, height, data, xScale, yScale]);
 
   const search = (x: number, y: number, radius: number) => {
     const [x0, x3, y0, y3] = [x - radius, x + radius, y - radius, y + radius];
-    const selectedNodes: number[] = [];
+    const selectedNodes: string[] = [];
+    // TODO: Figure out the types for this
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     quadTree.visit((node: any, x1, y1, x2, y2) => {
       if (!node.length) {
+        let newNode = node;
         do {
           const {
             data: d,
             data: { x: cx, y: cy },
-          } = node;
+          } = newNode;
 
           const isSelected = isInCircle({ x, y }, radius, { x: xScale(cx), y: yScale(cy) });
 
           if (isSelected) {
             selectedNodes.push(d.id);
           }
-        } while ((node = node.next));
+        } while ((newNode = newNode.next));
       }
 
       return x1 >= x3 || y1 >= y3 || x2 < x0 || y2 < y0;
@@ -119,7 +124,7 @@ const FreeFormBrush: FC<Props> = ({
   const { brushStyle, brushDown, brushHide } = useStyles();
   const brushRef = useRef<SVGCircleElement>(null);
   const layerRef = useRef<SVGRectElement>(null);
-  const selectedPointsRef = useRef<number[]>([]);
+  const selectedPointsRef = useRef<string[]>([]);
 
   const brushSize: BrushSize = '20';
 

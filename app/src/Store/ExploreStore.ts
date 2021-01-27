@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createAction, initProvenance, NodeID, Provenance } from '@visdesignlab/trrack';
-import Axios from 'axios';
+import { getState, initProvenance, NodeID } from '@visdesignlab/trrack';
+import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable } from 'mobx';
 
 import { BrushType, defaultState, IntentState } from './IntentState';
-import { ExtendedBrush, ExtendedBrushCollection, Plot, Plots } from './Plot';
-import { ProjectList } from './ProjectStore';
-import { IntentEvents, Predictions } from './Provenance';
 import { RootStore } from './Store';
+import { IntentEvents } from './Types/IntentEvents';
+import { ExtendedBrush, ExtendedBrushCollection, Plot, Plots } from './Types/Plot';
+import { Prediction, Predictions } from './Types/Prediction';
+import { IntentProvenance } from './Types/ProvenanceType';
 
 export class ExploreStore {
   rootStore: RootStore;
-  projects: ProjectList = [];
-  provenance: Provenance<IntentState, IntentEvents, Predictions>;
+  provenance: IntentProvenance;
   plots: Plots = [];
   showCategories = false;
   categoryColumn = '';
   isLoadingData = false;
-  predictions: any[] = [];
+  predictions: Predictions = [];
+  selectedPrediction: Prediction | null = null;
   showMatchesLegend = false;
 
   constructor(rootStore: RootStore) {
@@ -25,6 +26,20 @@ export class ExploreStore {
     this.provenance = initProvenance<IntentState, IntentEvents, Predictions>(defaultState, {
       loadFromUrl: false,
     });
+    this.provenance.addGlobalObserver((graph) => {
+      if (!graph) return;
+      const current = graph.nodes[graph.current];
+
+      Object.entries(graph.nodes).forEach((entry) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [key, val]: [string, any] = entry;
+
+        val['state'] = getState(graph, val);
+
+        graph.nodes[key] = val;
+      });
+    });
+
     this.provenance.done();
     makeAutoObservable(this, {
       provenance: false,
@@ -51,7 +66,7 @@ export class ExploreStore {
     return loadedDataset;
   }
 
-  setFreeformSelection = (plot: Plot, points: number[]) => {
+  setFreeformSelection = (plot: Plot, points: string[]) => {
     this.addPointSelection(plot, points, true);
 
     this.plots.forEach((plt) => {
@@ -71,11 +86,17 @@ export class ExploreStore {
         dimensions,
       },
     ).then(
-      action((response: any) => {
+      action((response: AxiosResponse<Predictions>) => {
         const { data = [] } = response;
         this.predictions = data;
       }),
     );
+  };
+
+  setPredictionSelection = (prediction: Prediction) => {
+    this.selectedPrediction = prediction;
+    this.rootStore.provenanceActions.addPredictionSelection.setLabel('Prediction Selection');
+    this.provenance.apply(this.rootStore.provenanceActions.addPredictionSelection(prediction));
   };
 
   setBrush = (plot: Plot, brushes: ExtendedBrushCollection) => {
@@ -85,11 +106,14 @@ export class ExploreStore {
   };
 
   get selectedPoints() {
-    const selectedPoints: number[] = [];
+    let selectedPoints: string[] = [];
 
     this.plots.forEach((plot) => {
       selectedPoints.push(...plot.selectedPoints);
     });
+
+    if (this.selectedPrediction)
+      selectedPoints = [...selectedPoints, ...this.selectedPrediction.memberIds];
 
     return Array.from(new Set(selectedPoints));
   }
@@ -200,7 +224,7 @@ export class ExploreStore {
     // this.provenance.apply(action(show, categories));
   };
 
-  addPointSelection = (plot: Plot, points: number[], isPaintBrush = false) => {
+  addPointSelection = (plot: Plot, points: string[], isPaintBrush = false) => {
     if (points.length === 0) return;
 
     this.rootStore.provenanceActions.addPointSelectionAction.setLabel(
@@ -209,27 +233,9 @@ export class ExploreStore {
     this.provenance.apply(this.rootStore.provenanceActions.addPointSelectionAction(plot, points));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
-
-    // const action = createAction<IntentState, any[], IntentEvents>(
-    //   (state: IntentState, plot: Plot, points: number[]) => {
-    //     for (let i = 0; i < state.plots.length; ++i) {
-    //       if (plot.id === state.plots[i].id) {
-    //         const pts = state.plots[i].selectedPoints;
-    //         state.plots[i].selectedPoints = [...pts, ...points];
-    //         break;
-    //       }
-    //     }
-    // addPointSelectionInteraction(state, plot, points);
-    //   },
-    // );
-
-    // action.setLabel(isPaintBrush ? `P. Brush: ${points.length}` : `Add Point Selection`);
-    // action.setEventType('Point Selection');
-
-    // this.provenance.apply(action(plot, points));
   };
 
-  removePointSelection = (plot: Plot, points: number[]) => {
+  removePointSelection = (plot: Plot, points: string[]) => {
     this.rootStore.provenanceActions.removePointSelectionAction.setLabel('Unselect Points');
     this.provenance.apply(
       this.rootStore.provenanceActions.removePointSelectionAction(plot, points),
@@ -405,10 +411,10 @@ export class ExploreStore {
     // this.provenance.apply(action(brushType));
   };
 
-  invertSelection = (currentSelected: number[], all: number[]): void => {
-    this.rootStore.provenanceActions.changeBrushTypeAction.setLabel('Invert Selection');
+  invertSelection = (currentSelected: string[], all: string[]): void => {
+    this.rootStore.provenanceActions.invertSelectionAction.setLabel('Invert Selection');
     this.provenance.apply(
-      this.rootStore.provenanceActions.changeBrushTypeAction(currentSelected, all),
+      this.rootStore.provenanceActions.invertSelectionAction(currentSelected, all),
     );
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);

@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
-import { CategoricalDistribution, Column } from '../../Store/Dataset';
+import { CategoricalDistribution, Column } from '../../Store/Types/Dataset';
 
 type CategoricalHeaderProps = {
   info: CategoricalDistribution;
@@ -31,8 +31,6 @@ const HeaderDistribution: FC<Props> = ({ column, width, height }: Props) => {
   const { dataType, fullname } = column;
 
   if (dataType === 'id' || dataType === 'label') return <>{fullname}</>;
-
-  console.log(column.dataType);
 
   if (column.dataType === 'categorical')
     return <CategoricalHeader height={height} info={column.info} width={width} />;

@@ -1,8 +1,9 @@
 import { createAction } from '@visdesignlab/trrack';
 
 import { BrushType, IntentState } from './IntentState';
-import { ExtendedBrush, ExtendedBrushCollection, Plot, Plots } from './Plot';
-import { IntentEvents } from './Provenance';
+import { IntentEvents } from './Types/IntentEvents';
+import { ExtendedBrush, ExtendedBrushCollection, Plot, Plots } from './Types/Plot';
+import { Prediction } from './Types/Prediction';
 
 export const provenanceActions = {
   addPlotAction: createAction<IntentState, [Plot], IntentEvents>(
@@ -43,8 +44,8 @@ export const provenanceActions = {
       }
     },
   ).setEventType('Switch Category Visibility'),
-  addPointSelectionAction: createAction<IntentState, [Plot, number[]], IntentEvents>(
-    (state: IntentState, plot: Plot, points: number[]) => {
+  addPointSelectionAction: createAction<IntentState, [Plot, string[]], IntentEvents>(
+    (state: IntentState, plot: Plot, points: string[]) => {
       for (let i = 0; i < state.plots.length; ++i) {
         if (plot.id === state.plots[i].id) {
           const pts = state.plots[i].selectedPoints;
@@ -54,8 +55,17 @@ export const provenanceActions = {
       }
     },
   ).setEventType('Point Selection'),
-  removePointSelectionAction: createAction<IntentState, [Plot, number[]], IntentEvents>(
-    (state: IntentState, plot: Plot, points: number[]) => {
+  addPredictionSelection: createAction<IntentState, [Prediction], IntentEvents>(
+    (state: IntentState, prediction: Prediction) => {
+      state.plots.forEach((plot) => {
+        plot.brushes = {};
+        plot.selectedPoints = [];
+      });
+      state.selectedPrediction = prediction;
+    },
+  ).setEventType('Prediction Selection'),
+  removePointSelectionAction: createAction<IntentState, [Plot, string[]], IntentEvents>(
+    (state: IntentState, plot: Plot, points: string[]) => {
       for (let i = 0; i < state.plots.length; ++i) {
         if (plot.id === state.plots[i].id) {
           const pts = state.plots[i].selectedPoints;
@@ -126,8 +136,8 @@ export const provenanceActions = {
       state.brushType = brushType;
     },
   ).setEventType('Change Selected Brush'),
-  invertSelectionAction: createAction<IntentState, [number[], number[]], IntentEvents>(
-    (state: IntentState, currentSelected: number[], all: number[]) => {
+  invertSelectionAction: createAction<IntentState, [string[], string[]], IntentEvents>(
+    (state: IntentState, currentSelected: string[], all: string[]) => {
       const newSelection = all.filter((a) => !currentSelected.includes(a));
 
       for (let i = 0; i < state.plots.length; ++i) {
@@ -140,11 +150,4 @@ export const provenanceActions = {
       }
     },
   ).setEventType('Invert'),
-  // multiBrushAction: createAction<IntentState, [MultiBrushBehaviour], IntentEvents>(
-  //   (state: IntentState, brushBehaviour: MultiBrushBehaviour) => {
-  //     state.multiBrushBehaviour = brushBehaviour;
-
-  //     return state;
-  //   }
-  // ).setEventType("MultiBrush")
 };

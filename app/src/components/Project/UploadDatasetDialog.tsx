@@ -16,8 +16,8 @@ import React, { ChangeEvent, FC, useCallback, useContext, useState } from 'react
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { SERVER } from '../../consts';
-import { Project } from '../../Store/ProjectStore';
 import Store from '../../Store/Store';
+import { Project } from '../../Store/Types/Project';
 
 import StatusBars from './StatusBars';
 

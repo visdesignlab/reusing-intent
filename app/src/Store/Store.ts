@@ -10,14 +10,13 @@ export class RootStore {
   projectStore: ProjectStore;
   exploreStore: ExploreStore;
   //FIX THIS
-  provenanceActions: any;
+  provenanceActions = provenanceActions;
   currentNodes: string[];
   bundledNodes: string[][];
 
   constructor() {
     this.projectStore = new ProjectStore(this);
     this.exploreStore = new ExploreStore(this);
-    this.provenanceActions = provenanceActions
     this.currentNodes = [];
     this.bundledNodes = [];
   }

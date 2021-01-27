@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   CssBaseline,
+  IconButton,
   makeStyles,
   Paper,
   Table,
@@ -11,19 +12,13 @@ import {
   TableRow,
   Tooltip,
 } from '@material-ui/core';
+import TouchAppIcon from '@material-ui/icons/TouchApp';
+import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
-import { ProvVis, EventConfig } from '@visdesignlab/trrack-vis';
 
-import Navbar from './components/Navbar';
-import useScatterplotStyle from './components/Scatterplot.tsx/styles';
-import Visualization from './components/Visualization';
-import { Plot } from './Store/Plot';
-import Store from './Store/Store';
-import { getPlotId } from './Utils/IDGens';
-import { IntentEvents } from './Store/Provenance';
 import {
   AddBrush,
   AddPlot,
@@ -42,15 +37,21 @@ import {
   SwitchCategoryVisibility,
   TurnPrediction,
 } from './components/Icons';
+import Navbar from './components/Navbar';
+import useScatterplotStyle from './components/Scatterplot.tsx/styles';
+import Visualization from './components/Visualization';
+import Store from './Store/Store';
+import { IntentEvents } from './Store/Types/IntentEvents';
+import { Plot } from './Store/Types/Plot';
+import { getPlotId } from './Utils/IDGens';
 
 export type Bundle = {
-  metadata: any;
+  metadata: unknown;
   bundleLabel: string;
   bunchedNodes: string[];
 };
 
 export type BundleMap = { [key: string]: Bundle };
-
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -71,7 +72,7 @@ const useStyles = makeStyles(() => ({
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 1.5fr 1.3fr',
+    gridTemplateColumns: '5fr 2fr 1.3fr',
     overflow: 'hidden',
   },
 }));
@@ -175,13 +176,17 @@ const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-
-
 const App: FC = () => {
   const classes = useStyles();
   const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
   const {
-    exploreStore: { predictions, n_plots, addPlot, setMatchLegendVisibility },
+    exploreStore: {
+      predictions,
+      n_plots,
+      addPlot,
+      setMatchLegendVisibility,
+      setPredictionSelection,
+    },
     projectStore: { loadedDataset },
   } = useContext(Store);
 
@@ -203,45 +208,40 @@ const App: FC = () => {
 
   if (!loadedDataset) return <Redirect to="/project" />;
 
-  const bundle: BundleMap = {}
+  const bundle: BundleMap = {};
 
-  console.log(JSON.parse(JSON.stringify(bundledNodes)))
-
-  for(const j of bundledNodes){
-    if (j.length === 0 )
-    {
+  for (const j of bundledNodes) {
+    if (j.length === 0) {
       continue;
     }
-    console.log(j)
     bundle[j[0]] = {
       metadata: '',
       bundleLabel: '',
-      bunchedNodes: j
-    }
+      bunchedNodes: j,
+    };
   }
-
-  console.log(bundle);
-
-  console.log(provenance.graph)
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <Navbar style={{ }} />
+      <Navbar />
       <div className={classes.layout}>
-      <Visualization />
+        <Visualization />
         <div style={{ overflow: 'scroll', padding: '1em' }}>
           <TableContainer component={Paper}>
             <Table style={{ tableLayout: 'auto' }}>
               <TableHead>
                 <TableRow>
                   <TableCell width="30%">Intent</TableCell>
-                  <TableCell width="70%">Rank</TableCell>
+                  <TableCell width="60%">Rank</TableCell>
+                  <TableCell width="10%" />
                 </TableRow>
               </TableHead>
               <TableBody>
                 {predictions.map((pred, i) => (
                   <TableRow
+                    // TODO: Add a uid for prediction on backend and then use that
+                    // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     onMouseOut={() => {
                       setMatchLegendVisibility(false);
@@ -257,28 +257,27 @@ const App: FC = () => {
                       selectAll('.marks').classed(regularForceMark, true);
 
                       if (matchIds.length > 0)
-                        selectAll(matchIds.map((m: any) => `#mark${m}`).join(',')).classed(
+                        selectAll(matchIds.map((m) => `#mark${m}`).join(',')).classed(
                           matches,
                           true,
                         );
 
                       if (isnpIds.length > 0)
-                        selectAll(isnpIds.map((m: any) => `#mark${m}`).join(',')).classed(
-                          isnp,
-                          true,
-                        );
+                        selectAll(isnpIds.map((m) => `#mark${m}`).join(',')).classed(isnp, true);
 
                       if (ipnsIds.length > 0)
-                        selectAll(ipnsIds.map((m: any) => `#mark${m}`).join(',')).classed(
-                          ipns,
-                          true,
-                        );
+                        selectAll(ipnsIds.map((m) => `#mark${m}`).join(',')).classed(ipns, true);
                     }}
                   >
-                    <Tooltip title={JSON.stringify(pred.params, null, 2)}>
+                    <Tooltip title={JSON.stringify(pred.info, null, 2)}>
                       <TableCell width="30%">{pred.intent}</TableCell>
                     </Tooltip>
-                    <TableCell width="70%">{pred.rank}</TableCell>
+                    <TableCell width="60%">{pred.rank}</TableCell>
+                    <TableCell width="10%">
+                      <IconButton onClick={() => setPredictionSelection(pred)}>
+                        <TouchAppIcon />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

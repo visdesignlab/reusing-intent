@@ -3,8 +3,8 @@ import { select } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext } from 'react';
 
-import { Plot } from '../../Store/Plot';
 import Store from '../../Store/Store';
+import { Plot } from '../../Store/Types/Plot';
 import translate from '../../Utils/Translate';
 import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
@@ -53,7 +53,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   const yScale = useScale(y_extents, [sp_dimension, 0]);
 
   const freeFormBrushHandler = useCallback(
-    (points: number[], event: FreeformBrushEvent, _: FreeformBrushAction) => {
+    (points: string[], event: FreeformBrushEvent, _: FreeformBrushAction) => {
       if (points.length === 0) return;
       const selectorString = points.map((p) => `#mark${p}`).join(',');
 
@@ -76,15 +76,6 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     [plot, setFreeformSelection, classes],
   );
 
-  // const onRectBrush = useCallback(
-  //   (brush: Brush) => {
-  //     const { brushes } = plot;
-  //     brushes[brush.id] = brush as any;
-  //     setBrush(plot, brushes);
-  //   },
-  //   [plot, setBrush],
-  // );
-
   return (
     <svg className={root} id={plot.id}>
       <g transform={translate(margin)}>
@@ -94,7 +85,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
         <FreeFormBrush
           bottom={sp_dimension}
-          data={points as any}
+          data={points}
           left={0}
           right={sp_dimension}
           top={0}

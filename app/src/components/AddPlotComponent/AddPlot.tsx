@@ -12,8 +12,8 @@ import DoneIcon from '@material-ui/icons/Done';
 import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext, useState } from 'react';
 
-import { Plot } from '../../Store/Plot';
 import Store from '../../Store/Store';
+import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
 import useDropdown from '../Dropdown';
 

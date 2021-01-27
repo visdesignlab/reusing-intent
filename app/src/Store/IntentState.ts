@@ -1,7 +1,8 @@
 import { Brush } from '../components/Brush/Types/Brush';
-import { InteractionHistory, Prediction } from '../contract';
 
-import { Plot, Plots } from './Plot';
+import { Interactions } from './Types/Interactions';
+import { Plot, Plots } from './Types/Plot';
+import { Prediction } from './Types/Prediction';
 
 export type MultiBrushBehaviour = 'Union' | 'Intersection';
 
@@ -41,11 +42,11 @@ export type IntentState = {
   multiBrushBehaviour: MultiBrushBehaviour;
   plots: Plots;
   //only store your own interaction
-  interactionHistory: InteractionHistory;
+  interactions: Interactions;
   brushType: BrushType;
 
   //create interaction type for this
-  lockedPrediction: Prediction | null;
+  selectedPrediction: Prediction | null;
 };
 
 export const defaultState: IntentState = {
@@ -54,7 +55,7 @@ export const defaultState: IntentState = {
   showCategories: true,
   categoryColumn: '',
   plots: [],
-  interactionHistory: [],
+  interactions: [],
   brushType: 'Freeform Medium',
-  lockedPrediction: null,
+  selectedPrediction: null,
 };

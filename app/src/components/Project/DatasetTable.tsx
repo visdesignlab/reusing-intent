@@ -1,8 +1,8 @@
 import { CellClassParams, ColDef, ValueFormatterParams, XGrid } from '@material-ui/x-grid';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
-import { Dataset } from '../../Store/Dataset';
 import Store from '../../Store/Store';
+import { Dataset } from '../../Store/Types/Dataset';
 
 import HeaderDistribution from './HeaderDistribution';
 
@@ -89,7 +89,7 @@ function useDataGridFormat(
       },
     }));
 
-    return { rows: values as any, columns: cols };
+    return { rows: values, columns: cols };
   }, [data, comparisonDataset, headerHeight, firstTable, st]);
 
   return { rows, columns };

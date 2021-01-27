@@ -3,27 +3,9 @@ import { action, makeAutoObservable } from 'mobx';
 
 import { SERVER } from '../consts';
 
-import { Dataset } from './Dataset';
 import { RootStore } from './Store';
-
-export type UploadedDatasetList = {
-  key: string;
-  version: string;
-  rows: number;
-  columns: number;
-  description: string;
-}[];
-
-export type Project = {
-  key: string;
-  name: string;
-  datasets: UploadedDatasetList;
-};
-
-export type ProjectList = {
-  key: string;
-  name: string;
-}[];
+import { Dataset } from './Types/Dataset';
+import { Project, ProjectList, UploadedDatasetList } from './Types/Project';
 
 export class ProjectStore {
   rootStore: RootStore;
