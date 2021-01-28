@@ -11,7 +11,6 @@ export class ProjectStore {
   rootStore: RootStore;
   currentProject: Project | null = null;
   projects: ProjectList = [];
-  loadedDatasetKey: string | null = null;
   comparisonDatasetKey: string | null = null;
   loadedDataset: Dataset | null = null;
   comparisonDataset: Dataset | null = null;
@@ -22,11 +21,31 @@ export class ProjectStore {
     this.loadProjects();
   }
 
+  // ##################################################################### //
+  // ############################## Getters ############################## //
+  // ##################################################################### //
+
+  get state() {
+    return this.rootStore.state;
+  }
+
+  get provenance() {
+    return this.rootStore.provenance;
+  }
+
+  // ##################################################################### //
+  // ########################### Store Helpers ########################### //
+  // ##################################################################### //
+
   projectByKey = (key: string) => {
     const proj = this.projects.find((p) => p.key === key);
 
     return proj;
   };
+
+  // ##################################################################### //
+  // ########################### Store Actions ########################### //
+  // ##################################################################### //
 
   loadProjects = (newProjectId: string | null = null) => {
     Axios.get(`${SERVER}/project`).then(
@@ -34,21 +53,21 @@ export class ProjectStore {
         this.projects = response.data;
 
         if (!newProjectId && this.rootStore.debug) {
-          this.selectProject(this.rootStore.defaultProject);
+          this.loadProjectByKey(this.rootStore.defaultProject);
         }
 
         if (newProjectId) {
           const proj = this.projects.find((p) => p.key === newProjectId);
 
           if (proj) {
-            this.selectProject(proj.key);
+            this.loadProjectByKey(proj.key);
           }
         }
       }),
     );
   };
 
-  selectProject = (projectId: string) => {
+  loadProjectByKey = (projectId: string) => {
     const proj = this.projectByKey(projectId);
 
     if (!proj) return;
@@ -57,21 +76,9 @@ export class ProjectStore {
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
 
-        if (this.rootStore.debug && response.data.length > 0) {
-          this.loadDataset(response.data[0].key);
+        if (this.rootStore.debug && this.currentProject.datasets.length > 0) {
+          this.loadDataset(this.currentProject.datasets[0].key);
         }
-      }),
-    );
-  };
-
-  loadDataset = (datasetKey: string) => {
-    if (!this.currentProject) return;
-
-    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
-      action((response: AxiosResponse<Dataset>) => {
-        this.rootStore.exploreStore.changeDataset(datasetKey);
-        this.loadedDatasetKey = datasetKey;
-        this.loadedDataset = response.data;
       }),
     );
   };
@@ -81,9 +88,30 @@ export class ProjectStore {
 
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
-        // this.rootStore.exploreStore.changeDataset(datasetKey);
         this.comparisonDatasetKey = datasetKey;
         this.comparisonDataset = response.data;
+      }),
+    );
+  };
+
+  // ##################################################################### //
+  // ######################### Provenance Actions ######################## //
+  // ##################################################################### //
+
+  loadDataset = (datasetKey: string) => {
+    if (!this.currentProject) return;
+
+    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
+      action((response: AxiosResponse<Dataset>) => {
+        this.rootStore.bundledNodes.push(this.rootStore.currentNodes);
+        this.rootStore.currentNodes = [];
+
+        this.rootStore.provenanceActions.changeDatasetAction.setLabel(`Load ${datasetKey} dataset`);
+        this.provenance.apply(this.rootStore.provenanceActions.changeDatasetAction(datasetKey));
+
+        this.rootStore.currentNodes.push(this.provenance.graph.current);
+
+        this.loadedDataset = response.data;
       }),
     );
   };

@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from '@material-ui/core';
 import TouchAppIcon from '@material-ui/icons/TouchApp';
+import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
@@ -188,9 +189,16 @@ const App: FC = () => {
       setPredictionSelection,
     },
     projectStore: { loadedDataset },
+    provenance,
   } = useContext(Store);
 
   useEffect(() => {
+    const current = provenance.current;
+
+    if (isChildNode(current)) {
+      if (current.children.length > 0) return;
+    }
+
     if (n_plots > 0 || !loadedDataset) return;
     const { numericColumns } = loadedDataset;
     const plot: Plot = {
@@ -203,7 +211,6 @@ const App: FC = () => {
     addPlot(plot);
   });
 
-  const { provenance } = useContext(Store).exploreStore;
   const { bundledNodes } = useContext(Store);
 
   if (!loadedDataset) return <Redirect to="/project" />;
@@ -269,7 +276,13 @@ const App: FC = () => {
                         selectAll(ipnsIds.map((m) => `#mark${m}`).join(',')).classed(ipns, true);
                     }}
                   >
-                    <Tooltip title={JSON.stringify(pred.info, null, 2)}>
+                    <Tooltip
+                      title={
+                        <>
+                          <pre>{JSON.stringify(pred.info || '', null, 2)}</pre>
+                        </>
+                      }
+                    >
                       <TableCell width="30%">{pred.intent}</TableCell>
                     </Tooltip>
                     <TableCell width="60%">{pred.rank}</TableCell>

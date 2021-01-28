@@ -15,7 +15,7 @@ type Props = {
 const Axis: FC<Props> = ({ scale, transform = '', type, columnName }: Props) => {
   const gRef = useRef<SVGGElement>(null);
   const {
-    dataset: { columnInfo },
+    loadedDataset: { columnInfo },
   } = useContext(Store).exploreStore;
 
   const axis = useMemo(() => {

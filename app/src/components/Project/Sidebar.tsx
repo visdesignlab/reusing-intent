@@ -49,7 +49,9 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Sidebar = () => {
   const classes = useStyles();
-  const { projects, currentProject, selectProject } = useContext(Store).projectStore;
+  const { projects, currentProject, loadProjectByKey: selectProject } = useContext(
+    Store,
+  ).projectStore;
 
   const [open, setOpen] = useState(false);
 

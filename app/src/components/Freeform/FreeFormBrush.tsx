@@ -157,7 +157,7 @@ const FreeFormBrush: FC<Props> = ({
     const targetNode = layerRef.current;
 
     if (targetNode) {
-      onBrush(selectedPointsRef.current, 'End', 'Selection');
+      onBrush(Array.from(new Set(selectedPointsRef.current)), 'End', 'Selection');
       selectedPointsRef.current = [];
     }
     setMouseDown(false);

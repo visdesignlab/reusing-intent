@@ -46,7 +46,7 @@ const ProjectView = () => {
   const {
     currentProject,
     comparisonDatasetKey,
-    loadedDatasetKey,
+    state: { datasetKey },
     loadDataset,
     loadComparisonDataset,
   } = useContext(Store).projectStore;
@@ -69,7 +69,7 @@ const ProjectView = () => {
     'Dataset',
     '',
     datasetOptions,
-    loadedDatasetKey || '',
+    datasetKey || '',
     loadDataset,
   );
 

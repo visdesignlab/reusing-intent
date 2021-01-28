@@ -30,10 +30,9 @@ const Navbar: FC = () => {
   const store = useContext(Store);
 
   const {
-    dataset,
-    showCategories,
+    loadedDataset: dataset,
+    state: { showCategories, categoryColumn },
     toggleCategories,
-    categoryColumn,
     changeCategory,
   } = store.exploreStore;
 

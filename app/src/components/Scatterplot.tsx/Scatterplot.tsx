@@ -34,7 +34,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
-    dataset: { labelColumn },
+    loadedDataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
     showMatchesLegend,

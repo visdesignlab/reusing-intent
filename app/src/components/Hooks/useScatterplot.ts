@@ -13,7 +13,7 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { dataset: data } = useContext(Store).exploreStore;
+  const { loadedDataset: data } = useContext(Store).exploreStore;
   const dt =
     useMemo(() => {
       const points =

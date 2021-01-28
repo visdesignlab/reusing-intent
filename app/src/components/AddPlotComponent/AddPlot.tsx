@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const AddPlot: FC = () => {
   const classes = useStyles();
   const [isAdding, setIsAdding] = useState(false);
-  const { dataset, addPlot } = useContext(Store).exploreStore;
+  const { loadedDataset: dataset, addPlot } = useContext(Store).exploreStore;
 
   const columns =
     dataset?.numericColumns.map((col) => ({

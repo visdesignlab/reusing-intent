@@ -1,6 +1,5 @@
 import { Brush } from '../components/Brush/Types/Brush';
 
-import { Interactions } from './Types/Interactions';
 import { Plot, Plots } from './Types/Plot';
 import { Prediction } from './Types/Prediction';
 
@@ -36,13 +35,12 @@ export function getDefaultPlot(): Plot {
 }
 
 export type IntentState = {
-  dataset: string;
+  datasetKey: string;
   showCategories: boolean;
   categoryColumn: string;
   multiBrushBehaviour: MultiBrushBehaviour;
   plots: Plots;
   //only store your own interaction
-  interactions: Interactions;
   brushType: BrushType;
 
   //create interaction type for this
@@ -50,12 +48,11 @@ export type IntentState = {
 };
 
 export const defaultState: IntentState = {
-  dataset: '',
+  datasetKey: '',
   multiBrushBehaviour: 'Union',
   showCategories: true,
   categoryColumn: '',
   plots: [],
-  interactions: [],
   brushType: 'Freeform Medium',
   selectedPrediction: null,
 };

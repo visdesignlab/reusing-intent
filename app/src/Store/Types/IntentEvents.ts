@@ -1,18 +1,8 @@
 export type IntentEvents =
   | 'Load Dataset'
-  | 'MultiBrush'
-  | 'Switch Category Visibility'
-  | 'Change Category'
-  | 'Add Plot'
-  | 'Point Selection'
-  | 'Point Deselection'
-  | 'Add Brush'
-  | 'Lock Prediction'
-  | 'Turn Prediction'
-  | 'Invert'
-  | 'Edit Brush'
-  | 'Remove Brush'
-  | 'Clear All'
-  | 'Change Selected Brush'
   | 'Change Dataset'
-  | 'Prediction Selection';
+  | 'Add Plot'
+  | 'Prediction Selection'
+  | 'Point Selection'
+  | 'Change Category'
+  | 'Toggle Category';
