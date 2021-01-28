@@ -17,7 +17,7 @@ export class RootStore {
   projectStore: ProjectStore;
   exploreStore: ExploreStore;
   provenance: IntentProvenance;
-  provenanceActions = provenanceActions;
+  actions = provenanceActions;
   currentNodes: string[];
   bundledNodes: string[][];
 
@@ -35,7 +35,7 @@ export class RootStore {
     this.bundledNodes = [];
 
     makeAutoObservable(this, {
-      provenanceActions: false,
+      actions: false,
       provenance: false,
     });
   }

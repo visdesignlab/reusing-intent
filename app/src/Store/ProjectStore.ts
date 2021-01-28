@@ -103,11 +103,13 @@ export class ProjectStore {
 
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
+        const { changeDatasetAction } = this.rootStore.actions;
+
         this.rootStore.bundledNodes.push(this.rootStore.currentNodes);
         this.rootStore.currentNodes = [];
 
-        this.rootStore.provenanceActions.changeDatasetAction.setLabel(`Load ${datasetKey} dataset`);
-        this.provenance.apply(this.rootStore.provenanceActions.changeDatasetAction(datasetKey));
+        changeDatasetAction.setLabel(`Load ${datasetKey} dataset`);
+        this.provenance.apply(changeDatasetAction(datasetKey));
 
         this.rootStore.currentNodes.push(this.provenance.graph.current);
 

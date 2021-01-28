@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, toJS } from 'mobx';
+import { action, makeAutoObservable } from 'mobx';
 
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
@@ -19,7 +19,6 @@ export class ExploreStore {
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this);
-    this.provenance.addGlobalObserver(() => console.log(toJS(this.interactions)));
   }
 
   // ##################################################################### //
@@ -118,17 +117,18 @@ export class ExploreStore {
   // ##################################################################### //
 
   addPlot = (plot: Plot): void => {
-    this.rootStore.provenanceActions.addPlotAction.setLabel('Add Plot');
-    this.provenance.apply(this.rootStore.provenanceActions.addPlotAction(plot));
+    const { addPlotAction } = this.rootStore.actions;
+    addPlotAction.setLabel('Add Plot');
+    this.provenance.apply(addPlotAction(plot));
     this.addInteraction({ type: 'AddPlot', plot });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
   removePlot = (plot: Plot) => {
-    this.rootStore.provenanceActions.removePlotAction.setLabel(
-      `Remove plot: ${plot.x} - ${plot.y}`,
-    );
-    this.provenance.apply(this.rootStore.provenanceActions.removePlotAction(plot));
+    const { removePlotAction } = this.rootStore.actions;
+
+    removePlotAction.setLabel(`Remove plot: ${plot.x} - ${plot.y}`);
+    this.provenance.apply(removePlotAction(plot));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
@@ -140,10 +140,12 @@ export class ExploreStore {
   addPointSelection = (plot: Plot, points: string[], isPaintBrush = false) => {
     if (points.length === 0) return;
 
-    this.rootStore.provenanceActions.pointSelectionAction.setLabel(
+    const { pointSelectionAction } = this.rootStore.actions;
+
+    pointSelectionAction.setLabel(
       isPaintBrush ? `P. Brush: ${points.length}` : `Add Point Selection`,
     );
-    this.provenance.apply(this.rootStore.provenanceActions.pointSelectionAction(plot, points));
+    this.provenance.apply(pointSelectionAction(plot, points));
 
     this.addInteraction({ type: 'PointSelection', selected: points, plot });
     this.addPredictions();
@@ -152,23 +154,27 @@ export class ExploreStore {
   };
 
   setPredictionSelection = (prediction: Prediction) => {
-    this.rootStore.provenanceActions.predictionSelectionAction.setLabel(
-      `${prediction.intent} Selection`,
-    );
-    this.provenance.apply(this.rootStore.provenanceActions.predictionSelectionAction(prediction));
+    const { predictionSelectionAction } = this.rootStore.actions;
+
+    predictionSelectionAction.setLabel(`${prediction.intent} Selection`);
+    this.provenance.apply(predictionSelectionAction(prediction));
   };
 
   changeCategory = (category: string) => {
-    this.rootStore.provenanceActions.changeCategoryAction.setLabel(`Category: ${category}`);
-    this.provenance.apply(this.rootStore.provenanceActions.changeCategoryAction(category));
+    const { changeCategoryAction } = this.rootStore.actions;
+
+    changeCategoryAction.setLabel(`Category: ${category}`);
+    this.provenance.apply(changeCategoryAction(category));
     this.addInteraction({ type: 'ChangeCategory', category });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
   toggleCategories = (show: boolean, categories: string[] = []) => {
+    const { toggleCategoryAction } = this.rootStore.actions;
+
     if (!show) {
-      this.rootStore.provenanceActions.toggleCategoryAction.setLabel('Hide Categories');
-      this.provenance.apply(this.rootStore.provenanceActions.toggleCategoryAction(show, ''));
+      toggleCategoryAction.setLabel('Hide Categories');
+      this.provenance.apply(toggleCategoryAction(show, ''));
       this.addInteraction({ type: 'ToggleCategory', show });
 
       return;
@@ -180,8 +186,8 @@ export class ExploreStore {
 
     if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
 
-    this.rootStore.provenanceActions.toggleCategoryAction.setLabel('Show Categories');
-    this.provenance.apply(this.rootStore.provenanceActions.toggleCategoryAction(show, category));
+    toggleCategoryAction.setLabel('Show Categories');
+    this.provenance.apply(toggleCategoryAction(show, category));
     this.addInteraction({ type: 'ToggleCategory', show });
     this.addInteraction({ type: 'ChangeCategory', category });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
