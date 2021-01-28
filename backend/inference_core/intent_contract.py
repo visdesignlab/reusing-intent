@@ -7,4 +7,4 @@ class Prediction(TypedDict):
     algorithm: str
     memberIds: List[str]
     dimensions: List[str]
-    params: dict
+    info: dict

@@ -43,7 +43,7 @@ class ClusterBase(IntentBase):
                 intent=self.intentType,
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
-                params=self.getClusterParams(u),
+                info=self.getClusterParams(u),
                 algorithm=self.algorithm,
             )
             for (_, vals), u in zip(output.iteritems(), unique_vals)

@@ -32,7 +32,7 @@ class RegressionBase(IntentBase):
                 intent=str(col),
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
-                params=self.getParams(),
+                info=self.getParams(),
                 algorithm=self.algorithm,
             )
             for col, vals in output.iteritems()
