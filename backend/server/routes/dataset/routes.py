@@ -195,8 +195,10 @@ def predict(project: str, key: str):
             for a in algs:
                 predictions.extend(a.predict(selections, dataset["id"]))
 
+            predictions = list(filter(lambda x: x["rank"] > 0.1, predictions))
+
             predictions = list(
-                sorted(predictions, key=lambda x: x["rank"], reverse=True)
+                sorted(predictions, key=lambda x: x["rank"], reverse=True),
             )
 
             for pred in predictions:
