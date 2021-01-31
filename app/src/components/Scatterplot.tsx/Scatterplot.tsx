@@ -3,10 +3,17 @@ import { select } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext } from 'react';
 
+import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import translate from '../../Utils/Translate';
-import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Freeform/FreeFormBrush';
+import BrushComponent, { BrushSelections } from '../Brush/Components/BrushComponent';
+import { BrushAffectType, BrushCollection } from '../Brush/Types/Brush';
+import FreeFormBrush, {
+  BrushSize,
+  FreeformBrushAction,
+  FreeformBrushEvent,
+} from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
 
@@ -38,6 +45,8 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     setFreeformSelection,
     selectedPoints,
     showMatchesLegend,
+    setBrushSelection,
+    state: { brushType },
   } = useContext(Store).exploreStore;
 
   const { x, y } = plot;
@@ -76,6 +85,42 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     [plot, setFreeformSelection, classes],
   );
 
+  const rectBrushHandler = useCallback(
+    (
+      selection: BrushSelections,
+      brushes: BrushCollection,
+      type: BrushAffectType,
+      affectedId: string,
+    ) => {
+      const brs: ExtendedBrushCollection = {};
+
+      Object.entries(brushes).forEach((entry) => {
+        const [id, val] = entry;
+
+        brs[id] = { ...val, points: selection[id] };
+      });
+
+      setBrushSelection(plot, brs, type, affectedId);
+    },
+    [plot, setBrushSelection],
+  );
+
+  let brushSize: BrushSize | null = null;
+
+  switch (brushType) {
+    case 'Freeform Small':
+      brushSize = 20;
+      break;
+    case 'Freeform Medium':
+      brushSize = 35;
+      break;
+    case 'Freeform Large':
+      brushSize = 50;
+      break;
+    default:
+      brushSize = null;
+  }
+
   return (
     <svg className={root} id={plot.id}>
       <g transform={translate(margin)}>
@@ -83,27 +128,31 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
         <Axis columnName={y} scale={yScale} type="left" />
         <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
-        <FreeFormBrush
+        <BrushComponent
           bottom={sp_dimension}
+          brushes={plot.brushes}
           data={points}
+          disableBrush={brushType !== 'Rectangular'}
           left={0}
           right={sp_dimension}
           top={0}
           xScale={xScale}
           yScale={yScale}
-          onBrush={freeFormBrushHandler}
+          onBrushHandler={rectBrushHandler}
         />
-        {/* <BrushComponent
-          bottom={sp_dimension}
-          brushes={plot.brushes}
-          left={0}
-          right={sp_dimension}
-          top={0}
-          onBrush={onRectBrush}
-          // onBrushUpdate={(brushes, affectedBrush, affectType) => {
-          //   console.log(brushes, affectedBrush, affectType);
-          // }}
-        /> */}
+        {brushSize && (
+          <FreeFormBrush
+            bottom={sp_dimension}
+            brushSize={brushSize}
+            data={points}
+            left={0}
+            right={sp_dimension}
+            top={0}
+            xScale={xScale}
+            yScale={yScale}
+            onBrush={freeFormBrushHandler}
+          />
+        )}
       </g>
     </svg>
   );

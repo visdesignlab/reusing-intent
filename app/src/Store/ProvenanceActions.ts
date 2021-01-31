@@ -1,13 +1,13 @@
 import { createAction } from '@visdesignlab/trrack';
 
-import { IntentState } from './IntentState';
+import { ExtendedBrushCollection, IntentState } from './IntentState';
 import { IntentEvents } from './Types/IntentEvents';
-import { Plot, Plots } from './Types/Plot';
+import { Plot } from './Types/Plot';
 import { Prediction } from './Types/Prediction';
 
 const addPlotAction = createAction<IntentState, [Plot], IntentEvents>(
   (state: IntentState, plot: Plot) => {
-    state.plots.push(plot);
+    state.plots[plot.id] = plot;
   },
 ).setEventType('Add Plot');
 
@@ -19,36 +19,27 @@ const changeDatasetAction = createAction<IntentState, [string], IntentEvents>(
 
 const removePlotAction = createAction<IntentState, [Plot], IntentEvents>(
   (state: IntentState, plot: Plot) => {
-    const plots: Plots = [];
+    const { plots } = state;
 
-    for (let i = 0; i < state.plots.length; ++i) {
-      const plt = state.plots[i];
+    delete plots[plot.id];
 
-      if (plt.id !== plot.id) {
-        plots.push(plt);
-      }
-    }
     state.plots = plots;
   },
 ).setEventType('Add Plot');
 
 const pointSelectionAction = createAction<IntentState, [Plot, string[]], IntentEvents>(
   (state: IntentState, plot: Plot, points: string[]) => {
-    for (let i = 0; i < state.plots.length; ++i) {
-      if (plot.id === state.plots[i].id) {
-        const pts = state.plots[i].selectedPoints;
-        state.plots[i].selectedPoints = [...pts, ...points];
-        break;
-      }
-    }
+    plot.selectedPoints = [...new Set([...plot.selectedPoints, ...points])];
+    state.plots[plot.id] = plot;
   },
 ).setEventType('Point Selection');
 
 const predictionSelectionAction = createAction<IntentState, [Prediction], IntentEvents>(
   (state: IntentState, prediction: Prediction) => {
-    state.plots.forEach((plot) => {
+    Object.values(state.plots).forEach((plot) => {
       plot.brushes = {};
       plot.selectedPoints = [];
+      state.plots[plot.id] = plot;
     });
     state.selectedPrediction = prediction;
   },
@@ -70,6 +61,27 @@ const toggleCategoryAction = createAction<IntentState, [boolean, string], Intent
   },
 ).setEventType('Toggle Category');
 
+const addBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
+  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
+    plot.brushes = brushes;
+    state.plots[plot.id] = plot;
+  },
+).setEventType('Add Brush');
+
+const updateBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
+  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
+    plot.brushes = brushes;
+    state.plots[plot.id] = plot;
+  },
+).setEventType('Update Brush');
+
+const removeBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
+  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
+    plot.brushes = brushes;
+    state.plots[plot.id] = plot;
+  },
+).setEventType('Remove Brush');
+
 export const provenanceActions = {
   addPlotAction,
   changeDatasetAction,
@@ -78,4 +90,7 @@ export const provenanceActions = {
   predictionSelectionAction,
   changeCategoryAction,
   toggleCategoryAction,
+  addBrushAction,
+  updateBrushAction,
+  removeBrushAction,
 };

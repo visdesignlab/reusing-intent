@@ -10,7 +10,7 @@ export function useScale(
   const [r0, r1] = range;
 
   const scale = useMemo(() => {
-    const scale = scaleLinear().domain([d0, d1]).range([r0, r1]);
+    const scale = scaleLinear().domain([d0, d1]).range([r0, r1]).clamp(true);
 
     if (nice) scale.nice();
 

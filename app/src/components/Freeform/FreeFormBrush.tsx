@@ -5,7 +5,7 @@ import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import translate from '../../Utils/Translate';
 
-export type BrushSize = '20';
+export type BrushSize = 20 | 35 | 50;
 
 const useStyles = makeStyles(() => ({
   brushStyle: {
@@ -34,18 +34,6 @@ type BrushHandler = (
 ) => void;
 
 type BrushData = { x: number; y: number; id: string; [other: string]: unknown };
-
-type Props = {
-  left: number;
-  right: number;
-  top: number;
-  bottom: number;
-  extentPadding?: number;
-  xScale: ScaleLinear<number, number>;
-  yScale: ScaleLinear<number, number>;
-  onBrush: BrushHandler;
-  data: BrushData[];
-};
 
 function isInCircle(
   center: { x: number; y: number },
@@ -110,6 +98,19 @@ function useQuadSearch(
   return { search };
 }
 
+type Props = {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+  extentPadding?: number;
+  xScale: ScaleLinear<number, number>;
+  yScale: ScaleLinear<number, number>;
+  onBrush: BrushHandler;
+  data: BrushData[];
+  brushSize?: BrushSize;
+};
+
 const FreeFormBrush: FC<Props> = ({
   left = 0,
   right = 0,
@@ -119,6 +120,7 @@ const FreeFormBrush: FC<Props> = ({
   onBrush,
   xScale,
   yScale,
+  brushSize = 20,
   data = [],
 }: Props) => {
   const { brushStyle, brushDown, brushHide } = useStyles();
@@ -126,9 +128,7 @@ const FreeFormBrush: FC<Props> = ({
   const layerRef = useRef<SVGRectElement>(null);
   const selectedPointsRef = useRef<string[]>([]);
 
-  const brushSize: BrushSize = '20';
-
-  const radius = parseInt(brushSize) || 20;
+  const radius = brushSize || 20;
 
   const [mouseIn, setMouseIn] = useState(false);
   const [mouseDown, setMouseDown] = useState(false);

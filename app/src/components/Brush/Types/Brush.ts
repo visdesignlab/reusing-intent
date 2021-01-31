@@ -1,3 +1,5 @@
+export type BrushID = string;
+
 export type Brush = {
   id: string;
   extents: {
@@ -8,6 +10,6 @@ export type Brush = {
   };
 };
 
-export type BrushCollection = { [key: string]: Brush };
+export type BrushCollection = { [key in BrushID]: Brush };
 
-export type BrushAffectType = 'Add' | 'Remove' | 'Change' | 'Clear';
+export type BrushAffectType = 'Add' | 'Remove' | 'Update' | 'Clear';

@@ -33,15 +33,10 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Visualization: FC = () => {
-  const {
-    state: { plots },
-    removePlot,
-    isLoadingData,
-    n_plots,
-  } = useContext(Store).exploreStore;
+  const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
 
   // const spContainerDimension = height > width ? width : height;
-  const spContainerDimension = n_plots === 1 ? 800 : 650;
+  const spContainerDimension = n_plots === 1 ? 800 : 500;
   const classes = useStyles();
   const theme = useTheme();
   const xs = n_plots === 1 ? 'auto' : 6;

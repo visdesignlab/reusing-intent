@@ -1,24 +1,22 @@
 import { Brush } from '../components/Brush/Types/Brush';
 
+import { BrushSize } from './../components/Freeform/FreeFormBrush';
 import { Plot, Plots } from './Types/Plot';
 import { Prediction } from './Types/Prediction';
 
 export type MultiBrushBehaviour = 'Union' | 'Intersection';
 
 export type ExtendedBrush = {
-  points: number[];
+  points: string[];
 } & Brush;
 
 export type ExtendedBrushCollection = { [key: string]: ExtendedBrush };
 
-export type BrushType =
-  | 'Rectangular'
-  | 'Freeform Small'
-  | 'Freeform Medium'
-  | 'Freeform Large'
-  | 'None';
+export type FreeFormBrushType = 'Freeform Small' | 'Freeform Medium' | 'Freeform Large';
 
-export const BrushSize: { [key: string]: number } = {
+export type BrushType = FreeFormBrushType | 'Rectangular' | 'None';
+
+export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
   'Freeform Small': 20,
   'Freeform Medium': 35,
   'Freeform Large': 50,
@@ -40,19 +38,16 @@ export type IntentState = {
   categoryColumn: string;
   multiBrushBehaviour: MultiBrushBehaviour;
   plots: Plots;
-  //only store your own interaction
   brushType: BrushType;
-
-  //create interaction type for this
   selectedPrediction: Prediction | null;
 };
 
 export const defaultState: IntentState = {
   datasetKey: '',
   multiBrushBehaviour: 'Union',
-  showCategories: true,
+  showCategories: false,
   categoryColumn: '',
-  plots: [],
-  brushType: 'Freeform Medium',
+  plots: {},
+  brushType: 'Rectangular',
   selectedPrediction: null,
 };

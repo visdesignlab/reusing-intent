@@ -1,19 +1,14 @@
-import { Brush } from '../../components/Brush/Types/Brush';
-
+import { ExtendedBrushCollection } from './../IntentState';
 import { DatasetColumn } from './Dataset';
 
-export type ExtendedBrush = Brush & {
-  points: number[];
-};
-
-export type ExtendedBrushCollection = { [key: string]: ExtendedBrush };
+export type PlotID = string;
 
 export type Plot = {
-  id: string;
+  id: PlotID;
   x: DatasetColumn;
   y: DatasetColumn;
   brushes: ExtendedBrushCollection;
   selectedPoints: string[];
 };
 
-export type Plots = Plot[];
+export type Plots = { [key in PlotID]: Plot };

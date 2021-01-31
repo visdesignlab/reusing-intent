@@ -5,4 +5,7 @@ export type IntentEvents =
   | 'Prediction Selection'
   | 'Point Selection'
   | 'Change Category'
-  | 'Toggle Category';
+  | 'Toggle Category'
+  | 'Add Brush'
+  | 'Remove Brush'
+  | 'Update Brush';

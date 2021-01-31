@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, toJS } from 'mobx';
 
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
+import { BrushAffectType } from './../components/Brush/Types/Brush';
+import { ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
+import { Dataset } from './Types/Dataset';
 import { InteractionArtifact } from './Types/InteractionArtifact';
 import { Interaction, Interactions } from './Types/Interactions';
 import { Plot } from './Types/Plot';
@@ -79,9 +82,15 @@ export class ExploreStore {
 
   get selectedPoints() {
     let selectedPoints: string[] = [];
+    const { plots } = this.state;
 
-    this.state.plots.forEach((plot) => {
+    Object.values(plots).forEach((plot) => {
       selectedPoints.push(...plot.selectedPoints);
+
+      const brushes = plot.brushes;
+      Object.values(brushes).forEach((brush) => {
+        if (brush.points) selectedPoints.push(...brush.points);
+      });
     });
 
     const { selectedPrediction } = this.state;
@@ -93,13 +102,27 @@ export class ExploreStore {
   }
 
   get n_plots() {
-    return this.state.plots.length;
+    return Object.values(this.state.plots).length;
+  }
+
+  get plots() {
+    return Object.values(toJS(this.state.plots));
   }
 
   get loadedDataset() {
-    const dataset = this.rootStore.projectStore.loadedDataset;
+    let dataset = this.rootStore.projectStore.loadedDataset;
 
-    if (!dataset) throw new Error('Dataset not loaded');
+    if (!dataset) {
+      const dt_str = window.localStorage.getItem('dataset');
+
+      if (!dt_str) throw new Error('Dataset not loaded');
+
+      dataset = JSON.parse(dt_str) as Dataset;
+
+      return dataset;
+    }
+
+    window.localStorage.setItem('dataset', JSON.stringify(dataset));
 
     return dataset;
   }
@@ -153,6 +176,42 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
+  setBrushSelection = (
+    plot: Plot,
+    brushes: ExtendedBrushCollection,
+    type: BrushAffectType,
+    affectedId: string,
+  ) => {
+    const { addBrushAction, updateBrushAction, removeBrushAction } = this.rootStore.actions;
+
+    switch (type) {
+      case 'Add':
+        addBrushAction.setLabel(`Added brush to: ${plot.x}-${plot.y}`);
+        this.provenance.apply(addBrushAction(plot, brushes));
+        this.addInteraction({ type: 'Brush', plot, action: 'Add', brush: affectedId });
+        break;
+      case 'Update':
+        updateBrushAction.setLabel(`Updated brush in: ${plot.x}-${plot.y}`);
+        this.provenance.apply(updateBrushAction(plot, brushes));
+        this.addInteraction({ type: 'Brush', plot, action: 'Update', brush: affectedId });
+        break;
+      case 'Remove':
+        removeBrushAction.setLabel(`Removed brush in: ${plot.x}-${plot.y}`);
+        this.provenance.apply(removeBrushAction(plot, brushes));
+        this.addInteraction({
+          type: 'Brush',
+          plot,
+          action: 'Remove',
+          brush: affectedId,
+        });
+        break;
+      default:
+        break;
+    }
+
+    //
+  };
+
   setPredictionSelection = (prediction: Prediction) => {
     const { predictionSelectionAction } = this.rootStore.actions;
 
@@ -198,7 +257,19 @@ export class ExploreStore {
   // ##################################################################### //
 
   addInteraction = (interaction: Interaction) => {
-    const interactions = this.artifact.interactions;
+    const { current } = this.provenance;
+
+    let interactions = this.artifact.interactions;
+
+    if (isChildNode(current)) {
+      const parentId = current.parent;
+      const artifacts = this.provenance.getLatestArtifact(parentId);
+
+      if (artifacts) {
+        interactions = artifacts.artifact.interactions;
+      }
+    }
+
     interactions.push(interaction);
 
     this.provenance.addArtifact({

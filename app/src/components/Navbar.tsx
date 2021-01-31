@@ -1,12 +1,16 @@
 import {
   AppBar,
   Divider,
+  FormControl,
   FormControlLabel,
+  FormGroup,
   makeStyles,
   Switch,
   Theme,
   Toolbar,
 } from '@material-ui/core';
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
 import React, { FC, useContext } from 'react';
 
@@ -54,20 +58,33 @@ const Navbar: FC = () => {
     <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
-          <AddPlot />
-          <Divider orientation="vertical" flexItem />
-          <FormControlLabel
-            className={classes.formControlwoWidth}
-            control={
-              <Switch
-                checked={showCategories}
-                color="primary"
-                onChange={() => toggleCategories(!showCategories, categoricalColumns)}
-              />
-            }
-            label="Show Categories"
-          />
-          {showCategories && <CategoryDropdown />}
+          <FormGroup row>
+            <AddPlot />
+            <Divider orientation="vertical" flexItem />
+            <FormControlLabel
+              className={classes.formControlwoWidth}
+              control={
+                <Switch
+                  checked={showCategories}
+                  color="primary"
+                  onChange={() => toggleCategories(!showCategories, categoricalColumns)}
+                />
+              }
+              label="Show Categories"
+            />
+            {showCategories && <CategoryDropdown />}
+            <Divider orientation="vertical" flexItem />
+            <FormControl className={classes.formControl}>
+              <ToggleButtonGroup>
+                <ToggleButton>
+                  <CheckBoxOutlineBlankIcon />
+                </ToggleButton>
+                <ToggleButton>20</ToggleButton>
+                <ToggleButton>35</ToggleButton>
+                <ToggleButton>50</ToggleButton>
+              </ToggleButtonGroup>
+            </FormControl>
+          </FormGroup>
         </Toolbar>
       </AppBar>
     </div>

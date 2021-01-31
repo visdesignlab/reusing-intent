@@ -145,7 +145,7 @@ const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <Invert size={16} />,
     bundleGlyph: <Invert fill="#2185d0" size={22} />,
   },
-  'Change Brush': {
+  'Update Brush': {
     backboneGlyph: <ChangeBrush size={22} />,
     currentGlyph: <ChangeBrush fill="#2185d0" size={22} />,
     regularGlyph: <ChangeBrush size={16} />,

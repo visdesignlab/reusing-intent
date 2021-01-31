@@ -41,7 +41,9 @@ export class RootStore {
   }
 
   get state() {
-    return this.provenance.getState(this.provenance.current);
+    const state = this.provenance.getState(this.provenance.current);
+
+    return JSON.parse(JSON.stringify(state)) as IntentState;
   }
 }
 
