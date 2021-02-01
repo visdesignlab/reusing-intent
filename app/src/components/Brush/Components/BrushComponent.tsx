@@ -155,11 +155,14 @@ const BrushComponent: FC<Props> = ({
   const [height, width] = [Math.abs(top - bottom), Math.abs(left - right)];
 
   const { pixelX, pixelY, extentToData, extentToPixel } = useMemo(() => {
+    // const yDomainMax = yScale.domain()[1];
+    const yScaleUpdated = yScale.copy().domain(yScale.domain()).range(yScale.range());
+
     const pixelX = (x: number) => xScale(x);
-    const pixelY = (y: number) => height - yScale(y);
+    const pixelY = (y: number) => yScaleUpdated(y);
 
     const dataX = (x: number) => xScale.invert(x);
-    const dataY = (y: number) => yScale.invert(height - y);
+    const dataY = (y: number) => yScaleUpdated.invert(y);
 
     const extentToData = ({ x1, y1, x2, y2 }: Extents) => ({
       x1: dataX(x1),
@@ -176,7 +179,7 @@ const BrushComponent: FC<Props> = ({
     });
 
     return { dataX, dataY, pixelX, pixelY, extentToPixel, extentToData };
-  }, [xScale, yScale, height]);
+  }, [xScale, yScale]);
 
   const { search } = useQuadSearch({ left, top, right, bottom }, data, xScale, yScale);
 
@@ -187,7 +190,7 @@ const BrushComponent: FC<Props> = ({
 
       Object.values(brushes).forEach((br) => {
         const { x1, x2, y1, y2 } = br.extents;
-        const selected = search(pixelX(x1), pixelY(y1), pixelX(x2), pixelY(y2));
+        const selected = search(pixelX(x1), pixelY(y2), pixelX(x2), pixelY(y1));
         selections[br.id] = selected;
       });
 
@@ -248,10 +251,10 @@ const BrushComponent: FC<Props> = ({
 
       const { left, top } = targetNode.getBoundingClientRect();
 
-      const { x1, y1 } = extentToPixel(activeBrush.extents);
+      const { x1, y2 } = extentToPixel(activeBrush.extents);
 
       const x2 = event.clientX - left;
-      const y2 = event.clientY - top;
+      const y1 = event.clientY - top;
 
       // if (x2 < 0) x2 = 0;
 
@@ -308,7 +311,7 @@ const BrushComponent: FC<Props> = ({
       if (!brush) throw new Error('Something went wrong! Brush does not exist.');
 
       const { left, top } = targetNode.getBoundingClientRect();
-      const { x1: x, y1: y } = extentToPixel(brush.extents);
+      const { x1: x, y2: y } = extentToPixel(brush.extents);
 
       const [currX, currY] = [event.clientX - left, event.clientY - top];
       const [diffX, diffY] = [Math.abs(currX - x), Math.abs(currY - y)];
@@ -345,7 +348,7 @@ const BrushComponent: FC<Props> = ({
 
       if (newY + brushHeight > height) newY = height - brushHeight;
 
-      [x1, x2, y1, y2] = [newX, newX + brushWidth, newY, newY + brushHeight];
+      [x1, x2, y2, y1] = [newX, newX + brushWidth, newY, newY + brushHeight];
 
       setActiveBrush({ ...activeBrush, extents: extentToData({ x1, x2, y1, y2 }) });
     },
@@ -392,10 +395,10 @@ const BrushComponent: FC<Props> = ({
 
       switch (resizeDirection) {
         case 'N':
-          y1 = event.clientY - top;
+          y2 = event.clientY - top;
           break;
         case 'S':
-          y2 = event.clientY - top;
+          y1 = event.clientY - top;
           break;
         case 'W':
           x1 = event.clientX - left;
@@ -405,18 +408,18 @@ const BrushComponent: FC<Props> = ({
           break;
         case 'NW':
           x1 = event.clientX - left;
-          y1 = event.clientY - top;
+          y2 = event.clientY - top;
           break;
         case 'NE':
-          y1 = event.clientY - top;
+          y2 = event.clientY - top;
           x2 = event.clientX - left;
           break;
         case 'SW':
           x1 = event.clientX - left;
-          y2 = event.clientY - top;
+          y1 = event.clientY - top;
           break;
         case 'SE':
-          y2 = event.clientY - top;
+          y1 = event.clientY - top;
           x2 = event.clientX - left;
           break;
         default:
@@ -537,19 +540,16 @@ const BrushComponent: FC<Props> = ({
       {renderActiveBrush()}
       {Object.values(brushList).map((brush) => {
         const { x1, x2, y1, y2 } = extentToPixel(brush.extents);
-        // console.log('Brush', brush.extents);
-
-        // console.log('Pixel', { x1, y1, x2, y2 });
 
         return (
           <RectBrush
             key={brush.id}
             closeHandler={closeBrushHandler}
-            height={y2 - y1}
+            height={y1 - y2}
             id={brush.id}
             width={x2 - x1}
             x={x1}
-            y={y1}
+            y={y2}
             onMouseDown={moveMouseDownHandler}
             onResizeStart={resizeMouseDownHandler}
           />

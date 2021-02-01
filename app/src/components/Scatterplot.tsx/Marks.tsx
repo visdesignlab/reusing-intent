@@ -1,3 +1,4 @@
+import { Tooltip } from '@material-ui/core';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
@@ -22,6 +23,8 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
       <>
         {points.map((point) => {
           return (
+
+          <Tooltip key={point.id} title={<pre>{JSON.stringify(point, null, 2)}</pre>}>
             <circle
               key={point.label}
               className={`marks ${
@@ -33,8 +36,10 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
               opacity="0.5"
               r="5"
             />
-          );
-        })}
+              
+          </Tooltip>
+        );
+      })}
       </>
     );
   } else if (dataDisplay === 'Comparison') {
@@ -251,9 +256,7 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
           })}
       </>
     );
-  
 
-  
 };
 
 export default observer(Marks);
