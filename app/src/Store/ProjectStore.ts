@@ -77,7 +77,7 @@ export class ProjectStore {
         this.currentProject = { ...proj, datasets: response.data };
 
         if (this.rootStore.debug && this.currentProject.datasets.length > 0) {
-          this.loadDataset(this.currentProject.datasets[0].key);
+          // this.loadDataset(this.currentProject.datasets[0].key);
         }
       }),
     );

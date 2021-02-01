@@ -1,7 +1,7 @@
-import { createStyles, makeStyles, useTheme } from '@material-ui/core';
+import { createStyles, makeStyles, useTheme, Button } from '@material-ui/core';
 import { select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext } from 'react';
+import React, { FC, useCallback, useContext, useState } from 'react';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
@@ -34,7 +34,10 @@ const useStyles = makeStyles(() =>
 type Props = {
   plot: Plot;
   size: number;
+  comparisonPlot?: Plot;
 };
+
+export type DataDisplay = "Original" | "Diff" | "Comparison" | "All"
 
 const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   const theme = useTheme();
@@ -49,11 +52,22 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     state: { brushType },
   } = useContext(Store).exploreStore;
 
+  const [dataDisplay, setDataDisplay] = useState<DataDisplay>("All");
+
   const { x, y } = plot;
+
+  console.log(dataDisplay)
 
   const classes = useScatterplotStyle();
 
-  const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn);
+  const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, true);
+  const { points: compPoints} = useScatterplotData(
+    x,
+    y,
+    labelColumn,
+    false,
+  );
+
 
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
@@ -122,39 +136,89 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
   }
 
   return (
-    <svg className={root} id={plot.id}>
-      <g transform={translate(margin)}>
-        <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
-        <Axis columnName={y} scale={yScale} type="left" />
-        <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
-        {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
-        <BrushComponent
-          bottom={sp_dimension}
-          brushes={plot.brushes}
-          data={points}
-          disableBrush={brushType !== 'Rectangular'}
-          left={0}
-          right={sp_dimension}
-          top={0}
-          xScale={xScale}
-          yScale={yScale}
-          onBrushHandler={rectBrushHandler}
-        />
-        {brushSize && (
-          <FreeFormBrush
+    <div>
+      <Button
+        color="primary"
+        variant="outlined"
+        onMouseOut={() => {
+          setDataDisplay('All');
+        }}
+        onMouseOver={() => {
+          setDataDisplay('Original');
+        }}
+      >
+        Original Data
+      </Button>
+      <Button
+        color="primary"
+        variant="outlined"
+        onMouseOut={() => {
+          setDataDisplay('All');
+        }}
+        onMouseOver={() => {
+          setDataDisplay('Comparison');
+        }}
+      >
+        Comparison Data
+      </Button>
+      <Button
+        color="primary"
+        variant="outlined"
+        onMouseOut={() => {
+          setDataDisplay('All');
+        }}
+        onMouseOver={() => {
+          setDataDisplay('Diff');
+        }}
+      >
+        Shifted Data
+      </Button>
+      <svg className={root} id={plot.id}>
+        <g transform={translate(margin)}>
+          <Axis
+            columnName={x}
+            scale={xScale}
+            transform={translate(0, sp_dimension)}
+            type="bottom"
+          />
+          <Axis columnName={y} scale={yScale} type="left" />
+          <Marks
+            compPoints={compPoints}
+            dataDisplay={dataDisplay}
+            points={points}
+            selectedPoints={selectedPoints}
+            xScale={xScale}
+            yScale={yScale}
+          />
+          {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
+          <BrushComponent
             bottom={sp_dimension}
-            brushSize={brushSize}
+            brushes={plot.brushes}
             data={points}
+            disableBrush={brushType !== 'Rectangular'}
             left={0}
             right={sp_dimension}
             top={0}
             xScale={xScale}
             yScale={yScale}
-            onBrush={freeFormBrushHandler}
+            onBrushHandler={rectBrushHandler}
           />
-        )}
-      </g>
-    </svg>
+          {brushSize && (
+            <FreeFormBrush
+              bottom={sp_dimension}
+              brushSize={brushSize}
+              data={points}
+              left={0}
+              right={sp_dimension}
+              top={0}
+              xScale={xScale}
+              yScale={yScale}
+              onBrush={freeFormBrushHandler}
+            />
+          )}
+        </g>
+      </svg>
+    </div>
   );
 };
 
