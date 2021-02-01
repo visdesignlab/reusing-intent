@@ -540,9 +540,6 @@ const BrushComponent: FC<Props> = ({
       {renderActiveBrush()}
       {Object.values(brushList).map((brush) => {
         const { x1, x2, y1, y2 } = extentToPixel(brush.extents);
-        console.log('Brush', brush.extents);
-
-        console.log('Pixel', { x1, y1, x2, y2 });
 
         return (
           <RectBrush
