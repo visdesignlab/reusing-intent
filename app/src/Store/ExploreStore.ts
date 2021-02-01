@@ -29,6 +29,8 @@ export class ExploreStore {
   // ##################################################################### //
 
   get state() {
+    console.log(this.rootStore.state.plots);
+
     return this.rootStore.state;
   }
 

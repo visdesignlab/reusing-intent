@@ -126,7 +126,6 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
       <g transform={translate(margin)}>
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
-        <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
         <BrushComponent
           bottom={sp_dimension}
@@ -153,6 +152,7 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
             onBrush={freeFormBrushHandler}
           />
         )}
+        <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
       </g>
     </svg>
   );
