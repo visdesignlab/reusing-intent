@@ -26,7 +26,20 @@ def process_dataset(
 
     sorted_cols = sorted(dataset_df.columns)
 
+    if sourceMetadata:
+        sourceMetadata = yaml.full_load(sourceMetadata)
+    labelColumn = sourceMetadata["label_column"]
+
     dataset_df = dataset_df[sorted_cols]  # type: ignore
+    dataset_df.set_index(
+        dataset_df.apply(lambda row: getUIDForString(str(row[labelColumn])), axis=1),
+        inplace=True,
+        verify_integrity=True,
+    )
+    dataset_df.reset_index(level=0, inplace=True)
+    dataset_df.rename(columns={"index": "id"}, inplace=True)
+    dataset_df["id"] = dataset_df["id"].astype(str)  # type: ignore
+
     dataset_df.set_index(
         dataset_df.apply(
             lambda row: getUIDForString("_".join(row.values.astype(str))), axis=1
@@ -35,11 +48,9 @@ def process_dataset(
         verify_integrity=True,
     )
     dataset_df.reset_index(level=0, inplace=True)
-    dataset_df.rename(columns={"index": "id"}, inplace=True)
-    dataset_df["id"] = dataset_df["id"].astype(str)  # type: ignore
+    dataset_df.rename(columns={"index": "iid"}, inplace=True)
+    dataset_df["iid"] = dataset_df["iid"].astype(str)  # type: ignore
 
-    if sourceMetadata:
-        sourceMetadata = yaml.full_load(sourceMetadata)
     metadata, dataset_df = getMetadata(dataset_df, sourceMetadata)
 
     engine = getEngine(project)
@@ -133,6 +144,8 @@ def getMetadata(data, sourceMetadata=None):
             data[column] = data[column].astype(str)
         if column == "id":
             dataType = "id"
+        if column == "iid":
+            dataType = "iid"
         elif dataType == "object":
             dataType = "categorical"
         elif "int" in str(dataType) or "float" in str(dataType):

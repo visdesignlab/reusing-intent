@@ -226,7 +226,7 @@ export class ExploreStore {
       default:
         break;
     }
-
+    this.addPredictions();
     //
   };
 
@@ -235,6 +235,7 @@ export class ExploreStore {
 
     predictionSelectionAction.setLabel(`${prediction.intent} Selection`);
     this.provenance.apply(predictionSelectionAction(prediction));
+    this.addInteraction({ type: 'SelectPrediction', prediction });
   };
 
   changeCategory = (category: string) => {
@@ -294,6 +295,8 @@ export class ExploreStore {
       ...this.artifact,
       interactions,
     });
+
+    console.log(toJS(this.artifact.interactions));
   };
 
   addPredictions = () => {
