@@ -1,11 +1,16 @@
 import os
 
+import pandas as pd
 from flask import Blueprint, jsonify, request
 
+from backend.reapply.reapply import reapply
+from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.schemas.project import Project
 from backend.server.database.session import (
     dropAllTables,
     getDBSession,
+    getEngine,
+    getSessionScopeFromEngine,
     initializeDatabase,
 )
 from backend.server.paths import DATABASE_ROOT
@@ -69,55 +74,34 @@ def createProject(key: str):
         session.close()
 
 
-@projectRoute.route("/project/<project>/provenance", methods=["POST"])
+@projectRoute.route("/project/<project>/apply", methods=["POST"])
 def processProvenance(project):
-    graph = request.json
-    nodes = graph["nodes"]
-    current_id = graph["current"]
+    baseDatasetKey = request.json["baseDataset"]
+    updatedDatasetKey = request.json["updatedDataset"]
+    interactions = request.json["interactions"]
 
-    interactions = []
+    engine = getEngine(project)
 
-    current = nodes[current_id]
-
-    while True:
-        interactions.append(current)
-        if "parent" in current:
-            current = nodes[current["parent"]]
-        else:
-            break
-
-    interactions = list(reversed(interactions))
-
-    actions = []
-
-    for interaction in interactions:
-        if "diffs" in interaction:
-            del interaction["diffs"]
-        label = interaction["label"]
-        if label == "Root" or "Change Dataset" in label:
-            continue
-        state = interaction["state"]
-        if "Add Plot" in label:
-            actions.append(
-                {
-                    "type": "Add Plot",
-                    "x": state["plots"][0]["x"],
-                    "y": state["plots"][0]["y"],
-                }
-            )
-        if "Brush" in label:
-            actions.append(
-                {
-                    "type": "Point Selection",
-                    "selectedPoints": state["plots"][0]["selectedPoints"],
-                }
-            )
-        if "Prediction" in label:
-            actions.append(
-                {
-                    "type": "Prediction Selection",
-                    "prediction": state["selectedPrediction"],
-                }
+    with engine.begin() as connection:
+        with getSessionScopeFromEngine(connection) as session:
+            baseDatasetRecord = (
+                session.query(DatasetRecord)
+                .filter(DatasetRecord.key == baseDatasetKey)
+                .one()
             )
 
-    return jsonify(actions)
+            updatedDatasetRecord = (
+                session.query(DatasetRecord)
+                .filter(DatasetRecord.key == updatedDatasetKey)
+                .one()
+            )
+
+            allData = pd.read_sql("Dataset", con=connection)
+            baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
+            updatedDataset = allData[
+                allData["record_id"] == str(updatedDatasetRecord.id)
+            ]
+
+            results = reapply(baseDataset, updatedDataset, interactions)
+
+            return jsonify(results)
