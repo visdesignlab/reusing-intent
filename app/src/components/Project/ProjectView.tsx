@@ -11,7 +11,7 @@ import AddIcon from '@material-ui/icons/Add';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { observer } from 'mobx-react';
 import React, { useContext, useMemo, useState } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import Store from '../../Store/Store';
 import useDropdown from '../Dropdown';
@@ -84,7 +84,7 @@ const ProjectView = () => {
 
   if (!currentProject) return <div>Unloaded</div>;
 
-  if (currentProject && datasetKey) return <Redirect to="/explore" />;
+  // if (currentProject && datasetKey) return <Redirect to="/explore" />;
 
   return (
     <div className={classes.root}>
@@ -125,6 +125,17 @@ const ProjectView = () => {
               setComparisonView(!comparisonView);
             }}
           />
+          {comparisonView ? (
+            <Button
+              color="primary"
+              component={Link}
+              startIcon={<LaunchIcon />}
+              to="/compare"
+              variant="outlined"
+            >
+              Comparison View
+            </Button>
+          ) : null}
         </Toolbar>
       </AppBar>
       <DatasetTable columnNum={comparisonView ? 1 : 2} />

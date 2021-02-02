@@ -78,7 +78,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const eventConfig: EventConfig<IntentEvents> = {
+export const eventConfig: EventConfig<IntentEvents> = {
   'Load Dataset': {
     backboneGlyph: <LoadDataset size={22} />,
     currentGlyph: <LoadDataset fill="#2185d0" size={22} />,
