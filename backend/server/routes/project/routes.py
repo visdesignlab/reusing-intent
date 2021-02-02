@@ -104,4 +104,7 @@ def processProvenance(project):
 
             results = reapply(baseDataset, updatedDataset, interactions)
 
+            data = updatedDataset.drop(columns=["record_id"])
+            results["new_data"] = list(data.T.to_dict().values())
+
             return jsonify(results)
