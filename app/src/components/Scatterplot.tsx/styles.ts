@@ -10,7 +10,7 @@ const useScatterplotStyle = makeStyles({
     strokeLinecap: 'round',
   },
   movedLine: {
-    opacity: "0.5",
+    opacity: '0.5',
     stroke: 'black',
     strokeWidth: '1',
     strokeLinecap: 'round',

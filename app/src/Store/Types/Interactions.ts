@@ -1,4 +1,5 @@
 import { Plot } from './Plot';
+import { Prediction } from './Prediction';
 
 type AddPlotInteraction = {
   type: 'AddPlot';
@@ -44,11 +45,17 @@ type ChangeCategoryInteraction = {
   category: string;
 };
 
+type SelectPredictionInteraction = {
+  type: 'SelectPrediction';
+  prediction: Prediction;
+};
+
 export type Interaction =
   | AddPlotInteraction
   | PointSelectionInteraction
   | ToggleCategoryInteraction
   | ChangeCategoryInteraction
-  | BrushInteraction;
+  | BrushInteraction
+  | SelectPredictionInteraction;
 
 export type Interactions = Interaction[];
