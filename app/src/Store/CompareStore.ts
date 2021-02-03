@@ -1,18 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { isChildNode, NodeID } from '@visdesignlab/trrack';
-import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, toJS } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
-import { BrushAffectType } from './../components/Brush/Types/Brush';
-import { ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
-import { InteractionArtifact } from './Types/InteractionArtifact';
-import { Interaction, Interactions } from './Types/Interactions';
-import { Plot } from './Types/Plot';
-import { Prediction, Predictions } from './Types/Prediction';
 
 export class CompareStore {
   rootStore: RootStore;
@@ -27,26 +19,20 @@ export class CompareStore {
     let selectedPoints: string[] = [];
     const { plots } = this.rootStore.exploreStore.state;
 
-    for (const a in this.updatedActions)
-    {
+    for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      if(act.type === "Brush")
-      {
-        const brushes = act.plot.brushes
+      if (act.type === 'Brush') {
+        const brushes = act.plot.brushes;
 
-        for( const b in brushes)
-        {
-          const points = brushes[b].changes.added
+        for (const b in brushes) {
+          const points = brushes[b].changes.added;
           const removed = brushes[b].changes.removed;
 
-          console.log(points);
-          selectedPoints.push(...points)
+          selectedPoints.push(...points);
           selectedPoints.push(...removed);
-
         }
       }
-      console.log(act);
     }
 
     Object.values(plots).forEach((plot) => {
@@ -62,9 +48,6 @@ export class CompareStore {
 
     if (!isEmptyOrNull(selectedPrediction))
       selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
-
-    
-      console.log(new Set(selectedPoints));
 
     return Array.from(new Set(selectedPoints));
   }
