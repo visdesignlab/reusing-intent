@@ -9,6 +9,7 @@ from backend.server.celery.tasks import (
     precomputeClusters,
     precomputeLR,
     precomputeOutliers,
+    precomputeSkyline,
 )
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
@@ -105,11 +106,15 @@ def precompute(data, combinations, project, record_id):
     linear_regression_task = precomputeLR.delay(
         data.to_json(), combinations, record_id, project
     )
+    skyline_task = precomputeSkyline.delay(
+        data.to_json(), combinations, record_id, project
+    )
 
     return [
         {"type": "Outlier", "id": outlier_task.task_id},
         {"type": "Cluster", "id": cluster_task.task_id},
         {"type": "Linear Regression", "id": linear_regression_task.task_id},
+        {"type": "Skyline", "id": skyline_task.task_id},
     ]
 
 

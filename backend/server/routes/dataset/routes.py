@@ -11,6 +11,7 @@ from backend.server.database.schemas.algorithms.cluster import (
 )
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.algorithms.regression import LinearRegression
+from backend.server.database.schemas.algorithms.skyline import Skyline
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
@@ -185,12 +186,20 @@ def predict(project: str, key: str):
                 .distinct(LinearRegression.output)
                 .all()
             )
+            skyline = (
+                session.query(Skyline)
+                .filter(Skyline.record_id == record_id)
+                .filter(Skyline.dimensions == ",".join(dimensions))
+                .distinct(Skyline.output)
+                .all()
+            )
 
             algs = []
             algs.extend(kmeanscluster)
             algs.extend(dbscancluster)
             algs.extend(dbscanoutlier)
             algs.extend(linearregression)
+            algs.extend(skyline)
 
             for a in algs:
                 predictions.extend(a.predict(selections, dataset["id"]))

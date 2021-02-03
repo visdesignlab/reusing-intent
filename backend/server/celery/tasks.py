@@ -10,6 +10,7 @@ from backend.inference_core.algorithms.kmeans import (
     get_kmeans_count,
 )
 from backend.inference_core.algorithms.linear_regression import computeLR
+from backend.inference_core.algorithms.skyline_algorithm import computeSkyline
 from backend.server.celery.init import celery
 from backend.server.database.schemas.algorithms.cluster import (
     DBScanCluster,
@@ -17,6 +18,7 @@ from backend.server.database.schemas.algorithms.cluster import (
 )
 from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 from backend.server.database.schemas.algorithms.regression import LinearRegression
+from backend.server.database.schemas.algorithms.skyline import Skyline
 from backend.server.database.session import getSessionScopeFromId
 
 
@@ -138,3 +140,18 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
         state=SUCCESS, meta={"processed": processed, "to_process": to_process}
     )
     raise Ignore()
+
+
+@celery.task(bind=True)
+def precomputeSkyline(self, data: Any, combinations, record_id, project):
+    data = pd.read_json(data)
+
+    for combo in combinations:
+        subset = data[combo]
+        dimensions = ",".join(combo)
+        for output, info in computeSkyline(subset):
+            with getSessionScopeFromId(project) as session:
+                skyline_result = Skyline(
+                    dimensions=dimensions, output=output, info=info, record_id=record_id
+                )
+                session.add(skyline_result)
