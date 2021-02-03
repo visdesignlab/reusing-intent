@@ -12,7 +12,7 @@ from ..base import Base
 
 class ClusterBase(IntentBase):
     def getClusterParams(self, idx):
-        params = self.getParams()
+        params = self.getInfo()
         if self.algorithm == "DBScan":
             return params
         params["selected_center"] = params["centers"][idx]

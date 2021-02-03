@@ -32,19 +32,25 @@ def get_dbscan_count(data: pd.DataFrame):
     return len(params)
 
 
+def dbscan(data, eps, min_samples):
+    clf = DBSCAN(eps=eps, min_samples=min_samples)
+    clf.fit(data)
+    labels = clf.labels_
+    params = {"eps": eps, "min_samples": min_samples}
+
+    return labels, params
+
+
 def computeDBScan(data: pd.DataFrame):
     eps, min_samples = get_params(data.shape[0])
     params = [(e, m) for e in eps for m in min_samples]
 
     scaled_data = robustScaler(data.values)
-    dbscanners = [DBSCAN(eps=e, min_samples=m) for e, m in params]
 
-    for dbscan in dbscanners:
-        dbscan.fit(scaled_data)
+    results = [dbscan(scaled_data, eps=e, min_samples=m) for e, m in params]
 
     rets = [
-        (",".join(map(str, dbscan.labels_)), json.dumps(dbscan.get_params()))
-        for dbscan in dbscanners
+        (",".join(map(str, labels)), json.dumps(params)) for labels, params in results
     ]
 
     return rets

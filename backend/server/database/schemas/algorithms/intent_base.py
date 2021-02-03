@@ -10,12 +10,12 @@ from sqlalchemy.sql.sqltypes import Integer, String
 class IntentBase(ABC):
     id = Column(Integer, primary_key=True)
     record_id = Column(Integer, nullable=False)
-    params = Column(String, nullable=False)
+    info = Column(String, nullable=False)
     dimensions = Column(String, nullable=False)
     output = Column(String, nullable=False)
 
-    def getParams(self):
-        return json.loads(self.params)
+    def getInfo(self):
+        return json.loads(self.info)
 
     def getDimensionArr(self) -> List[str]:
         return self.dimensions.split(",")

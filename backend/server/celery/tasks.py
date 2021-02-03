@@ -40,7 +40,7 @@ def precomputeOutliers(self, data: Any, combinations, record_id, project):
                 dbscan_cluster_result = DBScanOutlier(
                     dimensions=dimensions,
                     output=output,
-                    params=params,
+                    info=params,
                     record_id=record_id,
                 )
                 session.add(dbscan_cluster_result)
@@ -76,7 +76,7 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
                 dbscan_cluster_result = DBScanCluster(
                     dimensions=dimensions,
                     output=output,
-                    params=params,
+                    info=params,
                     record_id=record_id,
                 )
                 session.add(dbscan_cluster_result)
@@ -89,7 +89,7 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
                 kmeans_result = KMeansCluster(
                     dimensions=dimensions,
                     output=output,
-                    params=params,
+                    info=params,
                     record_id=record_id,
                 )
                 session.add(kmeans_result)
@@ -125,7 +125,7 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
                 linear_regression_result = LinearRegression(
                     dimensions=dimensions,
                     output=output,
-                    params=params,
+                    info=params,
                     record_id=record_id,
                 )
                 session.add(linear_regression_result)

@@ -3,7 +3,7 @@ import os
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from backend.reapply.reapply import reapply
+from backend.inference_core.reapply.reapply import reapply
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.schemas.project import Project
 from backend.server.database.session import (

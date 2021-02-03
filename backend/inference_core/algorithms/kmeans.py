@@ -15,29 +15,32 @@ def get_kmeans_count():
     return len(n_clusters)
 
 
+def kmeans(data, n_clusters):
+    clf = KMeans(n_clusters=n_clusters)
+    clf.fit(data)
+    labels = clf.labels_
+    centers = clf.cluster_centers_
+    return labels, centers, n_clusters
+
+
 def computeKMeansClusters(data: pd.DataFrame):
     n_clusters = get_params()
 
     scaler = robustScaler2(data.values)
     scaled_data = scaler.transform(data.values)
 
-    kmeansClusterers = [KMeans(n_clusters=n) for n in n_clusters]
-
-    for kmeans in kmeansClusterers:
-        kmeans.fit(scaled_data)
+    results = [kmeans(scaled_data, n) for n in n_clusters]
 
     infos = [
         {
-            "params": kmeans.get_params(),
-            "centers": (
-                scaler.inverse_transform(kmeans.cluster_centers_)
-            ).tolist(),  # type:ignore
+            "params": {"n_clusters": n_cluster},
+            "centers": (scaler.inverse_transform(centers)).tolist(),  # type:ignore
         }
-        for kmeans in kmeansClusterers
+        for _, centers, n_cluster in results
     ]
 
     rets = [
-        (",".join(map(str, kmeans.labels_)), json.dumps(info))  # type: ignore
-        for kmeans, info in zip(kmeansClusterers, infos)
+        (",".join(map(str, labels)), json.dumps(info))  # type: ignore
+        for (labels, _c, _n), info in zip(results, infos)
     ]
     return rets

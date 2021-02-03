@@ -32,7 +32,7 @@ class OutlierBase(IntentBase):
                 intent=str(col),
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
-                info=self.getParams(),
+                info=self.getInfo(),
                 algorithm=self.algorithm,
             )
             for col, vals in output.iteritems()
