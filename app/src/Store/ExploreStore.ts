@@ -295,8 +295,6 @@ export class ExploreStore {
       ...this.artifact,
       interactions,
     });
-
-    console.log(toJS(this.artifact.interactions));
   };
 
   addPredictions = () => {
