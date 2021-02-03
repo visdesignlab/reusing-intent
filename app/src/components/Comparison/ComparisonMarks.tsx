@@ -4,7 +4,8 @@ import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
 import useScatterplotStyle from '../Scatterplot.tsx/styles';
-import { DataDisplay } from '../Scatterplot.tsx/Scatterplot';
+
+import { DataDisplay } from './ComparisonScatterplot';
 
 type Props = {
   points: { x: number; y: number; label: string; id: string }[];
@@ -80,10 +81,13 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
             if (compPoints !== null) {
               //if the compPoint removed the point
               if (compPoints.filter((d) => d.label === point.label).length === 0) {
+
                 return (
                   <g
                     key={point.label}
-                    className={`marks ${classes.removedMark}`}
+                    className={`marks ${classes.removedMark} ${
+                      selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                    }`}
                     id={`mark${point.id}`}
                     opacity="0.5"
                     transform={`translate(${xScale(point.x as number) - 3}, ${
@@ -111,7 +115,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
                   <g>
                     <circle
                       key={point.label}
-                      className={`marks ${classes.movedPoint}`}
+                      className={`marks ${classes.movedPoint} ${
+                        selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                      }`}
                       cx={xScale(point.x as number)}
                       cy={yScale(point.y as number)}
                       id={`mark${point.id}`}
@@ -119,7 +125,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
                       r="5"
                     />
                     <line
-                      className={`marks ${classes.movedLine}`}
+                      className={`marks ${classes.movedLine} ${
+                        selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                      }`}
                       x1={xScale(point.x)}
                       x2={xScale(editGroup[0].x)}
                       y1={yScale(point.y)}
@@ -133,7 +141,7 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
             return (
               <circle
                 key={point.label}
-                className={`marks ${selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark}`}
+                className={`marks ${selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark} `}
                 cx={xScale(point.x as number)}
                 cy={yScale(point.y as number)}
                 id={`mark${point.id}`}
@@ -151,7 +159,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
             return (
               <g
                 key={point.label}
-                className={`marks ${classes.newMark}`}
+                className={`marks ${classes.newMark} ${
+                  selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                }`}
                 id={`mark${point.id}`}
                 opacity="0.5"
                 transform={`translate(${xScale(point.x as number) - 5}, ${
@@ -173,10 +183,13 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
             if (compPoints !== null) {
               //if the compPoint removed the point
               if (compPoints.filter((d) => d.label === point.label).length === 0) {
+
                 return (
                   <g
                     key={point.label}
-                    className={`marks ${classes.removedMark}`}
+                    className={`marks ${classes.removedMark} ${
+                      selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                    }`}
                     id={`mark${point.id}`}
                     opacity="0.5"
                     transform={`translate(${xScale(point.x as number) - 3}, ${
@@ -201,7 +214,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
                   <g>
                     <circle
                       key={point.label}
-                      className={`marks ${classes.movedPoint}`}
+                      className={`marks ${classes.movedPoint} ${
+                        selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                      }`}
                       cx={xScale(point.x as number)}
                       cy={yScale(point.y as number)}
                       id={`mark${point.id}`}
@@ -209,7 +224,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
                       r="5"
                     />
                     <line
-                      className={`marks ${classes.movedLine}`}
+                      className={`marks ${classes.movedLine} ${
+                        selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                      }`}
                       x1={xScale(point.x)}
                       x2={xScale(editGroup[0].x)}
                       y1={yScale(point.y)}
@@ -243,7 +260,9 @@ const Marks: FC<Props> = ({ points, selectedPoints, xScale, yScale, compPoints, 
             return (
               <g
                 key={point.label}
-                className={`marks ${classes.newMark}`}
+                className={`marks ${classes.newMark} ${
+                  selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                }`}
                 id={`mark${point.id}`}
                 opacity="0.5"
                 transform={`translate(${xScale(point.x as number) - 5}, ${

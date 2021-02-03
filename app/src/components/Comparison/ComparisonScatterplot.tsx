@@ -1,225 +1,112 @@
-import { createStyles, makeStyles, useTheme, Button } from '@material-ui/core';
-import { select } from 'd3';
+import { createStyles, makeStyles, useTheme, Button, CircularProgress, Grid, Paper, IconButton, Theme } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext, useState } from 'react';
+import React, { FC, useContext, useState } from 'react';
+import { CloseIcon } from '@material-ui/x-grid';
 
-import { ExtendedBrushCollection } from '../../Store/IntentState';
+
+import Scatterplot from '../Scatterplot.tsx/Scatterplot';
 import Store from '../../Store/Store';
-import { Plot } from '../../Store/Types/Plot';
-import translate from '../../Utils/Translate';
-import BrushComponent, { BrushSelections } from '../Brush/Components/BrushComponent';
-import { BrushAffectType, BrushCollection } from '../Brush/Types/Brush';
-import FreeFormBrush, {
-  BrushSize,
-  FreeformBrushAction,
-  FreeformBrushEvent,
-} from '../Freeform/FreeFormBrush';
-import { useScale } from '../Hooks/useScale';
-import { useScatterplotData } from '../Hooks/useScatterplot';
 
-import Axis from './Axis';
-import Legend from './Legend';
-import Marks from './Marks';
-import useScatterplotStyle from './styles';
 
-const useStyles = makeStyles(() =>
+
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: (props: { dimension: number }) => ({
-      width: props.dimension,
-      height: props.dimension,
-    }),
+    root: {
+      flexGrow: 1,
+      padding: theme.spacing(2),
+      overflow: 'auto',
+    },
+    grid: {
+      height: '100%',
+    },
+    closeIcon: {
+      position: 'absolute',
+    },
   }),
 );
 
-type Props = {
-  plot: Plot;
-  size: number;
-  comparisonPlot?: Plot;
-};
 
 export type DataDisplay = "Original" | "Diff" | "Comparison" | "All"
 
-const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
+const CompVis: FC = () => {
+  const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
+
+  // const spContainerDimension = height > width ? width : height;
+  const spContainerDimension = n_plots === 1 ? 800 : 500;
+
+  const [dataDisplay, setDataDisplay] = useState <DataDisplay>("All")
+  const classes = useStyles();
   const theme = useTheme();
-  const dimension = size - 2 * theme.spacing(1);
-  const { root } = useStyles({ dimension });
-  const {
-    loadedDataset: { labelColumn },
-    setFreeformSelection,
-    selectedPoints,
-    showMatchesLegend,
-    setBrushSelection,
-    state: { brushType },
-  } = useContext(Store).exploreStore;
+  const xs = n_plots === 1 ? 'auto' : 6;
 
-  const [dataDisplay, setDataDisplay] = useState<DataDisplay>("All");
+  const loader = <CircularProgress />;
 
-  const { x, y } = plot;
+  const scatterPlots = plots.map((plot) => (
+    <Grid key={plot.id} xs={xs} item>
+      <Paper elevation={3}>
+        {n_plots > 1 && (
+          <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
+            <CloseIcon />
+          </IconButton>
+        )}
+        <div>
+          <Button
+            color="primary"
+            variant="outlined"
+            onMouseOut={() => {
+              setDataDisplay('All');
+            }}
+            onMouseOver={() => {
+              setDataDisplay('Original');
+            }}
+          >
+            Original Data
+          </Button>
+          <Button
+            color="primary"
+            variant="outlined"
+            onMouseOut={() => {
+              setDataDisplay('All');
+            }}
+            onMouseOver={() => {
+              setDataDisplay('Comparison');
+            }}
+          >
+            Comparison Data
+          </Button>
+          <Button
+            color="primary"
+            variant="outlined"
+            onMouseOut={() => {
+              setDataDisplay('All');
+            }}
+            onMouseOver={() => {
+              setDataDisplay('Diff');
+            }}
+          >
+            Shifted Data
+          </Button>
+        </div>
+        <Scatterplot
+          dataDisplay={dataDisplay}
+          originalMarks={false}
+          plot={plot}
+          size={spContainerDimension - 2 * theme.spacing(1)}
+        />
+      </Paper>
+    </Grid>
+  ));
 
-  console.log(dataDisplay)
-
-  const classes = useScatterplotStyle();
-
-  const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, true);
-  const { points: compPoints} = useScatterplotData(
-    x,
-    y,
-    labelColumn,
-    false,
-  );
-
-
-  const margin = theme.spacing(10);
-  const sp_dimension = dimension - 2 * margin;
-
-  const xScale = useScale(x_extents, [0, sp_dimension]);
-  const yScale = useScale(y_extents, [sp_dimension, 0]);
-
-  const freeFormBrushHandler = useCallback(
-    (points: string[], event: FreeformBrushEvent, _: FreeformBrushAction) => {
-      if (points.length === 0) return;
-      const selectorString = points.map((p) => `#mark${p}`).join(',');
-
-      switch (event) {
-        case 'Start':
-        case 'Brushing':
-          select(`#${plot.id}`)
-            .selectAll(selectorString)
-            .filter(function () {
-              return select(this).classed(classes.regularMark);
-            })
-            .classed(classes.intermittentHighlight, true);
-          break;
-        case 'End':
-          select(`#${plot.id}`).selectAll('.marks').classed(classes.intermittentHighlight, false);
-          setFreeformSelection(plot, points);
-          break;
-      }
-    },
-    [plot, setFreeformSelection, classes],
-  );
-
-  const rectBrushHandler = useCallback(
-    (
-      selection: BrushSelections,
-      brushes: BrushCollection,
-      type: BrushAffectType,
-      affectedId: string,
-    ) => {
-      const brs: ExtendedBrushCollection = {};
-
-      Object.entries(brushes).forEach((entry) => {
-        const [id, val] = entry;
-
-        brs[id] = { ...val, points: selection[id] };
-      });
-
-      setBrushSelection(plot, brs, type, affectedId);
-    },
-    [plot, setBrushSelection],
-  );
-
-  let brushSize: BrushSize | null = null;
-
-  switch (brushType) {
-    case 'Freeform Small':
-      brushSize = 20;
-      break;
-    case 'Freeform Medium':
-      brushSize = 35;
-      break;
-    case 'Freeform Large':
-      brushSize = 50;
-      break;
-    default:
-      brushSize = null;
-  }
+  // console.log(prov);
 
   return (
-    <div>
-      <Button
-        color="primary"
-        variant="outlined"
-        onMouseOut={() => {
-          setDataDisplay('All');
-        }}
-        onMouseOver={() => {
-          setDataDisplay('Original');
-        }}
-      >
-        Original Data
-      </Button>
-      <Button
-        color="primary"
-        variant="outlined"
-        onMouseOut={() => {
-          setDataDisplay('All');
-        }}
-        onMouseOver={() => {
-          setDataDisplay('Comparison');
-        }}
-      >
-        Comparison Data
-      </Button>
-      <Button
-        color="primary"
-        variant="outlined"
-        onMouseOut={() => {
-          setDataDisplay('All');
-        }}
-        onMouseOver={() => {
-          setDataDisplay('Diff');
-        }}
-      >
-        Shifted Data
-      </Button>
-      <svg className={root} id={plot.id}>
-        <g transform={translate(margin)}>
-          <Axis
-            columnName={x}
-            scale={xScale}
-            transform={translate(0, sp_dimension)}
-            type="bottom"
-          />
-          <Axis columnName={y} scale={yScale} type="left" />
-          <Marks
-            compPoints={compPoints}
-            dataDisplay={dataDisplay}
-            points={points}
-            selectedPoints={selectedPoints}
-            xScale={xScale}
-            yScale={yScale}
-          />
-          {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
-          <BrushComponent
-            bottom={sp_dimension}
-            brushes={plot.brushes}
-            data={points}
-            disableBrush={brushType !== 'Rectangular'}
-            left={0}
-            right={sp_dimension}
-            top={0}
-            xScale={xScale}
-            yScale={yScale}
-            onBrushHandler={rectBrushHandler}
-          />
-          {brushSize && (
-            <FreeFormBrush
-              bottom={sp_dimension}
-              brushSize={brushSize}
-              data={points}
-              left={0}
-              right={sp_dimension}
-              top={0}
-              xScale={xScale}
-              yScale={yScale}
-              onBrush={freeFormBrushHandler}
-            />
-          )}
-        </g>
-      </svg>
+    <div className={classes.root}>
+      <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
+        {isLoadingData ? loader : scatterPlots}
+      </Grid>
     </div>
   );
 };
 
-export default observer(Scatterplot);
+
+export default observer(CompVis);

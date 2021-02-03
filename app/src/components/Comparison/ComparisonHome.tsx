@@ -13,6 +13,8 @@ import Visualization from '../Visualization';
 import Navbar from '../Navbar';
 import { getPlotId } from '../../Utils/IDGens';
 
+import ComparisonScatterplot from './ComparisonScatterplot';
+
 const useStyles = makeStyles(() => ({
   root: {
     '.red': {
@@ -75,7 +77,7 @@ const ComparisonHome = () => {
         <CssBaseline />
         <Navbar />
         <div className={classes.layout}>
-        <Visualization />
+        <ComparisonScatterplot />
         <ProvVis
             changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
             current={provenance.graph.current}

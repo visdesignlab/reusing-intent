@@ -16,6 +16,8 @@ import FreeFormBrush, {
 } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
+import ComparisonMarks from '../Comparison/ComparisonMarks';
+import { DataDisplay } from '../Comparison/ComparisonScatterplot';
 
 import Axis from './Axis';
 import Legend from './Legend';
@@ -34,11 +36,11 @@ const useStyles = makeStyles(() =>
 type Props = {
   plot: Plot;
   size: number;
+  originalMarks?: boolean;
+  dataDisplay?: DataDisplay;
 };
 
-export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All';
-
-const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
+const Scatterplot: FC<Props> = ({ plot, size, originalMarks = true, dataDisplay = "Original" }: Props) => {
   const theme = useTheme();
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
@@ -46,16 +48,22 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
     loadedDataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
+
     showMatchesLegend,
     setBrushSelection,
     state: { brushType },
   } = useContext(Store).exploreStore;
 
+  const {
+    selectedPointsComparison,
+  } = useContext(Store).compareStore;
+
   const { x, y } = plot;
 
   const classes = useScatterplotStyle();
 
-  const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, true);
+  const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, false);
+  const { points: compPoints } = useScatterplotData(x, y, labelColumn, true);
 
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
@@ -128,7 +136,11 @@ const Scatterplot: FC<Props> = ({ plot, size }: Props) => {
       <g transform={translate(margin)}>
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
-        <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
+        {originalMarks ? (
+          <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
+        ) : (
+          <ComparisonMarks compPoints={compPoints} dataDisplay={dataDisplay} points={points} selectedPoints={selectedPointsComparison} xScale={xScale} yScale={yScale} />
+        )}
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
         <BrushComponent
           bottom={sp_dimension}
