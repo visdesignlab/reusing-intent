@@ -279,7 +279,16 @@ const App: FC = () => {
                     <Tooltip
                       title={
                         <>
-                          <pre>{JSON.stringify(pred.info || '', null, 2)}</pre>
+                          <pre>
+                            {JSON.stringify(
+                              {
+                                dimensions: pred.dimensions,
+                                info: pred.info || '',
+                              },
+                              null,
+                              2,
+                            )}
+                          </pre>
                         </>
                       }
                     >
