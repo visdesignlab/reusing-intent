@@ -8,11 +8,13 @@ import {
   Switch,
   Theme,
   Toolbar,
+  Button,
 } from '@material-ui/core';
+import { Link } from 'react-router-dom';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useMemo } from 'react';
 
 import Store from '../Store/Store';
 
@@ -42,6 +44,23 @@ const Navbar: FC = () => {
 
   const { categoricalColumns = [], columnInfo } = dataset || {};
 
+  const {
+    currentProject,
+    comparisonDatasetKey,
+
+    loadComparisonApply,
+  } = useContext(Store).projectStore;
+
+  const datasetOptions = useMemo(() => {
+    const opts =
+      currentProject?.datasets.map((dataset) => ({
+        key: dataset.key,
+        desc: dataset.version,
+      })) || [];
+
+    return opts;
+  }, [currentProject]);
+
   const { Dropdown: CategoryDropdown } = useDropdown(
     'category-dropdown',
     'Category Column',
@@ -52,6 +71,15 @@ const Navbar: FC = () => {
     })),
     categoryColumn,
     changeCategory,
+  );
+
+  const { Dropdown: ComparisonDropdown } = useDropdown(
+    'dataset-dropdown',
+    'Comparison Dataset',
+    '',
+    datasetOptions,
+    comparisonDatasetKey || '',
+    loadComparisonApply,
   );
 
   return (
@@ -85,6 +113,10 @@ const Navbar: FC = () => {
               </ToggleButtonGroup>
             </FormControl>
           </FormGroup>
+          <Button color="primary" component={Link} to="/compare" variant="outlined">
+            Apply
+          </Button>
+          <ComparisonDropdown/>
         </Toolbar>
       </AppBar>
     </div>

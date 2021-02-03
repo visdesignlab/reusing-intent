@@ -10,12 +10,14 @@ import { provenanceActions } from './ProvenanceActions';
 import { IntentEvents } from './Types/IntentEvents';
 import { InteractionArtifact } from './Types/InteractionArtifact';
 import { IntentProvenance } from './Types/ProvenanceType';
+import { CompareStore } from './CompareStore';
 
 export class RootStore {
   debug = true;
   defaultProject = 'cluster';
   projectStore: ProjectStore;
   exploreStore: ExploreStore;
+  compareStore: CompareStore
   provenance: IntentProvenance;
   actions = provenanceActions;
   currentNodes: string[];
@@ -30,6 +32,7 @@ export class RootStore {
 
     this.projectStore = new ProjectStore(this);
     this.exploreStore = new ExploreStore(this);
+    this.compareStore= new CompareStore(this);
 
     this.currentNodes = [];
     this.bundledNodes = [];

@@ -26,6 +26,7 @@ const useScatterplotStyle = makeStyles({
   },
   unionMark: {
     fill: UNION,
+    stroke: UNION,
   },
   regularForceMark: {
     fill: 'black !important',

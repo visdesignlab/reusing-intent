@@ -236,6 +236,7 @@ export class ExploreStore {
     predictionSelectionAction.setLabel(`${prediction.intent} Selection`);
     this.provenance.apply(predictionSelectionAction(prediction));
     this.addInteraction({ type: 'SelectPrediction', prediction });
+    this.addPredictions();
   };
 
   changeCategory = (category: string) => {

@@ -123,6 +123,17 @@ const ProjectView = () => {
               setComparisonView(!comparisonView);
             }}
           />
+          {comparisonView ? (
+            <Button
+              color="primary"
+              component={Link}
+              startIcon={<LaunchIcon />}
+              to="/compare"
+              variant="outlined"
+            >
+              Comparison View
+            </Button>
+          ) : null}
         </Toolbar>
       </AppBar>
       <DatasetTable columnNum={comparisonView ? 1 : 2} />

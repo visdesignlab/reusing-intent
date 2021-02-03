@@ -6,6 +6,7 @@ import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 import App from './App';
 import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
+import ComparisonHome from './components/Comparison/ComparisonHome';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
@@ -18,6 +19,7 @@ const app = (
       <Redirect from="/" to="/project" exact />
       <Route component={App} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
+      <Route component={ComparisonHome} path="/compare" exact />
     </Switch>
   </BrowserRouter>
 );
