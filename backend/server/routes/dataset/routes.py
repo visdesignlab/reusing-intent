@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
+from backend.inference_core.algorithms.range import range_intent
 from backend.server.celery.init import celery
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.algorithms.cluster import (
@@ -203,6 +204,8 @@ def predict(project: str, key: str):
 
             for a in algs:
                 predictions.extend(a.predict(selections, dataset["id"]))
+
+            predictions.extend(range_intent(dataset, dimensions, selections))
 
             predictions = list(filter(lambda x: x["rank"] > 0.1, predictions))  # type: ignore
 
