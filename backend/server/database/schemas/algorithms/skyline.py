@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 
 from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction_stats import getStats
 from backend.inference_core.rankings import rank_jaccard
 from backend.server.database.schemas.algorithms.intent_base import IntentBase
 from backend.server.database.schemas.base import Base
@@ -27,9 +28,9 @@ class Skyline(Base, IntentBase):
         output = list(map(int, self.output.split(",")))
         return np.array(output)
 
-    def predict(self, selections: List[int], ids):
+    def predict(self, selection: List[int], ids):
         output = self.processOutput()
-        sels = np.array(selections)
+        sels = np.array(selection)
 
         preds: List[Prediction] = [
             Prediction(
@@ -39,6 +40,10 @@ class Skyline(Base, IntentBase):
                 dimensions=self.getDimensionArr(),
                 info=self.getInfo(),
                 algorithm=self.algorithm,
+                membership=getStats(
+                    self.getMemberIds(output, ids),
+                    ids[sels.astype(bool)].tolist(),
+                ),
             )
         ]
 

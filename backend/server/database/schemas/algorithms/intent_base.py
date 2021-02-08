@@ -21,7 +21,7 @@ class IntentBase(ABC):
         return self.dimensions.split(",")
 
     def getMemberIds(self, arr: np.ndarray, ids) -> List[str]:
-        return ids.iloc[np.where(arr == 1)[0].tolist()].values.tolist()  # type: ignore
+        return list(sorted(ids.iloc[np.where(arr == 1)[0].tolist()].values.tolist()))  # type: ignore
 
     @property
     @abstractmethod

@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 from sklearn import tree
 
 from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction_stats import getStats
 
 
 def get_mask_from_exp(data, exp):
@@ -81,8 +82,9 @@ def get_decision_paths(model: tree.DecisionTreeClassifier, data, selection):
     return paths
 
 
-def range_intent(dataset, dimensions, selection, max_depth=None):
+def range_intent(dataset, dimensions, selection, max_depth=None) -> List[Prediction]:
     selection = np.array(selection)
+    selected_ids = dataset.loc[selection.astype(bool), "id"]
     data = dataset[dimensions]
     clf = tree.DecisionTreeClassifier(max_depth=max_depth)
     clf.fit(data, selection)
@@ -95,19 +97,23 @@ def range_intent(dataset, dimensions, selection, max_depth=None):
 
     intent = "Range" if max_depth is None else "Simplified Range"
 
-    rank = 1 / pow(current_depth, 2)
+    rank = 1 / (pow(current_depth, 2) + 1)
 
     pred = Prediction(
         rank=rank,
         intent=intent,
         memberIds=member_ids,
         dimensions=dimensions,
-        info={"depth": clf.get_depth()},
+        info={"depth": clf.get_depth(), "rules": rules},
         algorithm="Decision Tree",
+        membership=getStats(member_ids, selected_ids.tolist()),
     )
 
     if current_depth > 1 and max_depth is None:
         new_pred = range_intent(dataset, dimensions, selection, current_depth - 1)
-        return [pred, new_pred]
+        pred_list = []
+        pred_list.append(pred)
+        pred_list.extend(new_pred)
+        return pred_list
 
-    return pred
+    return [pred]

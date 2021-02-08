@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction_stats import getStats
 from backend.inference_core.rankings import rank_jaccard
 from backend.server.database.schemas.algorithms.intent_base import IntentBase
 
@@ -34,6 +35,10 @@ class OutlierBase(IntentBase):
                 dimensions=self.getDimensionArr(),
                 info=self.getInfo(),
                 algorithm=self.algorithm,
+                membership=getStats(
+                    self.getMemberIds(vals.values, ids),
+                    ids[sels.astype(bool)].tolist(),
+                ),
             )
             for col, vals in output.iteritems()
         ]

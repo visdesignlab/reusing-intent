@@ -146,6 +146,13 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
 def precomputeSkyline(self, data: Any, combinations, record_id, project):
     data = pd.read_json(data)
 
+    to_process = 2 * len(combinations)
+    processed = 0
+
+    self.update_state(
+        state=STARTED, meta={"processed": processed, "to_process": to_process}
+    )
+
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
@@ -155,3 +162,13 @@ def precomputeSkyline(self, data: Any, combinations, record_id, project):
                     dimensions=dimensions, output=output, info=info, record_id=record_id
                 )
                 session.add(skyline_result)
+
+            processed += 1
+            self.update_state(
+                state=STARTED, meta={"processed": processed, "to_process": to_process}
+            )
+
+    self.update_state(
+        state=SUCCESS, meta={"processed": processed, "to_process": to_process}
+    )
+    raise Ignore()

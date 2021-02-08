@@ -4,15 +4,11 @@ import pandas as pd
 from flask import Blueprint, jsonify, request
 
 from backend.inference_core.algorithms.range import range_intent
+from backend.inference_core.filter import process_predictions
+from backend.inference_core.intent_contract import Prediction
 from backend.server.celery.init import celery
+from backend.server.database.get_predictions import get_predictions
 from backend.server.database.process_dataset import process_dataset
-from backend.server.database.schemas.algorithms.cluster import (
-    DBScanCluster,
-    KMeansCluster,
-)
-from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
-from backend.server.database.schemas.algorithms.regression import LinearRegression
-from backend.server.database.schemas.algorithms.skyline import Skyline
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import (
@@ -139,7 +135,6 @@ def predict(project: str, key: str):
     engine = getEngine(project)
     with engine.begin() as conn:
         with getSessionScopeFromEngine(conn) as session:
-            predictions = []
 
             dataset_record = (
                 session.query(DatasetRecord).filter(DatasetRecord.key == key).one()
@@ -159,70 +154,12 @@ def predict(project: str, key: str):
                 1 if i in selectedIds else 0 for i in dataset["id"].values.tolist()
             ]
 
-            kmeanscluster = (
-                session.query(KMeansCluster)
-                .filter(KMeansCluster.record_id == record_id)
-                .filter(KMeansCluster.dimensions == ",".join(dimensions))
-                .distinct(KMeansCluster.output)
-                .all()
+            predictions: List[Prediction] = get_predictions(
+                record_id, dataset, selections, dimensions, session
             )
-            dbscancluster = (
-                session.query(DBScanCluster)
-                .filter(DBScanCluster.record_id == record_id)
-                .filter(DBScanCluster.dimensions == ",".join(dimensions))
-                .distinct(DBScanCluster.output)
-                .all()
-            )
-            dbscanoutlier = (
-                session.query(DBScanOutlier)
-                .filter(DBScanOutlier.record_id == record_id)
-                .filter(DBScanOutlier.dimensions == ",".join(dimensions))
-                .distinct(DBScanOutlier.output)
-                .all()
-            )
-            linearregression = (
-                session.query(LinearRegression)
-                .filter(LinearRegression.record_id == record_id)
-                .filter(LinearRegression.dimensions == ",".join(dimensions))
-                .distinct(LinearRegression.output)
-                .all()
-            )
-            skyline = (
-                session.query(Skyline)
-                .filter(Skyline.record_id == record_id)
-                .filter(Skyline.dimensions == ",".join(dimensions))
-                .distinct(Skyline.output)
-                .all()
-            )
-
-            algs = []
-            algs.extend(kmeanscluster)
-            algs.extend(dbscancluster)
-            algs.extend(dbscanoutlier)
-            algs.extend(linearregression)
-            algs.extend(skyline)
-
-            for a in algs:
-                predictions.extend(a.predict(selections, dataset["id"]))
 
             predictions.extend(range_intent(dataset, dimensions, selections))
 
-            predictions = list(filter(lambda x: x["rank"] > 0.1, predictions))  # type: ignore
+            predictions = process_predictions(predictions)
 
-            predictions = list(
-                sorted(predictions, key=lambda x: x["rank"], reverse=True),
-            )
-
-            for pred in predictions:
-                pred["stats"] = getStats(pred["memberIds"], selectedIds)
-
-            return jsonify(predictions)
-
-
-def getStats(members, sels):
-    stats = {
-        "ipns": list(set(members) - set(sels)),
-        "isnp": list(set(sels) - set(members)),
-        "matches": list(set(sels).intersection(set(members))),
-    }
-    return stats
+            return jsonify([e.serialize() for e in predictions])

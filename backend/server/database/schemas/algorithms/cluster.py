@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction_stats import getStats
 from backend.inference_core.rankings import rank_jaccard
 from backend.server.database.schemas.algorithms.intent_base import IntentBase
 
@@ -45,6 +46,10 @@ class ClusterBase(IntentBase):
                 dimensions=self.getDimensionArr(),
                 info=self.getClusterParams(u),
                 algorithm=self.algorithm,
+                membership=getStats(
+                    self.getMemberIds(vals.values, ids),
+                    ids[sels.astype(bool)].tolist(),
+                ),
             )
             for (_, vals), u in zip(output.iteritems(), unique_vals)
         ]
