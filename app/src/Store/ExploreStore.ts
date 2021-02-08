@@ -16,8 +16,8 @@ import { Prediction, Predictions } from './Types/Prediction';
 
 export class ExploreStore {
   rootStore: RootStore;
-  showMatchesLegend = false;
   isLoadingData = false;
+  hoveredPrediction: Prediction | null = null;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -27,6 +27,10 @@ export class ExploreStore {
   // ##################################################################### //
   // ############################## Getters ############################## //
   // ##################################################################### //
+
+  get showMatchesLegend() {
+    return this.hoveredPrediction ? true : false;
+  }
 
   get state() {
     return this.rootStore.state;
@@ -144,14 +148,6 @@ export class ExploreStore {
 
     return dataset;
   }
-
-  // ##################################################################### //
-  // ########################### Store actions ########################### //
-  // ##################################################################### //
-
-  setMatchLegendVisibility = (visible: boolean) => {
-    this.showMatchesLegend = visible;
-  };
 
   // ##################################################################### //
   // ######################### Provenance Actions ######################## //
@@ -273,6 +269,14 @@ export class ExploreStore {
   };
 
   // ##################################################################### //
+  // ########################### Store Actions ########################### //
+  // ##################################################################### //
+
+  setHoveredPrediction = (prediction: Prediction | null) => {
+    this.hoveredPrediction = prediction;
+  };
+
+  // ##################################################################### //
   // ######################### Provenance Helpers ######################## //
   // ##################################################################### //
 
@@ -302,6 +306,7 @@ export class ExploreStore {
   };
 
   addPredictions = () => {
+    this.hoveredPrediction = null;
     const dimensions: string[] = [];
 
     Object.values(this.state.plots).forEach((plt) => {

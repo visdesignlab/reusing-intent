@@ -15,7 +15,6 @@ import {
 import TouchAppIcon from '@material-ui/icons/TouchApp';
 import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
-import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect } from 'react-router-dom';
@@ -39,7 +38,6 @@ import {
   TurnPrediction,
 } from './components/Icons';
 import Navbar from './components/Navbar';
-import useScatterplotStyle from './components/Scatterplot.tsx/styles';
 import Visualization from './components/Visualization';
 import Store from './Store/Store';
 import { IntentEvents } from './Store/Types/IntentEvents';
@@ -179,15 +177,9 @@ export const eventConfig: EventConfig<IntentEvents> = {
 
 const App: FC = () => {
   const classes = useStyles();
-  const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
+  // const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
   const {
-    exploreStore: {
-      predictions,
-      n_plots,
-      addPlot,
-      setMatchLegendVisibility,
-      setPredictionSelection,
-    },
+    exploreStore: { predictions, n_plots, addPlot, setPredictionSelection, setHoveredPrediction },
     projectStore: { loadedDataset },
     provenance,
   } = useContext(Store);
@@ -251,29 +243,29 @@ const App: FC = () => {
                     // eslint-disable-next-line react/no-array-index-key
                     key={i}
                     onMouseOut={() => {
-                      setMatchLegendVisibility(false);
-                      selectAll('.marks')
-                        .classed(regularForceMark, false)
-                        .classed(matches, false)
-                        .classed(isnp, false)
-                        .classed(ipns, false);
+                      setHoveredPrediction(null);
+                      // selectAll('.marks')
+                      //   .classed(regularForceMark, false)
+                      //   .classed(matches, false)
+                      //   .classed(isnp, false)
+                      //   .classed(ipns, false);
                     }}
                     onMouseOver={() => {
-                      setMatchLegendVisibility(true);
-                      const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.membership;
-                      selectAll('.marks').classed(regularForceMark, true);
+                      setHoveredPrediction(pred);
+                      // const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.membership;
+                      // selectAll('.marks').classed(regularForceMark, true);
 
-                      if (matchIds.length > 0)
-                        selectAll(matchIds.map((m) => `#mark${m}`).join(',')).classed(
-                          matches,
-                          true,
-                        );
+                      // if (matchIds.length > 0)
+                      //   selectAll(matchIds.map((m) => `#mark${m}`).join(',')).classed(
+                      //     matches,
+                      //     true,
+                      //   );
 
-                      if (isnpIds.length > 0)
-                        selectAll(isnpIds.map((m) => `#mark${m}`).join(',')).classed(isnp, true);
+                      // if (isnpIds.length > 0)
+                      //   selectAll(isnpIds.map((m) => `#mark${m}`).join(',')).classed(isnp, true);
 
-                      if (ipnsIds.length > 0)
-                        selectAll(ipnsIds.map((m) => `#mark${m}`).join(',')).classed(ipns, true);
+                      // if (ipnsIds.length > 0)
+                      //   selectAll(ipnsIds.map((m) => `#mark${m}`).join(',')).classed(ipns, true);
                     }}
                   >
                     <Tooltip
