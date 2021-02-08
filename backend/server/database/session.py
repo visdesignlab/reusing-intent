@@ -1,3 +1,5 @@
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -26,3 +28,36 @@ def getDBSession(id: str):
     DBSession = sessionmaker(bind=engine)
     sess = DBSession()
     return sess
+
+
+def getDBSessionFromEngine(engine):
+    Base.metadata.bind = engine  # type: ignore
+    DBSession = sessionmaker(bind=engine)
+    sess = DBSession()
+    return sess
+
+
+@contextmanager
+def getSessionScopeFromId(id: str):
+    session = getDBSession(id)
+    try:
+        yield session
+        session.commit()
+    except Exception as ex:
+        session.rollback()
+        raise ex
+    finally:
+        session.close()
+
+
+@contextmanager
+def getSessionScopeFromEngine(engine):
+    session = getDBSessionFromEngine(engine)
+    try:
+        yield session
+        session.commit()
+    except Exception as ex:
+        session.rollback()
+        raise ex
+    finally:
+        session.close()

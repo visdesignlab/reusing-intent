@@ -1,10 +1,32 @@
-from typing import List, TypedDict
+from typing import List
+
+from backend.utils.hash import getUIDForString
 
 
-class Prediction(TypedDict):
+class Prediction(object):
     rank: float
     intent: str
     algorithm: str
-    memberIds: List[int]
+    memberIds: List[str]
     dimensions: List[str]
-    params: dict
+    info: dict
+    membership: dict
+
+    def __init__(
+        self, rank, intent, algorithm, memberIds, dimensions, info, membership
+    ) -> None:
+        self.rank = rank
+        self.intent = intent
+        self.algorithm = algorithm
+        self.memberIds = memberIds
+        self.dimensions = dimensions
+        self.info = info
+        self.membership = membership
+
+    def serialize(self):
+        return self.__dict__
+
+    def get_hash(self):
+        hashString = "_".join(sorted(self.memberIds))
+        hashString = f"{hashString}_{self.algorithm}_{self.intent}"
+        return getUIDForString(hashString)

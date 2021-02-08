@@ -1,10 +1,30 @@
+import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import App from './App';
+import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
+import ComparisonHome from './components/Comparison/ComparisonHome';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+whyDidYouRender(React, {
+  trackAllPureComponents: true,
+  exclude: [/XGrid|RowCells|GridCell/],
+});
+
+const app = (
+  <BrowserRouter>
+    <Switch>
+      <Redirect from="/" to="/project" exact />
+      <Route component={App} path="/explore" exact />
+      <Route component={ProjectHome} path="/project" exact />
+      <Route component={ComparisonHome} path="/compare" exact />
+    </Switch>
+  </BrowserRouter>
+);
+
+ReactDOM.render(app, document.getElementById('root'));
 // ReactDOM.render(
 //   <React.StrictMode>
 //     <App />

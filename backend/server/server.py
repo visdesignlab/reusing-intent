@@ -3,14 +3,14 @@ import os
 from flask import Flask
 from flask_cors import CORS
 
+from backend.server.celery.init import celery
+from backend.server.celery.utils import configure_celery
 from backend.server.paths import DATABASE_ROOT
-
-from .routes.datasetRoutes import datasetRoute
+from backend.server.routes.install_routes import installRoutes
 
 app = Flask(__name__)
 CORS(app)
 app.config["DEBUG"] = True
-app.register_blueprint(datasetRoute)
 
 
 def checkAndInitalizeDatabaseFolder():
@@ -20,4 +20,6 @@ def checkAndInitalizeDatabaseFolder():
 
 def start_server():
     checkAndInitalizeDatabaseFolder()
+    installRoutes(app)
+    configure_celery(celery, app)
     app.run()

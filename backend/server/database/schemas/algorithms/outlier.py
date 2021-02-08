@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction_stats import getStats
 from backend.inference_core.rankings import rank_jaccard
 from backend.server.database.schemas.algorithms.intent_base import IntentBase
 
@@ -19,10 +20,10 @@ class OutlierBase(IntentBase):
         arr[:, 0] = [1 if x == -1 else 0 for x in output]
         arr[:, 1] = [1 if x != -1 else 0 for x in output]
 
-        df = pd.DataFrame(arr, columns=["Outlier", "Non_Outliers"])
+        df = pd.DataFrame(arr, columns=["Outlier", "NonOutlier"])
         return df
 
-    def predict(self, selection: List[int]) -> List[Prediction]:
+    def predict(self, selection: List[int], ids) -> List[Prediction]:
         output = self.processOutput()
         sels = np.array(selection)
 
@@ -30,10 +31,14 @@ class OutlierBase(IntentBase):
             Prediction(
                 rank=rank_jaccard(vals.values, sels),
                 intent=str(col),
-                memberIds=self.getMemberIds(vals.values),
+                memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
-                params=self.getParams(),
+                info=self.getInfo(),
                 algorithm=self.algorithm,
+                membership=getStats(
+                    self.getMemberIds(vals.values, ids),
+                    ids[sels.astype(bool)].tolist(),
+                ),
             )
             for col, vals in output.iteritems()
         ]

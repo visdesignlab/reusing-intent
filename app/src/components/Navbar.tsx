@@ -1,92 +1,130 @@
 import {
   AppBar,
+  Divider,
   FormControl,
-  InputLabel,
+  FormControlLabel,
+  FormGroup,
   makeStyles,
-  MenuItem,
-  Select,
+  Switch,
   Theme,
   Toolbar,
+  Button,
 } from '@material-ui/core';
-import Axios from 'axios';
+import { Link } from 'react-router-dom';
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useContext, useMemo } from 'react';
 
-import IntentStore from '../Store/Store';
+import Store from '../Store/Store';
+
+import AddPlot from './AddPlotComponent/AddPlot';
+import useDropdown from './Dropdown';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
     margin: theme.spacing(1),
     minWidth: 120,
   },
+  formControlwoWidth: {
+    margin: theme.spacing(1),
+  },
 }));
-
-type FetchStatus = 'Idle' | 'Fetching' | 'Fetched';
-
-const useFetch = (url: string | null) => {
-  // TODO: Implement the following at some point
-  // https://www.smashingmagazine.com/2020/07/custom-react-hook-fetch-cache-data/
-  const cache = useRef<{ [key: string]: string[] }>({});
-  const [data, setData] = useState<string[]>([]);
-  const [status, setStatus] = useState<FetchStatus>('Idle');
-
-  useEffect(() => {
-    if (!url) return;
-    setStatus('Fetching');
-
-    if (cache.current[url]) {
-      const data = cache.current[url];
-      setData(data);
-      setStatus('Fetched');
-    } else {
-      Axios.get(url).then((res) => {
-        cache.current[url] = res.data;
-        setData(res.data);
-        setStatus('Fetched');
-      });
-    }
-  }, [url]);
-
-  return { data, status };
-};
 
 const Navbar: FC = () => {
   const classes = useStyles();
-  const intentStore = useContext(IntentStore);
-  const { data } = useFetch('http://127.0.0.1:5000/datasets');
-  const { dataset, datasets, setDataset, setDatasets } = intentStore;
+  const store = useContext(Store);
 
-  useEffect(() => {
-    if (datasets.length === 0) setDatasets(data);
-  }, [data, datasets]);
+  const {
+    loadedDataset: dataset,
+    state: { showCategories, categoryColumn },
+    toggleCategories,
+    changeCategory,
+  } = store.exploreStore;
 
-  const handleDatasetChange = (event: React.ChangeEvent<{ value: unknown }>) => {
-    setDataset(event.target.value as string);
-  };
+  const { categoricalColumns = [], columnInfo } = dataset || {};
+
+  const {
+    currentProject,
+    comparisonDatasetKey,
+
+    loadComparisonApply,
+  } = useContext(Store).projectStore;
+
+  const datasetOptions = useMemo(() => {
+    const opts =
+      currentProject?.datasets.map((dataset) => ({
+        key: dataset.key,
+        desc: dataset.version,
+      })) || [];
+
+    return opts;
+  }, [currentProject]);
+
+  const { Dropdown: CategoryDropdown } = useDropdown(
+    'category-dropdown',
+    'Category Column',
+    '',
+    categoricalColumns.map((col) => ({
+      key: col,
+      desc: `${columnInfo[col].fullname}`,
+    })),
+    categoryColumn,
+    changeCategory,
+  );
+
+  const { Dropdown: ComparisonDropdown } = useDropdown(
+    'dataset-dropdown',
+    'Comparison Dataset',
+    '',
+    datasetOptions,
+    comparisonDatasetKey || '',
+    loadComparisonApply,
+  );
 
   return (
     <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
-          <FormControl className={classes.formControl}>
-            <InputLabel id="load-dataset-select-label">Dataset</InputLabel>
-            <Select
-              id="load-dataset-select"
-              labelId="load-dataset-select-label"
-              value={dataset || ''}
-              onChange={handleDatasetChange}
-            >
-              {datasets.map((d) => (
-                <MenuItem key={d} value={d}>
-                  {d}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <FormGroup row>
+            <AddPlot />
+            <Divider orientation="vertical" flexItem />
+            <FormControlLabel
+              className={classes.formControlwoWidth}
+              control={
+                <Switch
+                  checked={showCategories}
+                  color="primary"
+                  onChange={() => toggleCategories(!showCategories, categoricalColumns)}
+                />
+              }
+              label="Show Categories"
+            />
+            {showCategories && <CategoryDropdown />}
+            <Divider orientation="vertical" flexItem />
+            <FormControl className={classes.formControl}>
+              <ToggleButtonGroup>
+                <ToggleButton>
+                  <CheckBoxOutlineBlankIcon />
+                </ToggleButton>
+                <ToggleButton>20</ToggleButton>
+                <ToggleButton>35</ToggleButton>
+                <ToggleButton>50</ToggleButton>
+              </ToggleButtonGroup>
+            </FormControl>
+          </FormGroup>
+          <Button color="primary" component={Link} to="/compare" variant="outlined">
+            Apply
+          </Button>
+          <ComparisonDropdown/>
         </Toolbar>
       </AppBar>
     </div>
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(Navbar as any).whyDidYouRender = {
+  logOnDifferentValues: true,
+};
 export default observer(Navbar);

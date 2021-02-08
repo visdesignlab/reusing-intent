@@ -12,5 +12,8 @@
     "setup": "echo 'Setting up frontend' && yarn app && yarn setup:python",
     "start:server": "poetry run python run.py",
     "start:app": "cd app && yarn start"
+  },
+  "dependencies": {
+    "typescript": "^4.1.3"
   }
 }

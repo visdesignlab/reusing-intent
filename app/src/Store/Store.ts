@@ -1,85 +1,54 @@
-import { Provenance } from '@visdesignlab/trrack';
-import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, observable } from 'mobx';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { initProvenance } from '@visdesignlab/trrack';
+import { makeAutoObservable } from 'mobx';
 import { createContext } from 'react';
 
-import { getPlotId } from '../Utils/IDGens';
+import { ExploreStore } from './ExploreStore';
+import { defaultState, IntentState } from './IntentState';
+import { ProjectStore } from './ProjectStore';
+import { provenanceActions } from './ProvenanceActions';
+import { IntentEvents } from './Types/IntentEvents';
+import { InteractionArtifact } from './Types/InteractionArtifact';
+import { IntentProvenance } from './Types/ProvenanceType';
+import { CompareStore } from './CompareStore';
 
-import { Dataset, getColumns } from './Dataset';
-import { Plot, Plots } from './Plot';
-
-type State = {
-  dataset: string;
-};
-
-class Store {
-  datasets: string[] = [];
-  dataset: string | null = null;
-  data: Dataset | null = null;
-  provenance: Provenance<State> | null = null;
-  plots: Plots = [];
+export class RootStore {
+  debug = true;
+  defaultProject = 'cluster';
+  projectStore: ProjectStore;
+  exploreStore: ExploreStore;
+  compareStore: CompareStore
+  provenance: IntentProvenance;
+  actions = provenanceActions;
+  currentNodes: string[];
+  bundledNodes: string[][];
 
   constructor() {
+    this.provenance = initProvenance<IntentState, IntentEvents, InteractionArtifact>(defaultState, {
+      loadFromUrl: false,
+    });
+
+    this.provenance.done();
+
+    this.projectStore = new ProjectStore(this);
+    this.exploreStore = new ExploreStore(this);
+    this.compareStore= new CompareStore(this);
+
+    this.currentNodes = [];
+    this.bundledNodes = [];
+
     makeAutoObservable(this, {
-      dataset: observable,
-      provenance: observable,
-      data: observable,
-      plots: observable,
-      setDataset: action,
-      setDatasets: action,
-      addPlot: action,
-      reset: action,
+      actions: false,
+      provenance: false,
     });
   }
 
-  reset() {
-    this.plots = [];
-    this.data = null;
-    this.dataset = null;
-    this.provenance = null;
+  get state() {
+    const state = this.provenance.getState(this.provenance.current);
+
+    return JSON.parse(JSON.stringify(state)) as IntentState;
   }
-
-  setDatasets = (datasets: string[]) => {
-    this.datasets = datasets;
-
-    if (this.datasets.length > 0 && this.dataset !== this.datasets[0]) {
-      this.setDataset(this.datasets[0]);
-    }
-  };
-
-  setDataset = async (datasetId: string) => {
-    Axios.get(`http://127.0.0.1:5000/dataset/${datasetId}`).then(
-      action((res: AxiosResponse<Dataset>) => {
-        this.reset();
-        this.dataset = datasetId;
-
-        this.data = res.data;
-        const columns = getColumns(this.data.columns);
-        const plot1: Plot = {
-          id: getPlotId(),
-          x: columns[0],
-          y: columns[1],
-          brushes: {},
-          selectedPoints: [],
-        };
-        this.addPlot(plot1);
-
-        // const plot2: Plot = {
-        //   id: getPlotId(),
-        //   x: columns[0],
-        //   y: columns[1],
-        //   brushes: {},
-        //   selectedPoints: [],
-        // };
-        // this.addPlot(plot2);
-      }),
-    );
-  };
-
-  addPlot = (plot: Plot) => {
-    this.plots.push(plot);
-  };
 }
 
-const IntentStore = createContext(new Store());
-export default IntentStore;
+const Store = createContext(new RootStore());
+export default Store;

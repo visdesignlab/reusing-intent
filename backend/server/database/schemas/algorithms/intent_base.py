@@ -9,18 +9,19 @@ from sqlalchemy.sql.sqltypes import Integer, String
 
 class IntentBase(ABC):
     id = Column(Integer, primary_key=True)
-    params = Column(String, nullable=False)
+    record_id = Column(Integer, nullable=False)
+    info = Column(String, nullable=False)
     dimensions = Column(String, nullable=False)
     output = Column(String, nullable=False)
 
-    def getParams(self):
-        return json.loads(self.params)
+    def getInfo(self):
+        return json.loads(self.info)
 
     def getDimensionArr(self) -> List[str]:
         return self.dimensions.split(",")
 
-    def getMemberIds(self, arr: np.ndarray) -> List[int]:
-        return np.where(arr == 1)[0].tolist()  # type: ignore
+    def getMemberIds(self, arr: np.ndarray, ids) -> List[str]:
+        return list(sorted(ids.iloc[np.where(arr == 1)[0].tolist()].values.tolist()))  # type: ignore
 
     @property
     @abstractmethod

@@ -207,3 +207,5 @@ yarn.lock
 *.db
 .vscode
 !.vscode/terminals.json
+dump.rdb
+.eslintcache

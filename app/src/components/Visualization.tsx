@@ -1,54 +1,68 @@
-import { createStyles, makeStyles, Paper, Theme } from '@material-ui/core';
+import {
+  CircularProgress,
+  createStyles,
+  Grid,
+  IconButton,
+  makeStyles,
+  Paper,
+  Theme,
+  useTheme,
+} from '@material-ui/core';
+import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect, useRef, useState } from 'react';
+import React, { FC, useContext } from 'react';
 
-import IntentStore from '../Store/Store';
+import Store from '../Store/Store';
+
+import Scatterplot from './Scatterplot.tsx/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    root: (props: { dimension: number }) => ({
-      display: 'flex',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: theme.spacing(1),
-      '& > *': {
-        width: props.dimension - theme.spacing(2),
-        height: props.dimension - theme.spacing(2),
-      },
-    }),
+    root: {
+      flexGrow: 1,
+      padding: theme.spacing(2),
+      overflow: 'auto',
+    },
+    grid: {
+      height: '100%',
+    },
+    closeIcon: {
+      position: 'absolute',
+    },
   }),
 );
 
 const Visualization: FC = () => {
-  const visRef = useRef<HTMLDivElement>(null);
-  const { plots } = useContext(IntentStore);
-  const [dimension, setDimension] = useState(-1);
-  const classes = useStyles({ dimension: dimension > 0 ? dimension : 0 });
+  const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
 
-  useEffect(() => {
-    const { current } = visRef;
+  // const spContainerDimension = height > width ? width : height;
+  const spContainerDimension = n_plots === 1 ? 800 : 500;
+  const classes = useStyles();
+  const theme = useTheme();
+  const xs = n_plots === 1 ? 'auto' : 6;
 
-    if (!current || plots.length === 0) return;
-    const [height, width] = [current.clientHeight, current.clientWidth];
+  const loader = <CircularProgress />;
 
-    let dim = height > width ? width : height;
+  const scatterPlots = plots.map((plot) => (
+    <Grid key={plot.id} xs={xs} item>
+      <Paper elevation={3}>
+        {n_plots > 1 && (
+          <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
+            <CloseIcon />
+          </IconButton>
+        )}
+        <Scatterplot plot={plot} size={spContainerDimension - 2 * theme.spacing(1)} />
+      </Paper>
+    </Grid>
+  ));
 
-    if (plots.length > 1) {
-      dim = dim / 2;
-      dim = Math.min(dim, height, width);
-    }
-
-    setDimension(dim);
-  }, [plots]);
+  // console.log(prov);
 
   return (
-    <div ref={visRef} className={classes.root}>
-      {plots.map((plot) => (
-        <Paper key={plot.id} elevation={3}>
-          <pre>{JSON.stringify(plot, null, 4)}</pre>
-        </Paper>
-      ))}
+    <div className={classes.root}>
+      <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
+        {isLoadingData ? loader : scatterPlots}
+      </Grid>
     </div>
   );
 };

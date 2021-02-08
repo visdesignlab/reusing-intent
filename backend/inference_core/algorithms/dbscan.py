@@ -9,7 +9,7 @@ from backend.inference_core.utils import robustScaler
 # https://towardsdatascience.com/how-to-use-dbscan-effectively-ed212c02e62
 
 
-def get_params(size: int = 100):
+def get_params(size: int = 10):
     eps = [0.1, 0.2, 0.5, 0.7, 1]
     min_samples = []
 
@@ -26,19 +26,31 @@ def get_params(size: int = 100):
     return eps, min_samples
 
 
+def get_dbscan_count(data: pd.DataFrame):
+    eps, min_samples = get_params(data.shape[0])
+    params = [(e, m) for e in eps for m in min_samples]
+    return len(params)
+
+
+def dbscan(data, eps, min_samples):
+    clf = DBSCAN(eps=eps, min_samples=min_samples)
+    clf.fit(data)
+    labels = clf.labels_
+    params = {"eps": eps, "min_samples": min_samples}
+
+    return labels, params
+
+
 def computeDBScan(data: pd.DataFrame):
     eps, min_samples = get_params(data.shape[0])
     params = [(e, m) for e in eps for m in min_samples]
 
     scaled_data = robustScaler(data.values)
-    dbscanners = [DBSCAN(eps=e, min_samples=m) for e, m in params]
 
-    for dbscan in dbscanners:
-        dbscan.fit(scaled_data)
+    results = [dbscan(scaled_data, eps=e, min_samples=m) for e, m in params]
 
     rets = [
-        (",".join(map(str, dbscan.labels_)), json.dumps(dbscan.get_params()))
-        for dbscan in dbscanners
+        (",".join(map(str, labels)), json.dumps(params)) for labels, params in results
     ]
 
     return rets
