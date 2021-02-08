@@ -10,7 +10,7 @@ import { ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { InteractionArtifact } from './Types/InteractionArtifact';
-import { Interaction, Interactions } from './Types/Interactions';
+import { BaseInteraction, Interactions } from './Types/Interactions';
 import { Plot } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
@@ -276,7 +276,7 @@ export class ExploreStore {
   // ######################### Provenance Helpers ######################## //
   // ##################################################################### //
 
-  addInteraction = (interaction: Interaction) => {
+  addInteraction = (interaction: BaseInteraction) => {
     const { current } = this.provenance;
 
     let interactions = this.artifact.interactions;
@@ -290,12 +290,15 @@ export class ExploreStore {
       }
     }
 
-    interactions.push(interaction);
+    const id = this.provenance.current.id;
+
+    interactions.push({ id, ...interaction });
 
     this.provenance.addArtifact({
       ...this.artifact,
       interactions,
     });
+    console.log(toJS(this.artifact.interactions));
   };
 
   addPredictions = () => {

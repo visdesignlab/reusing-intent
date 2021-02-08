@@ -1,3 +1,5 @@
+import { NodeID } from '@visdesignlab/trrack';
+
 import { Plot } from './Plot';
 import { Prediction } from './Prediction';
 
@@ -50,12 +52,16 @@ type SelectPredictionInteraction = {
   prediction: Prediction;
 };
 
-export type Interaction =
+export type BaseInteraction =
   | AddPlotInteraction
   | PointSelectionInteraction
   | ToggleCategoryInteraction
   | ChangeCategoryInteraction
   | BrushInteraction
   | SelectPredictionInteraction;
+
+export type Interaction = BaseInteraction & {
+  id: NodeID;
+};
 
 export type Interactions = Interaction[];

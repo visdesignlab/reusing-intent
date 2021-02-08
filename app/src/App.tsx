@@ -260,7 +260,7 @@ const App: FC = () => {
                     }}
                     onMouseOver={() => {
                       setMatchLegendVisibility(true);
-                      const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.stats;
+                      const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.membership;
                       selectAll('.marks').classed(regularForceMark, true);
 
                       if (matchIds.length > 0)

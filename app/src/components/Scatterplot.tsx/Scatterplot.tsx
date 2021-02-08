@@ -9,6 +9,8 @@ import { Plot } from '../../Store/Types/Plot';
 import translate from '../../Utils/Translate';
 import BrushComponent, { BrushSelections } from '../Brush/Components/BrushComponent';
 import { BrushAffectType, BrushCollection } from '../Brush/Types/Brush';
+import ComparisonMarks from '../Comparison/ComparisonMarks';
+import { DataDisplay } from '../Comparison/ComparisonScatterplot';
 import FreeFormBrush, {
   BrushSize,
   FreeformBrushAction,
@@ -16,8 +18,6 @@ import FreeFormBrush, {
 } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
-import ComparisonMarks from '../Comparison/ComparisonMarks';
-import { DataDisplay } from '../Comparison/ComparisonScatterplot';
 
 import Axis from './Axis';
 import Legend from './Legend';
@@ -40,7 +40,12 @@ type Props = {
   dataDisplay?: DataDisplay;
 };
 
-const Scatterplot: FC<Props> = ({ plot, size, originalMarks = true, dataDisplay = "Original" }: Props) => {
+const Scatterplot: FC<Props> = ({
+  plot,
+  size,
+  originalMarks = true,
+  dataDisplay = 'Original',
+}: Props) => {
   const theme = useTheme();
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
@@ -54,9 +59,7 @@ const Scatterplot: FC<Props> = ({ plot, size, originalMarks = true, dataDisplay 
     state: { brushType },
   } = useContext(Store).exploreStore;
 
-  const {
-    selectedPointsComparison,
-  } = useContext(Store).compareStore;
+  const { selectedPointsComparison } = useContext(Store).compareStore;
 
   const { x, y } = plot;
 
@@ -136,11 +139,6 @@ const Scatterplot: FC<Props> = ({ plot, size, originalMarks = true, dataDisplay 
       <g transform={translate(margin)}>
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
-        {originalMarks ? (
-          <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
-        ) : (
-          <ComparisonMarks compPoints={compPoints} dataDisplay={dataDisplay} points={points} selectedPoints={selectedPointsComparison} xScale={xScale} yScale={yScale} />
-        )}
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
         <BrushComponent
           bottom={sp_dimension}
@@ -165,6 +163,18 @@ const Scatterplot: FC<Props> = ({ plot, size, originalMarks = true, dataDisplay 
             xScale={xScale}
             yScale={yScale}
             onBrush={freeFormBrushHandler}
+          />
+        )}
+        {originalMarks ? (
+          <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
+        ) : (
+          <ComparisonMarks
+            compPoints={compPoints}
+            dataDisplay={dataDisplay}
+            points={points}
+            selectedPoints={selectedPointsComparison}
+            xScale={xScale}
+            yScale={yScale}
           />
         )}
       </g>

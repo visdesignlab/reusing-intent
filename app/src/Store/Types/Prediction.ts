@@ -31,7 +31,7 @@ export type Prediction = {
   memberIds: string[];
   dimensions: string[];
   info: AlgorithmInfo;
-  stats: {
+  membership: {
     ipns: string[];
     isnp: string[];
     matches: string[];
