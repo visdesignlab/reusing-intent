@@ -22,6 +22,7 @@ import { useScatterplotData } from '../Hooks/useScatterplot';
 import Axis from './Axis';
 import Legend from './Legend';
 import Marks from './Marks';
+import Overlay from './Overlay/Overlay';
 import useScatterplotStyle from './styles';
 
 const useStyles = makeStyles(() =>
@@ -57,6 +58,7 @@ const Scatterplot: FC<Props> = ({
     showMatchesLegend,
     setBrushSelection,
     state: { brushType },
+    hoveredPrediction,
   } = useContext(Store).exploreStore;
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
@@ -177,6 +179,7 @@ const Scatterplot: FC<Props> = ({
             yScale={yScale}
           />
         )}
+        {hoveredPrediction && <Overlay prediction={hoveredPrediction} />}
       </g>
     </svg>
   );

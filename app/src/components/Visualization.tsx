@@ -14,7 +14,7 @@ import React, { FC, useContext } from 'react';
 
 import Store from '../Store/Store';
 
-import Scatterplot from './Scatterplot.tsx/Scatterplot';
+import Scatterplot from './Scatterplot/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

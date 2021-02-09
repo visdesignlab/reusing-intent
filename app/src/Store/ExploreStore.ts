@@ -39,6 +39,7 @@ export class ExploreStore {
   get provenance() {
     return this.rootStore.provenance;
   }
+
   get currentProject() {
     const curr = this.rootStore.projectStore.currentProject;
 

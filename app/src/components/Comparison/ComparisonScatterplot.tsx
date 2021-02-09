@@ -1,13 +1,20 @@
-import { createStyles, makeStyles, useTheme, Button, CircularProgress, Grid, Paper, IconButton, Theme } from '@material-ui/core';
+import {
+  Button,
+  CircularProgress,
+  createStyles,
+  Grid,
+  IconButton,
+  makeStyles,
+  Paper,
+  Theme,
+  useTheme,
+} from '@material-ui/core';
+import { CloseIcon } from '@material-ui/x-grid';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useState } from 'react';
-import { CloseIcon } from '@material-ui/x-grid';
 
-
-import Scatterplot from '../Scatterplot.tsx/Scatterplot';
 import Store from '../../Store/Store';
-
-
+import Scatterplot from '../Scatterplot/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,8 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-
-export type DataDisplay = "Original" | "Diff" | "Comparison" | "All"
+export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All';
 
 const CompVis: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
@@ -34,7 +40,7 @@ const CompVis: FC = () => {
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
 
-  const [dataDisplay, setDataDisplay] = useState <DataDisplay>("All")
+  const [dataDisplay, setDataDisplay] = useState<DataDisplay>('All');
   const classes = useStyles();
   const theme = useTheme();
   const xs = n_plots === 1 ? 'auto' : 6;
@@ -107,6 +113,5 @@ const CompVis: FC = () => {
     </div>
   );
 };
-
 
 export default observer(CompVis);
