@@ -1,5 +1,6 @@
 import {
   AppBar,
+  Button,
   Divider,
   FormControl,
   FormControlLabel,
@@ -8,13 +9,12 @@ import {
   Switch,
   Theme,
   Toolbar,
-  Button,
 } from '@material-ui/core';
-import { Link } from 'react-router-dom';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 
 import Store from '../Store/Store';
 
@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Navbar: FC = () => {
   const classes = useStyles();
   const store = useContext(Store);
+  const { search } = store;
 
   const {
     loadedDataset: dataset,
@@ -113,10 +114,16 @@ const Navbar: FC = () => {
               </ToggleButtonGroup>
             </FormControl>
           </FormGroup>
-          <Button color="primary" component={Link} to="/compare" variant="outlined">
+          <Button
+            color="primary"
+            component={Link}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            to={{ pathname: '/compare', search } as any}
+            variant="outlined"
+          >
             Apply
           </Button>
-          <ComparisonDropdown/>
+          <ComparisonDropdown />
         </Toolbar>
       </AppBar>
     </div>

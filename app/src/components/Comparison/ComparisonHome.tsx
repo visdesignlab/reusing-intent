@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { createStyles, makeStyles, useTheme, Button, TableContainer, CssBaseline } from '@material-ui/core';
-import { select } from 'd3';
-import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext, useState, useEffect } from 'react';
-import { ProvVis } from '@visdesignlab/trrack-vis';
+import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
+import { ProvVis } from '@visdesignlab/trrack-vis';
+import { observer } from 'mobx-react';
+import React, { FC, useContext, useEffect } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 
+import { eventConfig } from '../../App';
 import Store from '../../Store/Store';
-import { eventConfig } from "../../App"
 import { Plot } from '../../Store/Types/Plot';
-import Visualization from '../Visualization';
-import Navbar from '../Navbar';
 import { getPlotId } from '../../Utils/IDGens';
+import Navbar from '../Navbar';
 
 import ComparisonScatterplot from './ComparisonScatterplot';
 
@@ -39,58 +38,58 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
+  const {
+    exploreStore: { n_plots, addPlot },
+    projectStore: { loadedDataset },
+    provenance,
+    setQueryParams,
+  } = useContext(Store);
 
+  useEffect(() => {
+    setQueryParams(location.search);
+  }, [location.search, setQueryParams]);
 
-const ComparisonHome = () => {
-      const {
-        exploreStore: {
-          n_plots,
-          addPlot,
-        },
-        projectStore: { loadedDataset },
-        provenance,
-      } = useContext(Store);
+  useEffect(() => {
+    const current = provenance.current;
 
-    useEffect(() => {
-      const current = provenance.current;
+    if (isChildNode(current)) {
+      if (current.children.length > 0) return;
+    }
 
-      if (isChildNode(current)) {
-        if (current.children.length > 0) return;
-      }
+    if (n_plots > 0 || !loadedDataset) return;
+    const { numericColumns } = loadedDataset;
+    const plot: Plot = {
+      id: getPlotId(),
+      x: numericColumns[0],
+      y: numericColumns[1],
+      brushes: {},
+      selectedPoints: [],
+    };
+    addPlot(plot);
+  });
 
-      if (n_plots > 0 || !loadedDataset) return;
-      const { numericColumns } = loadedDataset;
-      const plot: Plot = {
-        id: getPlotId(),
-        x: numericColumns[0],
-        y: numericColumns[1],
-        brushes: {},
-        selectedPoints: [],
-      };
-      addPlot(plot);
-    });
+  const classes = useStyles();
 
-    const classes = useStyles();
-
-    return (
+  return (
     <div className={classes.root}>
-        <CssBaseline />
-        <Navbar />
-        <div className={classes.layout}>
+      <CssBaseline />
+      <Navbar />
+      <div className={classes.layout}>
         <ComparisonScatterplot />
         <ProvVis
-            changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
-            current={provenance.graph.current}
-            ephemeralUndo={false}
-            eventConfig={eventConfig}
-            nodeMap={provenance.graph.nodes}
-            prov={provenance}
-            root={provenance.graph.root}
-            undoRedoButtons
+          changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
+          current={provenance.graph.current}
+          ephemeralUndo={false}
+          eventConfig={eventConfig}
+          nodeMap={provenance.graph.nodes}
+          prov={provenance}
+          root={provenance.graph.root}
+          undoRedoButtons
         />
-        </div>
+      </div>
     </div>
-    );
+  );
 };
 
 export default observer(ComparisonHome);

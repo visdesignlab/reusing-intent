@@ -34,7 +34,7 @@ export class ProjectStore {
   }
 
   get loadedDatasetKey() {
-    return this.state.datasetKey
+    return this.state.datasetKey;
   }
 
   // ##################################################################### //
@@ -58,9 +58,7 @@ export class ProjectStore {
 
         if (!newProjectId && this.rootStore.debug) {
           this.loadProjectByKey(this.rootStore.defaultProject);
-        }
-
-        if (newProjectId) {
+        } else if (newProjectId) {
           const proj = this.projects.find((p) => p.key === newProjectId);
 
           if (proj) {
@@ -80,8 +78,12 @@ export class ProjectStore {
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
 
-        if (this.rootStore.debug && this.currentProject.datasets.length > 0) {
-          // this.loadDataset(this.currentProject.datasets[0].key);
+        if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
+          const datasetKey = this.rootStore.defaultDatasetKey;
+
+          if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
+            this.loadDataset(datasetKey);
+          else this.loadDataset(this.currentProject.datasets[0].key);
         }
       }),
     );
@@ -98,10 +100,10 @@ export class ProjectStore {
     );
   };
 
-  loadComparisonApply = (datasetKey:string) => {
+  loadComparisonApply = (datasetKey: string) => {
     if (!this.currentProject) return;
 
-    this.comparisonDatasetKey = datasetKey
+    this.comparisonDatasetKey = datasetKey;
 
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
@@ -117,7 +119,7 @@ export class ProjectStore {
     }).then(
       action((response: AxiosResponse<any>) => {
         console.log(response);
-        this.rootStore.compareStore.updatedActions = response.data.updated
+        this.rootStore.compareStore.updatedActions = response.data.updated;
       }),
     );
   };

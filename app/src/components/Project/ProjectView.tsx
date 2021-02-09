@@ -44,12 +44,15 @@ const useStyles = makeStyles(() =>
 const ProjectView = () => {
   const classes = useStyles();
   const {
-    currentProject,
-    comparisonDatasetKey,
-    state: { datasetKey },
-    loadDataset,
-    loadComparisonDataset,
-  } = useContext(Store).projectStore;
+    projectStore: {
+      currentProject,
+      comparisonDatasetKey,
+      state: { datasetKey },
+      loadDataset,
+      loadComparisonDataset,
+    },
+    search,
+  } = useContext(Store);
 
   const [openUploadDatasetDialog, setOpenUploadDatasetDialog] = useState(false);
   const [comparisonView, setComparisonView] = useState(false);
@@ -109,7 +112,13 @@ const ProjectView = () => {
             color="primary"
             component={Link}
             startIcon={<LaunchIcon />}
-            to="/explore"
+            to={
+              {
+                pathname: '/explore',
+                search,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } as any
+            }
             variant="outlined"
           >
             Load Dataset

@@ -17,7 +17,7 @@ import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
 
 import {
   AddBrush,
@@ -175,14 +175,20 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const App: FC = () => {
+const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
-  // const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
+
   const {
     exploreStore: { predictions, n_plots, addPlot, setPredictionSelection, setHoveredPrediction },
     projectStore: { loadedDataset },
     provenance,
+    setQueryParams,
+    search,
   } = useContext(Store);
+
+  useEffect(() => {
+    setQueryParams(location.search);
+  }, [location.search, setQueryParams]);
 
   useEffect(() => {
     const current = provenance.current;
@@ -205,7 +211,7 @@ const App: FC = () => {
 
   const { bundledNodes } = useContext(Store);
 
-  if (!loadedDataset) return <Redirect to="/project" />;
+  if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   const bundle: BundleMap = {};
 
