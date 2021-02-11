@@ -117,8 +117,7 @@ export class ProjectStore {
       interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
         .interactions,
     }).then(
-      action((response: AxiosResponse<any>) => {
-        console.log(response);
+      action((response: AxiosResponse<{ updated: unknown }>) => {
         this.rootStore.compareStore.updatedActions = response.data.updated;
       }),
     );

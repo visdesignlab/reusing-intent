@@ -3,9 +3,12 @@ export type KMeansInfo = {
     n_clusters: number;
   };
   selected_center: number[];
+  centers: [number, number][];
+  hull: [number, number][];
 };
 
 export type DBScanInfo = {
+  hull: [number, number][];
   params: {
     eps: number;
     min_samples: number;
@@ -28,9 +31,11 @@ export type Prediction = {
   rank: number;
   intent: Intents;
   algorithm: Algorithms;
+  description: string;
   memberIds: string[];
   dimensions: string[];
   info: AlgorithmInfo;
+  hash: string;
   membership: {
     ipns: string[];
     isnp: string[];

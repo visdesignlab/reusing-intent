@@ -179,7 +179,9 @@ const Scatterplot: FC<Props> = ({
             yScale={yScale}
           />
         )}
-        {hoveredPrediction && <Overlay prediction={hoveredPrediction} />}
+        {hoveredPrediction && (
+          <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
+        )}
       </g>
     </svg>
   );
