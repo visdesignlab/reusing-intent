@@ -12,6 +12,7 @@ class Prediction(object):
     dimensions: List[str]
     info: dict
     membership: dict
+    hash: str
 
     def __init__(
         self,
@@ -32,6 +33,7 @@ class Prediction(object):
         self.dimensions = dimensions
         self.info = info
         self.membership = membership
+        self.hash = self.get_hash()
 
     def serialize(self):
         return self.__dict__
