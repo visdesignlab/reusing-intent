@@ -23,9 +23,10 @@ class RegressionBase(IntentBase):
 
         return df
 
-    def predict(self, selection: List[int], ids):
+    def predict(self, selection: List[int], dataset):
         output = self.processOutput()
         sels = np.array(selection)
+        ids = dataset["id"]
 
         preds: List[Prediction] = [
             Prediction(
@@ -39,6 +40,7 @@ class RegressionBase(IntentBase):
                     self.getMemberIds(vals.values, ids),
                     ids[sels.astype(bool)].tolist(),
                 ),
+                description=self.description,
             )
             for col, vals in output.iteritems()
         ]
@@ -57,10 +59,6 @@ class LinearRegression(Base, RegressionBase):
     def algorithm(self) -> str:
         return "LR"
 
-    @property
-    def description(self) -> str:
-        return f"{self.intentType}:{self.algorithm}"
-
 
 class QuadraticRegression(Base, RegressionBase):
     __tablename__ = "QuadraticRegression"
@@ -72,7 +70,3 @@ class QuadraticRegression(Base, RegressionBase):
     @property
     def algorithm(self) -> str:
         return "QR"
-
-    @property
-    def description(self) -> str:
-        return f"{self.intentType}:{self.algorithm}"

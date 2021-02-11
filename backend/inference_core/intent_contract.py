@@ -7,17 +7,27 @@ class Prediction(object):
     rank: float
     intent: str
     algorithm: str
+    description: str
     memberIds: List[str]
     dimensions: List[str]
     info: dict
     membership: dict
 
     def __init__(
-        self, rank, intent, algorithm, memberIds, dimensions, info, membership
+        self,
+        rank,
+        intent,
+        algorithm,
+        description,
+        memberIds,
+        dimensions,
+        info,
+        membership,
     ) -> None:
         self.rank = rank
         self.intent = intent
         self.algorithm = algorithm
+        self.description = description
         self.memberIds = memberIds
         self.dimensions = dimensions
         self.info = info

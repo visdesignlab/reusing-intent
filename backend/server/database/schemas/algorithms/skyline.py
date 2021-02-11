@@ -20,17 +20,14 @@ class Skyline(Base, IntentBase):
     def algorithm(self):
         return "BNL"
 
-    @property
-    def description(self):
-        return f"{self.intentType}-{self.algorithm}"
-
     def processOutput(self):
         output = list(map(int, self.output.split(",")))
         return np.array(output)
 
-    def predict(self, selection: List[int], ids):
+    def predict(self, selection: List[int], dataset):
         output = self.processOutput()
         sels = np.array(selection)
+        ids = dataset["id"]
 
         preds: List[Prediction] = [
             Prediction(
@@ -44,6 +41,7 @@ class Skyline(Base, IntentBase):
                     self.getMemberIds(output, ids),
                     ids[sels.astype(bool)].tolist(),
                 ),
+                description=self.description,
             )
         ]
 
