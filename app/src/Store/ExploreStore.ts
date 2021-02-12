@@ -17,6 +17,7 @@ import { Prediction, Predictions } from './Types/Prediction';
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
+  isLoadingPredictions = false;
   hoveredPrediction: Prediction | null = null;
 
   constructor(rootStore: RootStore) {
@@ -308,6 +309,7 @@ export class ExploreStore {
   addPredictions = () => {
     this.hoveredPrediction = null;
     const dimensions: string[] = [];
+    this.isLoadingPredictions = true;
 
     Object.values(this.state.plots).forEach((plt) => {
       dimensions.push(...[plt.x, plt.y]);
@@ -323,6 +325,7 @@ export class ExploreStore {
       action((response: AxiosResponse<Predictions>) => {
         const { data = [] } = response;
         this.provenance.addArtifact({ ...this.artifact, predictions: data });
+        this.isLoadingPredictions = false;
       }),
     );
   };
