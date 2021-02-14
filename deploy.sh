@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Deployment started"
-ssh ubuntu@ec2-3-131-141-97.us-east-2.compute.amazonaws.com "
+if ! ssh ubuntu@ec2-3-13mpute.amazonaws.com "
     echo 'Pruning Images'
     sudo docker image prune -f
     echo 'Images pruned'
@@ -15,4 +15,10 @@ ssh ubuntu@ec2-3-131-141-97.us-east-2.compute.amazonaws.com "
     echo 'Pulled latest'
     sudo docker-compose up -d
     "
-echo "Deployment complete!"
+then
+    echo "Failure"
+    exit 1
+else
+    echo "Deployment complete!"
+    exit 0
+fi
