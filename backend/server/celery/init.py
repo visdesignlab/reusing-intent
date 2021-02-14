@@ -1,8 +1,10 @@
+import os
+
 from celery import Celery
 
 
 def make_celery(app_name=__name__):
-    redis_uri = "redis://localhost:6379/0"
+    redis_uri = os.environ["REDIS_URI"]
     app = Celery(
         app_name,
         backend=redis_uri,

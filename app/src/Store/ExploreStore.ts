@@ -316,7 +316,7 @@ export class ExploreStore {
     });
 
     Axios.post(
-      `http://127.0.0.1:5000/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`,
+      `http://127.0.0.1/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`,
       {
         selections: this.selectedPoints,
         dimensions,

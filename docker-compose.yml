@@ -1,0 +1,33 @@
+version: "3"
+services:
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - ./config/redis.conf:/redis.conf
+    command: ["redis-server", "/redis.conf"]
+  celery-worker:
+    env_file: environment.env
+    build: .
+    depends_on:
+      - redis
+    volumes:
+      - .:/code
+    command: poetry run celery -A backend.server.celery.init.celery worker
+  flask-server:
+    env_file: environment.env
+    build: .
+    depends_on:
+      - celery-worker
+    volumes:
+      - .:/code
+    command: poetry run python run.py
+  reverse:
+    hostname: reverse
+    image: nginx:1.19
+    depends_on:
+      - flask-server
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - .nginx/nginx.conf:/etc/nginx/conf.d/default.conf
