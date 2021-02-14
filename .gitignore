@@ -210,4 +210,3 @@ yarn.lock
 dump.rdb
 .eslintcache
 database
-.nginx/
