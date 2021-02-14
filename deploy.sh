@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Deployment started"
-if ! ssh ubuntu@ec2-3-13mpute.amazonaws.com "
+if ! ssh ubuntu@ec2-3-131-141-97.us-east-2.compute.amazonaws.com "
     echo 'Pruning Images'
     sudo docker image prune -f
     echo 'Images pruned'
@@ -20,5 +20,4 @@ then
     exit 1
 else
     echo "Deployment complete!"
-    exit 0
 fi
