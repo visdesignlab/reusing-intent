@@ -23,9 +23,10 @@ class OutlierBase(IntentBase):
         df = pd.DataFrame(arr, columns=["Outlier", "NonOutlier"])
         return df
 
-    def predict(self, selection: List[int], ids) -> List[Prediction]:
+    def predict(self, selection: List[int], dataset) -> List[Prediction]:
         output = self.processOutput()
         sels = np.array(selection)
+        ids = dataset["id"]
 
         preds: List[Prediction] = [
             Prediction(
@@ -39,6 +40,7 @@ class OutlierBase(IntentBase):
                     self.getMemberIds(vals.values, ids),
                     ids[sels.astype(bool)].tolist(),
                 ),
+                description=self.description,
             )
             for col, vals in output.iteritems()
         ]
@@ -56,7 +58,3 @@ class DBScanOutlier(Base, OutlierBase):
     @property
     def algorithm(self) -> str:
         return "DBScan"
-
-    @property
-    def description(self) -> str:
-        return f"{self.intentType}:{self.algorithm}"

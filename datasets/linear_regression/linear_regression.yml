@@ -1,3 +1,4 @@
+label_column: Label
 columns:
   X:
     fullname: X

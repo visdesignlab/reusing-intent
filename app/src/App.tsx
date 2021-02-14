@@ -1,24 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import {
-  CssBaseline,
-  IconButton,
-  makeStyles,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-} from '@material-ui/core';
-import TouchAppIcon from '@material-ui/icons/TouchApp';
+import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
-import { selectAll } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
 
 import {
   AddBrush,
@@ -39,7 +25,7 @@ import {
   TurnPrediction,
 } from './components/Icons';
 import Navbar from './components/Navbar';
-import useScatterplotStyle from './components/Scatterplot.tsx/styles';
+import PredictionTable from './components/Predictions/PredictionTable';
 import Visualization from './components/Visualization';
 import Store from './Store/Store';
 import { IntentEvents } from './Store/Types/IntentEvents';
@@ -177,20 +163,19 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const App: FC = () => {
+const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
-  const { regularForceMark, matches, isnp, ipns } = useScatterplotStyle();
+
   const {
-    exploreStore: {
-      predictions,
-      n_plots,
-      addPlot,
-      setMatchLegendVisibility,
-      setPredictionSelection,
-    },
+    exploreStore: { predictions, n_plots, addPlot, setPredictionSelection, setHoveredPrediction },
     projectStore: { loadedDataset },
     provenance,
+    setQueryParams,
   } = useContext(Store);
+
+  useEffect(() => {
+    setQueryParams(location.search);
+  }, [location.search, setQueryParams]);
 
   useEffect(() => {
     const current = provenance.current;
@@ -213,7 +198,7 @@ const App: FC = () => {
 
   const { bundledNodes } = useContext(Store);
 
-  if (!loadedDataset) return <Redirect to="/project" />;
+  if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   const bundle: BundleMap = {};
 
@@ -234,78 +219,7 @@ const App: FC = () => {
       <Navbar />
       <div className={classes.layout}>
         <Visualization />
-        <div style={{ overflow: 'scroll', padding: '1em' }}>
-          <TableContainer component={Paper}>
-            <Table style={{ tableLayout: 'auto' }}>
-              <TableHead>
-                <TableRow>
-                  <TableCell width="30%">Intent</TableCell>
-                  <TableCell width="60%">Rank</TableCell>
-                  <TableCell width="10%" />
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {predictions.map((pred, i) => (
-                  <TableRow
-                    // TODO: Add a uid for prediction on backend and then use that
-                    // eslint-disable-next-line react/no-array-index-key
-                    key={i}
-                    onMouseOut={() => {
-                      setMatchLegendVisibility(false);
-                      selectAll('.marks')
-                        .classed(regularForceMark, false)
-                        .classed(matches, false)
-                        .classed(isnp, false)
-                        .classed(ipns, false);
-                    }}
-                    onMouseOver={() => {
-                      setMatchLegendVisibility(true);
-                      const { matches: matchIds, isnp: isnpIds, ipns: ipnsIds } = pred.membership;
-                      selectAll('.marks').classed(regularForceMark, true);
-
-                      if (matchIds.length > 0)
-                        selectAll(matchIds.map((m) => `#mark${m}`).join(',')).classed(
-                          matches,
-                          true,
-                        );
-
-                      if (isnpIds.length > 0)
-                        selectAll(isnpIds.map((m) => `#mark${m}`).join(',')).classed(isnp, true);
-
-                      if (ipnsIds.length > 0)
-                        selectAll(ipnsIds.map((m) => `#mark${m}`).join(',')).classed(ipns, true);
-                    }}
-                  >
-                    <Tooltip
-                      title={
-                        <>
-                          <pre>
-                            {JSON.stringify(
-                              {
-                                dimensions: pred.dimensions,
-                                info: pred.info || '',
-                              },
-                              null,
-                              2,
-                            )}
-                          </pre>
-                        </>
-                      }
-                    >
-                      <TableCell width="30%">{pred.intent}</TableCell>
-                    </Tooltip>
-                    <TableCell width="60%">{pred.rank}</TableCell>
-                    <TableCell width="10%">
-                      <IconButton onClick={() => setPredictionSelection(pred)}>
-                        <TouchAppIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </div>
+        <PredictionTable />
         <ProvVis
           bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}

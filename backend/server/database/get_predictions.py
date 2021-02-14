@@ -56,6 +56,6 @@ def get_predictions(record_id, dataset, selections, dimensions, session):
     algs.extend(skyline)
 
     for a in algs:
-        predictions.extend(a.predict(selections, dataset["id"]))
+        predictions.extend(a.predict(selections, dataset))
 
     return predictions

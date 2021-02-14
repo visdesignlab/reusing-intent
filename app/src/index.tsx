@@ -4,19 +4,21 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import App from './App';
+import ComparisonHome from './components/Comparison/ComparisonHome';
 import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
-import ComparisonHome from './components/Comparison/ComparisonHome';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
   exclude: [/XGrid|RowCells|GridCell/],
 });
 
+const search = window.location.search;
+
 const app = (
   <BrowserRouter>
     <Switch>
-      <Redirect from="/" to="/project" exact />
+      <Redirect from="/" to={{ pathname: '/project', search }} exact />
       <Route component={App} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
       <Route component={ComparisonHome} path="/compare" exact />

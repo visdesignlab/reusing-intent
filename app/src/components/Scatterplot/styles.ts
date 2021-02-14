@@ -1,6 +1,6 @@
 import { makeStyles } from '@material-ui/core';
 
-import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from './../ColorSpecs';
+import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from '../ColorSpecs';
 
 const useScatterplotStyle = makeStyles({
   newMark: { stroke: 'black', strokeWidth: '1', fill: 'black' },

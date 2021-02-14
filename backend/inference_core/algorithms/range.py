@@ -95,9 +95,11 @@ def range_intent(dataset, dimensions, selection, max_depth=None) -> List[Predict
     member_ids = dataset.loc[mask, "id"].tolist()
     current_depth = clf.get_depth()
 
-    intent = "Range" if max_depth is None else "Simplified Range"
+    intent = "Range" if max_depth is None else "SimplifiedRange"
 
     rank = 1 / (pow(current_depth, 2) + 1)
+
+    algorithm = "DecisionTree"
 
     pred = Prediction(
         rank=rank,
@@ -105,8 +107,9 @@ def range_intent(dataset, dimensions, selection, max_depth=None) -> List[Predict
         memberIds=member_ids,
         dimensions=dimensions,
         info={"depth": clf.get_depth(), "rules": rules},
-        algorithm="Decision Tree",
+        algorithm=algorithm,
         membership=getStats(member_ids, selected_ids.tolist()),
+        description=f"Range-{algorithm}",
     )
 
     if current_depth > 1 and max_depth is None:

@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { createStyles, CssBaseline, makeStyles } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { useContext } from 'react';
+import React, { FC, useContext, useEffect } from 'react';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
 
 import Store from '../../Store/Store';
 
@@ -16,11 +17,24 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-const ProjectHome = () => {
+const ProjectHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
-  const { currentProject } = useContext(Store).projectStore;
+  const {
+    projectStore: { currentProject, loadedDatasetKey },
+    setQueryParams,
+    debug,
+    redirectPath,
+    search,
+  } = useContext(Store);
+
+  useEffect(() => {
+    setQueryParams(location.search);
+  }, [location.search, setQueryParams]);
 
   const instructions = 'Please select a project';
+
+  if (debug && redirectPath === 'explore' && loadedDatasetKey)
+    return <Redirect to={{ pathname: '/explore', search }} />;
 
   return (
     <div className={classes.root}>

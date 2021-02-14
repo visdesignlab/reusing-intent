@@ -162,4 +162,6 @@ def predict(project: str, key: str):
 
             predictions = process_predictions(predictions)
 
+            print("Test")
+
             return jsonify([e.serialize() for e in predictions])

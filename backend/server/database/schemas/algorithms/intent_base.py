@@ -34,9 +34,8 @@ class IntentBase(ABC):
         pass
 
     @property
-    @abstractmethod
     def description(self) -> str:
-        pass
+        return f"{self.intentType}-{self.algorithm}"
 
     @abstractmethod
     def predict(self, selection: List[int]):

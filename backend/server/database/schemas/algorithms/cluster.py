@@ -2,6 +2,7 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from scipy.spatial import ConvexHull  # type: ignore
 
 from backend.inference_core.intent_contract import Prediction
 from backend.inference_core.prediction_stats import getStats
@@ -12,13 +13,16 @@ from ..base import Base
 
 
 class ClusterBase(IntentBase):
-    def getClusterParams(self, idx):
-        params = self.getInfo()
+    def getClusterParams(self, vals, idx):
+        info = self.getInfo()
+        info["hull"] = []
+        if vals.shape[0] >= 3:
+            hull = ConvexHull(vals)
+            info["hull"] = vals[hull.vertices, :].tolist()
         if self.algorithm == "DBScan":
-            return params
-        params["selected_center"] = params["centers"][idx]
-        del params["centers"]
-        return params
+            return info
+        info["selected_center"] = info["centers"][idx]
+        return info
 
     def processOutput(self):
         output = list(map(int, self.output.split(",")))
@@ -34,9 +38,10 @@ class ClusterBase(IntentBase):
 
         return df, unique_vals
 
-    def predict(self, selection: List[int], ids) -> List[Prediction]:
+    def predict(self, selection: List[int], dataset) -> List[Prediction]:
         output, unique_vals = self.processOutput()
         sels = np.array(selection)
+        ids = dataset["id"]
 
         preds: List[Prediction] = [
             Prediction(
@@ -44,12 +49,15 @@ class ClusterBase(IntentBase):
                 intent=self.intentType,
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
-                info=self.getClusterParams(u),
+                info=self.getClusterParams(
+                    dataset.loc[vals.astype(bool), self.getDimensionArr()].values, u
+                ),
                 algorithm=self.algorithm,
                 membership=getStats(
                     self.getMemberIds(vals.values, ids),
                     ids[sels.astype(bool)].tolist(),
                 ),
+                description=self.description,
             )
             for (_, vals), u in zip(output.iteritems(), unique_vals)
         ]
@@ -68,10 +76,6 @@ class DBScanCluster(Base, ClusterBase):
     def algorithm(self) -> str:
         return "DBScan"
 
-    @property
-    def description(self) -> str:
-        return f"{self.intentType}:{self.algorithm}"
-
 
 class KMeansCluster(Base, ClusterBase):
     __tablename__ = "KMeansCluster"
@@ -83,7 +87,3 @@ class KMeansCluster(Base, ClusterBase):
     @property
     def algorithm(self) -> str:
         return "KMeans"
-
-    @property
-    def description(self) -> str:
-        return f"{self.intentType}:{self.algorithm}"

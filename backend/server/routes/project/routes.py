@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import pandas as pd
 from flask import Blueprint, jsonify, request
@@ -17,6 +18,15 @@ from backend.server.paths import DATABASE_ROOT
 from backend.server.routes.utils import handle_exception
 
 projectRoute = Blueprint("project", __name__)
+
+
+@projectRoute.route("/clearall", methods=["GET"])
+def clearAll():
+    shutil.rmtree(DATABASE_ROOT)
+    os.mkdir(DATABASE_ROOT)
+    print("Test")
+
+    return "Done!"
 
 
 @projectRoute.route("/project", methods=["GET"])
