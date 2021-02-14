@@ -8,6 +8,7 @@ import { Dataset } from './Types/Dataset';
 
 export class CompareStore {
   rootStore: RootStore;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updatedActions: any;
 
   constructor(rootStore: RootStore) {
