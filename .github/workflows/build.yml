@@ -4,7 +4,7 @@ on:
     branches:
       - main
 jobs:
-  merge-PR:
+  deploy_backend:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,3 +17,18 @@ jobs:
           known_hosts: ${{ secrets.KNOWN_HOSTS }}
       - name: rsync over ssh
         run: ./deploy.sh
+  deploy_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install and build
+        run: |
+          cd app
+          yarn install
+          yarn build
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: gh-pages
+          folder: app/build
