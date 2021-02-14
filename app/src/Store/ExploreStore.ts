@@ -6,6 +6,7 @@ import { action, makeAutoObservable, toJS } from 'mobx';
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
+import { SERVER } from './../consts';
 import { ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
@@ -315,13 +316,10 @@ export class ExploreStore {
       dimensions.push(...[plt.x, plt.y]);
     });
 
-    Axios.post(
-      `http://127.0.0.1/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`,
-      {
-        selections: this.selectedPoints,
-        dimensions,
-      },
-    ).then(
+    Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`, {
+      selections: this.selectedPoints,
+      dimensions,
+    }).then(
       action((response: AxiosResponse<Predictions>) => {
         const { data = [] } = response;
         this.provenance.addArtifact({ ...this.artifact, predictions: data });
