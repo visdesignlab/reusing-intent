@@ -72,19 +72,7 @@ export class CompareStore {
   }
 
   get compDataset() {
-    let dataset = this.rootStore.projectStore.comparisonDataset;
-
-    if (!dataset) {
-      const dt_str = window.localStorage.getItem('dataset');
-
-      if (!dt_str) throw new Error('Dataset not loaded');
-
-      dataset = JSON.parse(dt_str) as Dataset;
-
-      return dataset;
-    }
-
-    window.localStorage.setItem('dataset', JSON.stringify(dataset));
+    const dataset = this.rootStore.projectStore.comparisonDataset;
 
     return dataset;
   }
