@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import time
 
@@ -12,7 +13,7 @@ subdirs = os.walk(ROOT)
 api = "http://localhost"
 
 
-def main():
+def main(projects=[]):
     req = empty_database()
     if req.status_code != 200:
         raise Exception("Cannot empty database")
@@ -25,6 +26,10 @@ def main():
         dataset_dir = os.path.join(ROOT, dir)
         name = dir
         id = get_project_id(dir)
+
+        if len(projects) > 0 and id not in projects:
+            continue
+
         req = create_project(name, id)
         if req.status_code != 200:
             raise Exception(f"Error adding {name}")
@@ -109,4 +114,7 @@ def get_project_id(dir: str):
 
 
 if __name__ == "__main__":
-    main()
+    projects = []
+    if len(sys.argv) > 1:
+        projects = sys.argv[1:]
+    main(projects)
