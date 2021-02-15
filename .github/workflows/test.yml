@@ -31,7 +31,7 @@ jobs:
         run: poetry install
       - name: Test
         run: |
-          poetry run isort
-          poetry run black
-          poetry run flake8
-          poetry run mypy
+          poetry run isort backend/
+          poetry run black backend/
+          poetry run flake8 backend/
+          poetry run mypy backend/
