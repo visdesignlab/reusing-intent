@@ -29,9 +29,11 @@ jobs:
           poetry-version: 1.1.4
       - name: Install
         run: poetry install
-      - name: Test
-        run: |
-          poetry run isort backend/
-          poetry run black backend/
-          poetry run flake8 backend/
-          poetry run mypy backend/
+      - name: Lint with isort
+        run: poetry run isort backend
+      - name: Lint with black
+        run: poetry run black backend
+      - name: Lint with flake8
+        run: poetry run flake8 backend
+      - name: Lint with mypy
+        run: poetry run mypy backend
