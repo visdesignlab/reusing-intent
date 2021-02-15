@@ -3,10 +3,8 @@ import {
   Button,
   Divider,
   FormControl,
-  FormControlLabel,
   FormGroup,
   makeStyles,
-  Switch,
   Theme,
   Toolbar,
 } from '@material-ui/core';
@@ -37,20 +35,12 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    loadedDataset: dataset,
-    state: { showCategories, categoryColumn },
-    toggleCategories,
-    changeCategory,
-  } = store.exploreStore;
-
-  const { categoricalColumns = [], columnInfo } = dataset || {};
-
-  const {
-    currentProject,
-    comparisonDatasetKey,
-
-    loadComparisonApply,
-  } = useContext(Store).projectStore;
+    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply },
+    exploreStore: {
+      state: { brushType },
+      switchBrush,
+    },
+  } = useContext(Store);
 
   const datasetOptions = useMemo(() => {
     const opts =
@@ -61,18 +51,6 @@ const Navbar: FC = () => {
 
     return opts;
   }, [currentProject]);
-
-  const { Dropdown: CategoryDropdown } = useDropdown(
-    'category-dropdown',
-    'Category Column',
-    '',
-    categoricalColumns.map((col) => ({
-      key: col,
-      desc: `${columnInfo[col].fullname}`,
-    })),
-    categoryColumn,
-    changeCategory,
-  );
 
   const { Dropdown: ComparisonDropdown } = useDropdown(
     'dataset-dropdown',
@@ -90,27 +68,20 @@ const Navbar: FC = () => {
           <FormGroup row>
             <AddPlot />
             <Divider orientation="vertical" flexItem />
-            <FormControlLabel
-              className={classes.formControlwoWidth}
-              control={
-                <Switch
-                  checked={showCategories}
-                  color="primary"
-                  onChange={() => toggleCategories(!showCategories, categoricalColumns)}
-                />
-              }
-              label="Show Categories"
-            />
-            {showCategories && <CategoryDropdown />}
-            <Divider orientation="vertical" flexItem />
             <FormControl className={classes.formControl}>
-              <ToggleButtonGroup>
-                <ToggleButton>
+              <ToggleButtonGroup
+                value={brushType}
+                exclusive
+                onChange={(_, bt) => {
+                  switchBrush(bt);
+                }}
+              >
+                <ToggleButton value="Rectangular">
                   <CheckBoxOutlineBlankIcon />
                 </ToggleButton>
-                <ToggleButton>20</ToggleButton>
-                <ToggleButton>35</ToggleButton>
-                <ToggleButton>50</ToggleButton>
+                <ToggleButton value="Freeform Small">20</ToggleButton>
+                <ToggleButton value="Freeform Medium">35</ToggleButton>
+                <ToggleButton value="Freeform Large">50</ToggleButton>
               </ToggleButtonGroup>
             </FormControl>
           </FormGroup>

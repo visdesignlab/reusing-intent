@@ -1,11 +1,13 @@
 import { ScaleLinear } from 'd3';
+import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
-import { DBScanInfo, KMeansInfo, Prediction } from '../../../Store/Types/Prediction';
+import { DBScanInfo, KMeansInfo, Prediction, SkylineInfo } from '../../../Store/Types/Prediction';
 
 import DBScan from './DBScan';
 import KMeans from './KMeans';
+import Skyline from './Skyline';
 
 type Props = {
   prediction: Prediction;
@@ -15,6 +17,7 @@ type Props = {
 
 const Overlay: FC<Props> = ({ prediction, xScale, yScale }: Props) => {
   const { info } = prediction;
+  console.log(toJS(prediction));
 
   switch (prediction.algorithm) {
     case 'DBScan':
@@ -27,6 +30,8 @@ const Overlay: FC<Props> = ({ prediction, xScale, yScale }: Props) => {
       break;
     case 'KMeans':
       return <KMeans info={info as KMeansInfo} xScale={xScale} yScale={yScale} />;
+    case 'BNL':
+      return <Skyline info={info as SkylineInfo} xScale={xScale} yScale={yScale} />;
     default:
       break;
   }
