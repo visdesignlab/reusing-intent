@@ -30,10 +30,10 @@ jobs:
       - name: Install
         run: poetry install
       - name: Lint with isort
-        run: poetry run isort backend
+        run: poetry run isort backend/**/*.py
       - name: Lint with black
-        run: poetry run black backend
+        run: poetry run black backend/**/*.py
       - name: Lint with flake8
-        run: poetry run flake8 backend
+        run: poetry run flake8 backend/**/*.py
       - name: Lint with mypy
-        run: poetry run mypy backend
+        run: poetry run mypy backend/**/*.py
