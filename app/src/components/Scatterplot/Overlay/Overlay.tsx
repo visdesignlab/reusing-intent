@@ -1,5 +1,4 @@
 import { ScaleLinear } from 'd3';
-import { toJS } from 'mobx';
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
@@ -17,7 +16,6 @@ type Props = {
 
 const Overlay: FC<Props> = ({ prediction, xScale, yScale }: Props) => {
   const { info } = prediction;
-  console.log(toJS(prediction));
 
   switch (prediction.algorithm) {
     case 'DBScan':
