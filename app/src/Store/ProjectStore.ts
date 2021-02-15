@@ -3,6 +3,7 @@ import { action, makeAutoObservable } from 'mobx';
 
 import { SERVER } from '../consts';
 
+import { ExploreStore } from './ExploreStore';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { Project, ProjectList, UploadedDatasetList } from './Types/Project';
@@ -73,6 +74,9 @@ export class ProjectStore {
     const proj = this.projectByKey(projectId);
 
     if (!proj) return;
+
+    this.loadedDataset = null;
+    this.rootStore.exploreStore = new ExploreStore(this.rootStore);
 
     Axios.get(`${SERVER}/${projectId}/dataset`).then(
       action((response: AxiosResponse<UploadedDatasetList>) => {
