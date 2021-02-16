@@ -39,6 +39,7 @@ const Navbar: FC = () => {
     exploreStore: {
       state: { brushType },
       switchBrush,
+      filter,
     },
   } = useContext(Store);
 
@@ -98,7 +99,10 @@ const Navbar: FC = () => {
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
-            onClick={() => loadComparisonFilter("demo")}
+            onClick={() => {
+              loadComparisonFilter("demo")
+              filter();
+            }}
           >
             Filter
           </Button>

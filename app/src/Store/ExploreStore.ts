@@ -173,6 +173,15 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
+  filter = () => {
+    const { filterAction } = this.rootStore.actions;
+
+    filterAction.setLabel(`Filter`);
+    this.provenance.apply(filterAction());
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
   switchBrush = (brushType: BrushType) => {
     const { switchBrushTypeAction } = this.rootStore.actions;
 

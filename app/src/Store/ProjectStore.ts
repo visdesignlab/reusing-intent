@@ -14,6 +14,7 @@ export class ProjectStore {
   projects: ProjectList = [];
   comparisonDatasetKey: string | null = null;
   loadedDataset: Dataset | null = null;
+  workingDataset: Dataset | null = null;
   comparisonDataset: Dataset | null = null;
 
   constructor(rootStore: RootStore) {
@@ -171,6 +172,7 @@ export class ProjectStore {
         this.rootStore.currentNodes.push(this.provenance.graph.current);
 
         this.loadedDataset = response.data;
+        this.workingDataset = response.data;
       }),
     );
   };

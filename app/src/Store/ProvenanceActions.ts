@@ -27,6 +27,12 @@ const removePlotAction = createAction<IntentState, [Plot], IntentEvents>(
   },
 ).setEventType('Add Plot');
 
+const filterAction = createAction<IntentState, [], IntentEvents>(
+  (state: IntentState) => {
+    return state;
+  },
+).setEventType('Filter');
+
 const pointSelectionAction = createAction<IntentState, [Plot, string[]], IntentEvents>(
   (state: IntentState, plot: Plot, points: string[]) => {
     plot.selectedPoints = [...new Set([...plot.selectedPoints, ...points])];
@@ -92,6 +98,7 @@ export const provenanceActions = {
   addPlotAction,
   changeDatasetAction,
   removePlotAction,
+  filterAction,
   pointSelectionAction,
   predictionSelectionAction,
   changeCategoryAction,
