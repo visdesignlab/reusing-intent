@@ -35,7 +35,8 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All';
+export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All' 
+| "AddedOnly" | "RemovedOnly" | "ChangedOnly";
 
 const CompVis: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
@@ -62,6 +63,8 @@ const CompVis: FC = () => {
 
   const loader = <CircularProgress />;
 
+  console.log(dataDisplay)
+
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
       <Paper elevation={3}>
@@ -71,7 +74,7 @@ const CompVis: FC = () => {
           </IconButton>
         )}
         <div>
-          {/* <Button
+          <Button
             color="primary"
             variant="outlined"
             onMouseOut={() => {
@@ -106,13 +109,14 @@ const CompVis: FC = () => {
             }}
           >
             Changed Data
-          </Button> */}
-          <ComparisonLegend offset={20} />
+          </Button>
+          {/* <ComparisonLegend offset={spContainerDimension - 2 * theme.spacing(1) - 110} /> */}
         </div>
         <Scatterplot
           dataDisplay={dataDisplay}
           originalMarks={false}
           plot={plot}
+          setDataDisplay={setDataDisplay}
           size={spContainerDimension - 2 * theme.spacing(1)}
         />
       </Paper>

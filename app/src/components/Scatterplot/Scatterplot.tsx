@@ -18,6 +18,7 @@ import FreeFormBrush, {
 } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
+import ComparisonLegend from '../Comparison/ComparisonLegend';
 
 import Axis from './Axis';
 import Legend from './Legend';
@@ -39,6 +40,7 @@ type Props = {
   size: number;
   originalMarks?: boolean;
   dataDisplay?: DataDisplay;
+  setDataDisplay?: any;
 };
 
 const Scatterplot: FC<Props> = ({
@@ -46,6 +48,7 @@ const Scatterplot: FC<Props> = ({
   size,
   originalMarks = true,
   dataDisplay = 'Original',
+  setDataDisplay
 }: Props) => {
   const theme = useTheme();
   const dimension = size - 2 * theme.spacing(1);
@@ -167,6 +170,7 @@ const Scatterplot: FC<Props> = ({
             onBrush={freeFormBrushHandler}
           />
         )}
+        
         {originalMarks ? (
           <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         ) : (
@@ -179,6 +183,7 @@ const Scatterplot: FC<Props> = ({
             yScale={yScale}
           />
         )}
+        {originalMarks ? null : <ComparisonLegend offset={sp_dimension - 55} setDataDisplay={setDataDisplay} />}
         {hoveredPrediction && (
           <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
         )}
