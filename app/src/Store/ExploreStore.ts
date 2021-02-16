@@ -346,6 +346,14 @@ export class ExploreStore {
       dimensions.push(...[plt.x, plt.y]);
     });
 
+    console.log(
+      toJS({
+        selections: this.selectedPoints,
+        dimensions,
+      }),
+      this.loadedDatasetKey,
+    );
+
     Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`, {
       selections: this.selectedPoints,
       dimensions,

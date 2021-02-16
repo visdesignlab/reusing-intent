@@ -50,7 +50,10 @@ class ClusterBase(IntentBase):
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
                 info=self.getClusterParams(
-                    dataset.loc[vals.astype(bool), self.getDimensionArr()].values, u
+                    dataset.loc[
+                        vals.values.astype(bool), self.getDimensionArr()
+                    ].values,
+                    u,
                 ),
                 algorithm=self.algorithm,
                 membership=getStats(

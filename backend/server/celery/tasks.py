@@ -15,13 +15,6 @@ from backend.inference_core.algorithms.skyline_algorithm import (
     get_sense_combinations,
 )
 from backend.server.celery.init import celery
-from backend.server.database.schemas.algorithms.cluster import (
-    DBScanCluster,
-    KMeansCluster,
-)
-from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
-from backend.server.database.schemas.algorithms.regression import LinearRegression
-from backend.server.database.schemas.algorithms.skyline import Skyline
 from backend.server.database.session import getSessionScopeFromId
 
 
@@ -29,6 +22,8 @@ from backend.server.database.session import getSessionScopeFromId
 def precomputeOutliers(self, data: Any, combinations, record_id, project):
     data = pd.read_json(data)
     # self.update_state(state=STARTED)
+
+    combinations = list(filter(lambda x: len(x) < 3, combinations))
 
     to_process = sum([get_dbscan_count(data[combo]) for combo in combinations])
     processed = 0
@@ -40,15 +35,9 @@ def precomputeOutliers(self, data: Any, combinations, record_id, project):
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
-        for output, params in computeDBScan(subset):
+        for result in computeDBScan(subset, dimensions, record_id, True):
             with getSessionScopeFromId(project) as session:
-                dbscan_cluster_result = DBScanOutlier(
-                    dimensions=dimensions,
-                    output=output,
-                    info=params,
-                    record_id=record_id,
-                )
-                session.add(dbscan_cluster_result)
+                session.add(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
@@ -64,6 +53,8 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
     data = pd.read_json(data)
     # self.update_state(state=STARTED)
 
+    combinations = list(filter(lambda x: len(x) < 3, combinations))
+
     to_process = [get_dbscan_count(data[combo]) for combo in combinations]
     to_process.extend([get_kmeans_count() for _ in combinations])
     to_process = sum(to_process)
@@ -76,28 +67,16 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
-        for output, params in computeDBScan(subset):
+        for result in computeDBScan(subset, dimensions, record_id, False):
             with getSessionScopeFromId(project) as session:
-                dbscan_cluster_result = DBScanCluster(
-                    dimensions=dimensions,
-                    output=output,
-                    info=params,
-                    record_id=record_id,
-                )
-                session.add(dbscan_cluster_result)
+                session.add(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
-        for output, params in computeKMeansClusters(subset):
+        for result in computeKMeansClusters(subset, dimensions, record_id):
             with getSessionScopeFromId(project) as session:
-                kmeans_result = KMeansCluster(
-                    dimensions=dimensions,
-                    output=output,
-                    info=params,
-                    record_id=record_id,
-                )
-                session.add(kmeans_result)
+                session.add(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
@@ -125,15 +104,9 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
-        for output, params in computeLR(subset):
+        for result in computeLR(subset, dimensions, record_id):
             with getSessionScopeFromId(project) as session:
-                linear_regression_result = LinearRegression(
-                    dimensions=dimensions,
-                    output=output,
-                    info=params,
-                    record_id=record_id,
-                )
-                session.add(linear_regression_result)
+                session.add(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
@@ -160,12 +133,9 @@ def precomputeSkyline(self, data: Any, combinations, record_id, project):
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
-        for output, info in computeSkyline(subset):
+        for result in computeSkyline(subset, dimensions, record_id):
             with getSessionScopeFromId(project) as session:
-                skyline_result = Skyline(
-                    dimensions=dimensions, output=output, info=info, record_id=record_id
-                )
-                session.add(skyline_result)
+                session.add(result)
 
             processed += 1
             self.update_state(

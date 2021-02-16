@@ -4,6 +4,8 @@ import pandas as pd
 from sklearn.cluster import DBSCAN
 
 from backend.inference_core.utils import robustScaler
+from backend.server.database.schemas.algorithms.cluster import DBScanCluster
+from backend.server.database.schemas.algorithms.outlier import DBScanOutlier
 
 # TODO: Implement some sort of Knee detection to add values for eps
 # https://towardsdatascience.com/how-to-use-dbscan-effectively-ed212c02e62
@@ -41,7 +43,7 @@ def dbscan(data, eps, min_samples):
     return labels, params
 
 
-def computeDBScan(data: pd.DataFrame):
+def computeDBScan(data: pd.DataFrame, dimensions, record_id, outlier=False):
     eps, min_samples = get_params(data.shape[0])
     params = [(e, m) for e in eps for m in min_samples]
 
@@ -54,4 +56,17 @@ def computeDBScan(data: pd.DataFrame):
         for labels, params in results
     ]
 
-    return rets
+    if outlier:
+        return [
+            DBScanOutlier(
+                dimensions=dimensions, output=output, info=params, record_id=record_id
+            )
+            for output, params in rets
+        ]
+    else:
+        return [
+            DBScanCluster(
+                dimensions=dimensions, output=output, info=params, record_id=record_id
+            )
+            for output, params in rets
+        ]
