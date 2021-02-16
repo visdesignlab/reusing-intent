@@ -13,7 +13,7 @@ if ! ssh ubuntu@ec2-3-131-141-97.us-east-2.compute.amazonaws.com "
     echo 'Switched to main'
     git pull
     echo 'Pulled latest'
-    sudo docker-compose up -d
+    sudo docker-compose -f docker-compose.prod.yml up  -d
     "
 then
     echo "Failure"
