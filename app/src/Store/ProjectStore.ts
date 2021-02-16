@@ -121,13 +121,13 @@ export class ProjectStore {
       interactions:
         this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact.interactions || [],
     }).then(
-      action((response: AxiosResponse<any>) => {
+      action((response: AxiosResponse<unknown>) => {
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
   };
 
-  //load the dataset into comparison 
+  //load the dataset into comparison
   loadComparisonFilter = (datasetKey: string) => {
     if (!this.currentProject) return;
 
@@ -145,7 +145,7 @@ export class ProjectStore {
       interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
         .interactions,
     }).then(
-      action((response: AxiosResponse<any>) => {
+      action((response: AxiosResponse<unknown>) => {
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
