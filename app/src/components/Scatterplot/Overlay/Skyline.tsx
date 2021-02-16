@@ -15,8 +15,6 @@ const Skyline: FC<Props> = ({ info, xScale, yScale }: Props) => {
 
   const [x_sense, y_sense] = info.sense;
 
-  console.log(x_sense, y_sense);
-
   const scaled_frontier = useMemo(() => {
     const front: { x: number; y: number }[] = frontier.map((val) => ({
       x: xScale(val[0]),

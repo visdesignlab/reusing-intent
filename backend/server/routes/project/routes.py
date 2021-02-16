@@ -88,6 +88,7 @@ def createProject(key: str):
 def processProvenance(project):
     baseDatasetKey = request.json["baseDataset"]
     updatedDatasetKey = request.json["updatedDataset"]
+    print(request.json)
     interactions = request.json["interactions"]
 
     engine = getEngine(project)

@@ -1,9 +1,6 @@
-id: gapminderworld
-dataset_name: Gapminder World
-file_name: gapminderworld.csv
 label_column: country
 columns:
-  cmu:
+  cmr:
     fullname: Child Mortality Rate
     short: A
     unit: 0-5 year old dying per 1000 born
@@ -11,7 +8,7 @@ columns:
   gdp:
     fullname: GDP
     short: B
-    unit: per capita
+    unit: per capita (2010 US$)
     dataType: numeric
   life_exp:
     fullname: Life Expectancy

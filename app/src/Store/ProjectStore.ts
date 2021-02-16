@@ -118,8 +118,8 @@ export class ProjectStore {
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,
-      interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
-        .interactions,
+      interactions:
+        this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact.interactions || [],
     }).then(
       action((response: AxiosResponse<{ updated: unknown }>) => {
         this.rootStore.compareStore.updatedActions = response.data.updated;
