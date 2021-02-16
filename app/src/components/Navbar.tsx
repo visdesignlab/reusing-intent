@@ -35,7 +35,7 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply },
+    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadComparisonFilter },
     exploreStore: {
       state: { brushType },
       switchBrush,
@@ -93,6 +93,14 @@ const Navbar: FC = () => {
             variant="outlined"
           >
             Apply
+          </Button>
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => loadComparisonFilter("demo")}
+          >
+            Filter
           </Button>
           <ComparisonDropdown />
         </Toolbar>

@@ -5,9 +5,10 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 
 from backend.inference_core.utils import robustScaler2
+from backend.server.database.schemas.algorithms.regression import LinearRegression as LR
 
 
-def computeLR(data: pd.DataFrame):
+def computeLR(data: pd.DataFrame, dimensions, record_id):
     reg = LinearRegression()
     values = data.values
 
@@ -63,9 +64,10 @@ def computeLR(data: pd.DataFrame):
     threshold = 3 * Y_scaler.inverse_transform(np.array(m).reshape(-1, 1))[0][0]  # type: ignore
 
     return [
-        (
-            ",".join(map(str, within.tolist())),
-            json.dumps(
+        LR(
+            dimensions=dimensions,
+            output=",".join(map(str, within.tolist())),
+            info=json.dumps(
                 {
                     "threshold": threshold,
                     "coeff": coeffs,
@@ -73,5 +75,6 @@ def computeLR(data: pd.DataFrame):
                     "type": "within",
                 }
             ),
+            record_id=record_id,
         )
     ]

@@ -3,15 +3,16 @@ import { makeStyles } from '@material-ui/core';
 import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from '../ColorSpecs';
 
 const useScatterplotStyle = makeStyles({
-  newMark: { stroke: 'black', strokeWidth: '1', fill: 'black' },
+  newMark: { stroke: 'blue', strokeWidth: '1', fill: 'blue !important' },
   removedMark: {
-    stroke: 'black',
+    stroke: 'red',
     strokeWidth: '3',
     strokeLinecap: 'round',
   },
   movedLine: {
     opacity: '0.5',
-    stroke: 'black',
+    stroke: 'blue',
+    fill: 'blue !important',
     strokeWidth: '1',
     strokeLinecap: 'round',
   },
