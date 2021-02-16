@@ -119,7 +119,7 @@ const Marks: FC<Props> = ({
                         />
                         <g
                           key={point.label}
-                          className={`marks ${classes.newMark} ${
+                          className={`marks ${classes.movedPoint} ${
                             selectedPoints.includes(point.id)
                               ? classes.unionMark
                               : classes.regularMark
@@ -133,8 +133,8 @@ const Marks: FC<Props> = ({
                           <polygon points="0 5, 5 10, 10 5, 5 0" />
                         </g>
                         <g
-                          key={editGroup[0].label}
-                          className={`marks ${classes.newMark} ${
+                          key={editGroup[0].label + "2"}
+                          className={`marks ${classes.movedPoint} ${
                             selectedPoints.includes(point.id)
                               ? classes.unionMark
                               : classes.regularMark
@@ -231,39 +231,37 @@ const Marks: FC<Props> = ({
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                   }`}
                   d={createComet(
-                    xScale(point.x),
-                    xScale(editGroup[0].x),
-                    yScale(point.y),
-                    yScale(editGroup[0].y),
+                    xScale(point.x as number),
+                    xScale(editGroup[0].x as number),
+                    yScale(point.y as number),
+                    yScale(editGroup[0].y as number),
                   )}
                   style={{ opacity: '0.4' }}
                 />
-                <g
+                <circle
                   key={point.label}
-                  className={`marks ${classes.newMark} ${
+                  className={`marks ${classes.movedPoint} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                   }`}
+                  cx={xScale(point.x as number)}
+                  cy={yScale(point.y as number)}
                   id={`mark${point.id}`}
-                  opacity="0.5"
-                  transform={`translate(${xScale(point.x as number) - 5}, ${
-                    yScale(point.y as number) - 5
-                  })`}
-                >
-                  <polygon points="0 5, 5 10, 10 5, 5 0" />
-                </g>
-                <g
-                  key={editGroup[0].label}
-                  className={`marks ${classes.newMark} ${
-                    selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                  opacity=".2"
+                  r="5"
+                />
+                <circle
+                  key={editGroup[0].label + "2"}
+                  className={`marks ${classes.movedPoint} ${
+                    selectedPoints.includes(editGroup[0].id)
+                      ? classes.unionMark
+                      : classes.regularMark
                   }`}
-                  id={`mark${editGroup[0].id}`}
-                  opacity="0.5"
-                  transform={`translate(${xScale(editGroup[0].x as number) - 5}, ${
-                    yScale(editGroup[0].y as number) - 5
-                  })`}
-                >
-                  <polygon points="0 5, 5 10, 10 5, 5 0" />
-                </g>
+                  cx={xScale(editGroup[0].x as number)}
+                  cy={yScale(editGroup[0].y as number)}
+                  id={`mark${point.id}`}
+                  opacity="1"
+                  r="5"
+                />
               </g>
             );
           }
@@ -311,10 +309,17 @@ const Marks: FC<Props> = ({
 
 function createComet(x1: number, x2: number, y1: number, y2: number): string{
 
+  const theta = Math.atan((x1 - x2) / (y1 - y2))
 
-  return `M ${Math.trunc(x1 + 4)} ${Math.trunc(y1)} 
-  L ${Math.trunc(x2) - 1} ${Math.trunc(y2)} 
-  L ${Math.trunc(x1 - 4)} ${Math.trunc(y1)}
+  const xLength = 4.5 * Math.cos(theta);
+  const yLength = 4.5 * Math.sin(theta);
+
+
+  console.log(xLength, yLength)
+
+  return `M ${x2 + xLength} ${y2 - yLength} 
+  L ${x1} ${y1} 
+  L ${x2-xLength} ${y2 + yLength}
   z`;
 }
 

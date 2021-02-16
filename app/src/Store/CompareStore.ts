@@ -49,15 +49,11 @@ export class CompareStore {
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      if (!act.added || graph.nodes[a].label === "Add Plot")
+      if (!act || !act.added || graph.nodes[a].label === "Add Plot")
       {
         continue;
       }
 
-      const points = act.added;
-      const removed = act.removed;
-
-      selectedPoints.push(...points);
       // selectedPoints.push(...removed);
     }
 

@@ -17,7 +17,7 @@ const useScatterplotStyle = makeStyles({
     strokeLinecap: 'round',
   },
   movedPoint: {
-    fill: 'black',
+    fill: 'gray !important',
   },
   regularMark: {
     fill: 'black',

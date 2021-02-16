@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Button,
   CircularProgress,
@@ -15,6 +16,8 @@ import React, { FC, useContext, useState } from 'react';
 
 import Store from '../../Store/Store';
 import Scatterplot from '../Scatterplot/Scatterplot';
+
+import ComparisonLegend from './ComparisonLegend';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -68,7 +71,7 @@ const CompVis: FC = () => {
           </IconButton>
         )}
         <div>
-          <Button
+          {/* <Button
             color="primary"
             variant="outlined"
             onMouseOut={() => {
@@ -101,9 +104,10 @@ const CompVis: FC = () => {
             onMouseOver={() => {
               setDataDisplay('Diff');
             }}
-           >
-             Changed Data
-             </Button>
+          >
+            Changed Data
+          </Button> */}
+          <ComparisonLegend offset={20} />
         </div>
         <Scatterplot
           dataDisplay={dataDisplay}
