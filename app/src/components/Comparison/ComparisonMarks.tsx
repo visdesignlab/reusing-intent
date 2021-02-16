@@ -307,7 +307,7 @@ const Marks: FC<Props> = ({
   );
 };
 
-function createComet(x1: number, x2: number, y1: number, y2: number): string{
+export function createComet(x1: number, x2: number, y1: number, y2: number): string{
 
   const theta = Math.atan((x1 - x2) / (y1 - y2))
 

@@ -9,6 +9,9 @@ const useScatterplotStyle = makeStyles({
     strokeWidth: '3',
     strokeLinecap: 'round',
   },
+  hovered: {
+
+  },
   movedLine: {
     opacity: '0.5',
     stroke: 'blue',
