@@ -8,6 +8,7 @@ import { Dataset } from './Types/Dataset';
 
 export class CompareStore {
   rootStore: RootStore;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updatedActions: any;
 
   constructor(rootStore: RootStore) {
@@ -96,19 +97,7 @@ export class CompareStore {
   }
 
   get compDataset() {
-    let dataset = this.rootStore.projectStore.comparisonDataset;
-
-    if (!dataset) {
-      const dt_str = window.localStorage.getItem('dataset');
-
-      if (!dt_str) throw new Error('Dataset not loaded');
-
-      dataset = JSON.parse(dt_str) as Dataset;
-
-      return dataset;
-    }
-
-    window.localStorage.setItem('dataset', JSON.stringify(dataset));
+    const dataset = this.rootStore.projectStore.comparisonDataset;
 
     return dataset;
   }

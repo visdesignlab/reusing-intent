@@ -167,7 +167,6 @@ const Scatterplot: FC<Props> = ({
             onBrush={freeFormBrushHandler}
           />
         )}
-        {hoveredPrediction && <Overlay prediction={hoveredPrediction} />}
         {originalMarks ? (
           <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         ) : (
@@ -179,6 +178,9 @@ const Scatterplot: FC<Props> = ({
             xScale={xScale}
             yScale={yScale}
           />
+        )}
+        {hoveredPrediction && (
+          <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
         )}
       </g>
     </svg>

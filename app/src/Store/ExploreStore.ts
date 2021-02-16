@@ -6,7 +6,8 @@ import { action, makeAutoObservable, toJS } from 'mobx';
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
-import { ExtendedBrushCollection } from './IntentState';
+import { SERVER } from './../consts';
+import { BrushType, ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { InteractionArtifact } from './Types/InteractionArtifact';
@@ -17,6 +18,7 @@ import { Prediction, Predictions } from './Types/Prediction';
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
+  isLoadingPredictions = false;
   hoveredPrediction: Prediction | null = null;
 
   constructor(rootStore: RootStore) {
@@ -171,6 +173,33 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
+  switchBrush = (brushType: BrushType) => {
+    const { switchBrushTypeAction } = this.rootStore.actions;
+
+    let label = 'None';
+
+    switch (brushType) {
+      case 'Rectangular':
+        label = 'Rectangular Brush';
+        break;
+      case 'Freeform Large':
+        label = 'Large Paint Brush';
+        break;
+      case 'Freeform Medium':
+        label = 'Medium Paint Brush';
+        break;
+      case 'Freeform Small':
+        label = 'Small Paint Brush';
+        break;
+      default:
+        label = 'Disable Brush';
+        break;
+    }
+
+    this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
+    this.addPredictions();
+  };
+
   setFreeformSelection = (plot: Plot, points: string[]) => {
     this.addPointSelection(plot, points, true);
   };
@@ -303,27 +332,28 @@ export class ExploreStore {
       ...this.artifact,
       interactions,
     });
-    console.log(toJS(this.artifact.interactions));
   };
 
   addPredictions = () => {
     this.hoveredPrediction = null;
     const dimensions: string[] = [];
 
+    if (this.selectedPoints.length === 0) return;
+
+    this.isLoadingPredictions = true;
+
     Object.values(this.state.plots).forEach((plt) => {
       dimensions.push(...[plt.x, plt.y]);
     });
 
-    Axios.post(
-      `http://127.0.0.1:5000/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`,
-      {
-        selections: this.selectedPoints,
-        dimensions,
-      },
-    ).then(
+    Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`, {
+      selections: this.selectedPoints,
+      dimensions,
+    }).then(
       action((response: AxiosResponse<Predictions>) => {
         const { data = [] } = response;
         this.provenance.addArtifact({ ...this.artifact, predictions: data });
+        this.isLoadingPredictions = false;
       }),
     );
   };

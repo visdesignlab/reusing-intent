@@ -1,7 +1,7 @@
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { BrowserRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { HashRouter, Redirect, Route, Switch } from 'react-router-dom';
 
 import App from './App';
 import ComparisonHome from './components/Comparison/ComparisonHome';
@@ -16,23 +16,17 @@ whyDidYouRender(React, {
 const search = window.location.search;
 
 const app = (
-  <BrowserRouter>
+  <HashRouter>
     <Switch>
       <Redirect from="/" to={{ pathname: '/project', search }} exact />
       <Route component={App} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
       <Route component={ComparisonHome} path="/compare" exact />
     </Switch>
-  </BrowserRouter>
+  </HashRouter>
 );
 
 ReactDOM.render(app, document.getElementById('root'));
-// ReactDOM.render(
-//   <React.StrictMode>
-//     <App />
-//   </React.StrictMode>,
-//   document.getElementById('root'),
-// );
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

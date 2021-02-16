@@ -1,12 +1,6 @@
 from backend.inference_core.intent_contract import Prediction
 from backend.inference_core.reapply.compare import get_changes_df
-from backend.inference_core.reapply.interactions import (
-    BNL,
-    CLUSTER,
-    DBSCAN,
-    KMEANS,
-    OUTLIER,
-)
+from backend.inference_core.reapply.interactions import Algorithms, Intents
 from backend.inference_core.reapply.reapply_algorithms.dbscan import (
     applyDBScanCluster,
     applyDBScanOutlier,
@@ -21,7 +15,7 @@ def apply_prediction(base, data, prediction):
     changes = {}
     ids = None
 
-    if prediction.algorithm == KMEANS:
+    if prediction.algorithm == Algorithms.KMEANS:
         ids, closest_center = applyKMeans(
             data,
             prediction.dimensions,
@@ -34,8 +28,8 @@ def apply_prediction(base, data, prediction):
         )
         changes["center"] = closest_center
         return changes
-    if prediction.algorithm == DBSCAN:
-        if prediction.intent == CLUSTER:
+    if prediction.algorithm == Algorithms.DBSCAN:
+        if prediction.intent == Intents.CLUSTER:
             ids = applyDBScanCluster(
                 data,
                 prediction.dimensions,
@@ -43,12 +37,12 @@ def apply_prediction(base, data, prediction):
                 info["min_samples"],
                 prediction.memberIds,
             )
-        if prediction.intent == OUTLIER:
+        if prediction.intent == Intents.OUTLIER:
             ids = applyDBScanOutlier(
                 data, prediction.dimensions, info["eps"], info["min_samples"]
             )
 
-    if prediction.algorithm == BNL:
+    if prediction.algorithm == Algorithms.BNL:
         ids = applySkyline(data, prediction.dimensions, info["sense"])
 
     changes = get_changes_df(

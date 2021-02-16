@@ -72,7 +72,7 @@ const ProjectView = () => {
     'Dataset',
     '',
     datasetOptions,
-    datasetKey || '',
+    datasetOptions.map((d) => d.key).includes(datasetKey) ? datasetKey : '',
     loadDataset,
   );
 
@@ -81,7 +81,9 @@ const ProjectView = () => {
     'Comparison Dataset',
     '',
     datasetOptions,
-    comparisonDatasetKey || '',
+    comparisonDatasetKey && datasetOptions.map((d) => d.key).includes(comparisonDatasetKey)
+      ? comparisonDatasetKey
+      : '',
     loadComparisonDataset,
   );
 

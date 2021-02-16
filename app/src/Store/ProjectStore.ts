@@ -3,6 +3,7 @@ import { action, makeAutoObservable } from 'mobx';
 
 import { SERVER } from '../consts';
 
+import { ExploreStore } from './ExploreStore';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { Project, ProjectList, UploadedDatasetList } from './Types/Project';
@@ -74,6 +75,9 @@ export class ProjectStore {
 
     if (!proj) return;
 
+    this.loadedDataset = null;
+    this.rootStore.exploreStore = new ExploreStore(this.rootStore);
+
     Axios.get(`${SERVER}/${projectId}/dataset`).then(
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
@@ -114,11 +118,10 @@ export class ProjectStore {
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,
-      interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
-        .interactions,
+      interactions:
+        this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact.interactions || [],
     }).then(
       action((response: AxiosResponse<any>) => {
-        console.log(response);
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
@@ -143,7 +146,6 @@ export class ProjectStore {
         .interactions,
     }).then(
       action((response: AxiosResponse<any>) => {
-        console.log(response);
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );

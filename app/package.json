@@ -2,6 +2,7 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://vdl.sci.utah.edu/reusing-intent/",
   "dependencies": {
     "@material-ui/core": "^4.11.2",
     "@material-ui/data-grid": "^4.0.0-alpha.15",
@@ -23,6 +24,7 @@
     "axios": "^0.21.0",
     "clsx": "^1.1.1",
     "d3": "^6.2.0",
+    "debounce": "^1.2.0",
     "font-awesome": "^4.7.0",
     "formik": "^2.2.6",
     "mobx": "^6.0.4",
@@ -64,6 +66,7 @@
   },
   "devDependencies": {
     "@types/d3": "^6.2.0",
+    "@types/debounce": "^1.2.0",
     "@typescript-eslint/eslint-plugin": "^4.9.0",
     "@typescript-eslint/parser": "^4.9.0",
     "babel-eslint": "^10.1.0",

@@ -50,7 +50,8 @@ def computeDBScan(data: pd.DataFrame):
     results = [dbscan(scaled_data, eps=e, min_samples=m) for e, m in params]
 
     rets = [
-        (",".join(map(str, labels)), json.dumps(params)) for labels, params in results
+        (",".join(map(str, labels)), json.dumps({"params": params}))
+        for labels, params in results
     ]
 
     return rets
