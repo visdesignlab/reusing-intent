@@ -8,7 +8,6 @@ from backend.server.paths import DATABASE_ROOT
 from backend.server.routes.install_routes import installRoutes
 
 app = Flask(__name__)
-# CORS(app)
 
 
 def checkAndInitalizeDatabaseFolder():

@@ -16,35 +16,28 @@ export class CompareStore {
     makeAutoObservable(this);
   }
 
-  isBelowCurrent(id:string, current:string): boolean{
+  isBelowCurrent(id: string, current: string): boolean {
     const graph = this.rootStore.exploreStore.provenance.graph;
 
-    if(graph.nodes[current].children.length === 0)
-    {
+    if (graph.nodes[current].children.length === 0) {
       return false;
+    } else if (graph.nodes[current].children.includes(id)) {
+      return true;
     }
-    else if(graph.nodes[current].children.includes(id))
-    {
-      return true
-    }
-    
+
     let flag = false;
 
-    for (const i in graph.nodes[current].children)
-    {
-      if(!flag)
-        flag = this.isBelowCurrent(id, i);
+    for (const i in graph.nodes[current].children) {
+      if (!flag) flag = this.isBelowCurrent(id, i);
     }
 
     return flag;
-    
   }
 
   get selectedPointsComparison() {
     let selectedPoints: string[] = [];
     const { plots } = this.rootStore.exploreStore.state;
-    const graph = this.rootStore.exploreStore.provenance.graph
-    console.log(graph)
+    const graph = this.rootStore.exploreStore.provenance.graph;
 
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
@@ -74,7 +67,7 @@ export class CompareStore {
     return Array.from(new Set(selectedPoints));
   }
 
- loadedDataset() {
+  loadedDataset() {
     let dataset = this.rootStore.projectStore.loadedDataset;
 
     if (!dataset) {
