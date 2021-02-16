@@ -5,6 +5,8 @@ from typing import List
 import pandas as pd
 from paretoset import paretoset
 
+from backend.server.database.schemas.algorithms.skyline import Skyline
+
 
 def get_sense_combinations(columns: List[str]):
     if len(columns) <= 2:
@@ -19,7 +21,7 @@ def pareto(data, sense):
     return mask, sense
 
 
-def computeSkyline(data: pd.DataFrame):
+def computeSkyline(data: pd.DataFrame, dimensions, record_id):
     senses = get_sense_combinations(list(data.columns))
 
     results = [pareto(data, sense) for sense in senses]
@@ -29,4 +31,7 @@ def computeSkyline(data: pd.DataFrame):
         for mask, sense in results
     ]
 
-    return rets
+    return [
+        Skyline(dimensions=dimensions, output=output, info=info, record_id=record_id)
+        for output, info in rets
+    ]

@@ -1,6 +1,6 @@
 import pandas as pd
 
-from backend.inference_core.algorithms.dbscan import dbscan
+from backend.inference_core.algorithms.dbscan import dbscan as db
 from backend.inference_core.reapply.compare import get_similarity
 from backend.inference_core.utils import robustScaler2
 
@@ -12,7 +12,7 @@ def applyDBScanCluster(
     scaler = robustScaler2(data[dimensions].values)
     scaled_data = scaler.transform(data[dimensions].values)
 
-    labels, _ = dbscan(scaled_data, eps, min_samples)
+    labels, _ = db(scaled_data, eps, min_samples)
     data["label"] = labels
     groups = data.groupby("label")
     dist = groups.apply(lambda x: get_similarity(x["id"].tolist(), original_selections))
@@ -28,7 +28,7 @@ def applyDBScanOutlier(data: pd.DataFrame, dimensions, eps, min_samples):
     scaler = robustScaler2(data[dimensions].values)
     scaled_data = scaler.transform(data[dimensions].values)
 
-    labels, _ = dbscan(scaled_data, eps, min_samples)
+    labels, _ = db(scaled_data, eps, min_samples)
     data["label"] = labels
     groups = data.groupby("label")
 

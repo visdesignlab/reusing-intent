@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from backend.inference_core.utils import robustScaler2
+from backend.server.database.schemas.algorithms.cluster import KMeansCluster
 
 
 def get_params():
@@ -23,7 +24,7 @@ def kmeans(data, n_clusters):
     return labels, centers, n_clusters
 
 
-def computeKMeansClusters(data: pd.DataFrame):
+def computeKMeansClusters(data: pd.DataFrame, dimensions, record_id):
     n_clusters = get_params()
 
     scaler = robustScaler2(data.values)
@@ -43,4 +44,13 @@ def computeKMeansClusters(data: pd.DataFrame):
         (",".join(map(str, labels)), json.dumps(info))  # type: ignore
         for (labels, _c, _n), info in zip(results, infos)
     ]
-    return rets
+
+    return [
+        KMeansCluster(
+            dimensions=dimensions,
+            output=output,
+            info=params,
+            record_id=record_id,
+        )
+        for output, params in rets
+    ]

@@ -3,11 +3,8 @@ from typing import Any, Dict, List
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from backend.inference_core.algorithms.range import range_intent
-from backend.inference_core.filter import process_predictions
 from backend.inference_core.intent_contract import Prediction
 from backend.server.celery.init import celery
-from backend.server.database.get_predictions import get_predictions
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
@@ -15,6 +12,10 @@ from backend.server.database.session import (
     getEngine,
     getSessionScopeFromEngine,
     getSessionScopeFromId,
+)
+from backend.server.routes.dataset.predict_helpers import (
+    process_filtered,
+    process_regular,
 )
 from backend.server.routes.utils import handle_exception
 from backend.utils.hash import getUIDForFile
@@ -130,8 +131,15 @@ def getDatasetByKey(project: str, key: str):
 
 @datasetRoute.route("/<project>/dataset/predict/<key>", methods=["POST"])
 def predict(project: str, key: str):
-    selectedIds = request.json["selections"]
+    selections = request.json["selections"]
     dimensions = sorted(request.json["dimensions"])
+    filtered_ids = []
+
+    if "filtered_ids" in request.json:
+        filtered_ids = request.json["filtered_ids"]
+
+    isFiltered = len(filtered_ids) > 0
+
     engine = getEngine(project)
     with engine.begin() as conn:
         with getSessionScopeFromEngine(conn) as session:
@@ -150,18 +158,15 @@ def predict(project: str, key: str):
             dataset = dataset[dataset["record_id"] == str(record_id)]
             dataset = dataset.drop(columns=["record_id"])
 
-            selections = [
-                1 if i in selectedIds else 0 for i in dataset["id"].values.tolist()
-            ]
+            predictions: List[Prediction] = []
 
-            predictions: List[Prediction] = get_predictions(
-                record_id, dataset, selections, dimensions, session
-            )
-
-            predictions.extend(range_intent(dataset, dimensions, selections))
-
-            predictions = process_predictions(predictions)
-
-            print("Test")
+            if isFiltered:
+                predictions = process_filtered(
+                    dataset, selections, dimensions, filtered_ids
+                )
+            else:
+                predictions = process_regular(
+                    record_id, dataset, selections, dimensions, session
+                )
 
             return jsonify([e.serialize() for e in predictions])
