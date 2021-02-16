@@ -10,7 +10,10 @@ from backend.inference_core.algorithms.kmeans import (
     get_kmeans_count,
 )
 from backend.inference_core.algorithms.linear_regression import computeLR
-from backend.inference_core.algorithms.skyline_algorithm import computeSkyline
+from backend.inference_core.algorithms.skyline_algorithm import (
+    computeSkyline,
+    get_sense_combinations,
+)
 from backend.server.celery.init import celery
 from backend.server.database.schemas.algorithms.cluster import (
     DBScanCluster,
@@ -146,7 +149,8 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
 def precomputeSkyline(self, data: Any, combinations, record_id, project):
     data = pd.read_json(data)
 
-    to_process = 2 * len(combinations)
+    to_process = [len(get_sense_combinations(comb)) for comb in combinations]
+    to_process = sum(to_process)
     processed = 0
 
     self.update_state(

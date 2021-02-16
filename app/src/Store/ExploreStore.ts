@@ -7,7 +7,7 @@ import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
 import { SERVER } from './../consts';
-import { ExtendedBrushCollection } from './IntentState';
+import { BrushType, ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { InteractionArtifact } from './Types/InteractionArtifact';
@@ -173,6 +173,33 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
+  switchBrush = (brushType: BrushType) => {
+    const { switchBrushTypeAction } = this.rootStore.actions;
+
+    let label = 'None';
+
+    switch (brushType) {
+      case 'Rectangular':
+        label = 'Rectangular Brush';
+        break;
+      case 'Freeform Large':
+        label = 'Large Paint Brush';
+        break;
+      case 'Freeform Medium':
+        label = 'Medium Paint Brush';
+        break;
+      case 'Freeform Small':
+        label = 'Small Paint Brush';
+        break;
+      default:
+        label = 'Disable Brush';
+        break;
+    }
+
+    this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
+    this.addPredictions();
+  };
+
   setFreeformSelection = (plot: Plot, points: string[]) => {
     this.addPointSelection(plot, points, true);
   };
@@ -310,6 +337,9 @@ export class ExploreStore {
   addPredictions = () => {
     this.hoveredPrediction = null;
     const dimensions: string[] = [];
+
+    if (this.selectedPoints.length === 0) return;
+
     this.isLoadingPredictions = true;
 
     Object.values(this.state.plots).forEach((plt) => {

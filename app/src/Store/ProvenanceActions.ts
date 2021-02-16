@@ -1,6 +1,6 @@
 import { createAction } from '@visdesignlab/trrack';
 
-import { ExtendedBrushCollection, IntentState } from './IntentState';
+import { BrushType, ExtendedBrushCollection, IntentState } from './IntentState';
 import { IntentEvents } from './Types/IntentEvents';
 import { Plot } from './Types/Plot';
 import { Prediction } from './Types/Prediction';
@@ -82,6 +82,12 @@ const removeBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollecti
   },
 ).setEventType('Remove Brush');
 
+const switchBrushTypeAction = createAction<IntentState, [BrushType], IntentEvents>(
+  (state: IntentState, type: BrushType) => {
+    state.brushType = type;
+  },
+).setEventType('Change Brush Type');
+
 export const provenanceActions = {
   addPlotAction,
   changeDatasetAction,
@@ -93,4 +99,5 @@ export const provenanceActions = {
   addBrushAction,
   updateBrushAction,
   removeBrushAction,
+  switchBrushTypeAction,
 };
