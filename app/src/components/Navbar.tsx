@@ -48,8 +48,8 @@ const Navbar: FC = () => {
   const {
     currentProject,
     comparisonDatasetKey,
-
     loadComparisonApply,
+    loadComparisonFilter
   } = useContext(Store).projectStore;
 
   const datasetOptions = useMemo(() => {
@@ -122,6 +122,14 @@ const Navbar: FC = () => {
             variant="outlined"
           >
             Apply
+          </Button>
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => loadComparisonFilter("demo")}
+          >
+            Filter
           </Button>
           <ComparisonDropdown />
         </Toolbar>

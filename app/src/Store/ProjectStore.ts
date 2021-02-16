@@ -124,6 +124,31 @@ export class ProjectStore {
     );
   };
 
+  //load the dataset into comparison 
+  loadComparisonFilter = (datasetKey: string) => {
+    if (!this.currentProject) return;
+
+    this.comparisonDatasetKey = datasetKey;
+
+    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
+      action((response: AxiosResponse<Dataset>) => {
+        this.comparisonDataset = response.data;
+      }),
+    );
+
+    Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
+      baseDataset: this.loadedDatasetKey,
+      updatedDataset: datasetKey,
+      interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
+        .interactions,
+    }).then(
+      action((response: AxiosResponse<any>) => {
+        console.log(response);
+        this.rootStore.compareStore.updatedActions = response.data;
+      }),
+    );
+  };
+
   // ##################################################################### //
   // ######################### Provenance Actions ######################## //
   // ##################################################################### //

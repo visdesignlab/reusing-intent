@@ -105,7 +105,9 @@ const Marks: FC<Props> = ({
                       <g>
                         <path
                           className={`marks ${classes.movedLine} ${
-                            selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                            selectedPoints.includes(point.id)
+                              ? classes.unionMark
+                              : classes.regularMark
                           }`}
                           d={createComet(
                             xScale(point.x),
@@ -113,32 +115,38 @@ const Marks: FC<Props> = ({
                             yScale(point.y),
                             yScale(editGroup[0].y),
                           )}
-                          style={{opacity: "0.4"}}
+                          style={{ opacity: '0.4' }}
                         />
-                        <circle
+                        <g
                           key={point.label}
-                          className={`marks ${classes.movedPoint} ${
-                            selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                          }`}
-                          cx={xScale(point.x as number)}
-                          cy={yScale(point.y as number)}
-                          id={`mark${point.id}`}
-                          opacity="0.5"
-                          r="5"
-                        />
-                        <circle
-                          key={editGroup[0].label}
-                          className={`marks ${classes.movedPoint} ${
-                            selectedPoints.includes(editGroup[0].id)
+                          className={`marks ${classes.newMark} ${
+                            selectedPoints.includes(point.id)
                               ? classes.unionMark
                               : classes.regularMark
                           }`}
-                          cx={xScale(editGroup[0].x as number)}
-                          cy={yScale(editGroup[0].y as number)}
                           id={`mark${point.id}`}
-                          opacity="0.2"
-                          r="5"
-                        />
+                          opacity="0.5"
+                          transform={`translate(${xScale(point.x as number) - 5}, ${
+                            yScale(point.y as number) - 5
+                          })`}
+                        >
+                          <polygon points="0 5, 5 10, 10 5, 5 0" />
+                        </g>
+                        <g
+                          key={editGroup[0].label}
+                          className={`marks ${classes.newMark} ${
+                            selectedPoints.includes(point.id)
+                              ? classes.unionMark
+                              : classes.regularMark
+                          }`}
+                          id={`mark${editGroup[0].id}`}
+                          opacity="0.5"
+                          transform={`translate(${xScale(editGroup[0].x as number) - 5}, ${
+                            yScale(editGroup[0].y as number) - 5
+                          })`}
+                        >
+                          <polygon points="0 5, 5 10, 10 5, 5 0" />
+                        </g>
                       </g>
                     );
                   }
@@ -228,32 +236,34 @@ const Marks: FC<Props> = ({
                     yScale(point.y),
                     yScale(editGroup[0].y),
                   )}
-                  style={{opacity: "0.4"}}
+                  style={{ opacity: '0.4' }}
                 />
-                <circle
+                <g
                   key={point.label}
-                  className={`marks ${classes.movedPoint} ${
+                  className={`marks ${classes.newMark} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                   }`}
-                  cx={xScale(point.x as number)}
-                  cy={yScale(point.y as number)}
                   id={`mark${point.id}`}
                   opacity="0.5"
-                  r="5"
-                />
-                <circle
+                  transform={`translate(${xScale(point.x as number) - 5}, ${
+                    yScale(point.y as number) - 5
+                  })`}
+                >
+                  <polygon points="0 5, 5 10, 10 5, 5 0" />
+                </g>
+                <g
                   key={editGroup[0].label}
-                  className={`marks ${classes.movedPoint} ${
-                    selectedPoints.includes(editGroup[0].id)
-                      ? classes.unionMark
-                      : classes.regularMark
+                  className={`marks ${classes.newMark} ${
+                    selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                   }`}
-                  cx={xScale(editGroup[0].x as number)}
-                  cy={yScale(editGroup[0].y as number)}
-                  id={`mark${point.id}`}
-                  opacity="0.2"
-                  r="5"
-                />
+                  id={`mark${editGroup[0].id}`}
+                  opacity="0.5"
+                  transform={`translate(${xScale(editGroup[0].x as number) - 5}, ${
+                    yScale(editGroup[0].y as number) - 5
+                  })`}
+                >
+                  <polygon points="0 5, 5 10, 10 5, 5 0" />
+                </g>
               </g>
             );
           }
