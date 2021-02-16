@@ -15,24 +15,49 @@ export class CompareStore {
     makeAutoObservable(this);
   }
 
+  isBelowCurrent(id:string, current:string): boolean{
+    const graph = this.rootStore.exploreStore.provenance.graph;
+
+    if(graph.nodes[current].children.length === 0)
+    {
+      return false;
+    }
+    else if(graph.nodes[current].children.includes(id))
+    {
+      return true
+    }
+    
+    let flag = false;
+
+    for (const i in graph.nodes[current].children)
+    {
+      if(!flag)
+        flag = this.isBelowCurrent(id, i);
+    }
+
+    return flag;
+    
+  }
+
   get selectedPointsComparison() {
     let selectedPoints: string[] = [];
     const { plots } = this.rootStore.exploreStore.state;
+    const graph = this.rootStore.exploreStore.provenance.graph
+    console.log(graph)
 
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      if (act.type === 'Brush') {
-        const brushes = act.plot.brushes;
-
-        for (const b in brushes) {
-          const points = brushes[b].changes.added;
-          const removed = brushes[b].changes.removed;
-
-          selectedPoints.push(...points);
-          selectedPoints.push(...removed);
-        }
+      if (!act.added || graph.nodes[a].label === "Add Plot")
+      {
+        continue;
       }
+
+      const points = act.added;
+      const removed = act.removed;
+
+      selectedPoints.push(...points);
+      // selectedPoints.push(...removed);
     }
 
     Object.values(plots).forEach((plot) => {
@@ -52,7 +77,7 @@ export class CompareStore {
     return Array.from(new Set(selectedPoints));
   }
 
-  get loadedDataset() {
+ loadedDataset() {
     let dataset = this.rootStore.projectStore.loadedDataset;
 
     if (!dataset) {

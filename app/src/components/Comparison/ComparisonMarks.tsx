@@ -68,113 +68,120 @@ const Marks: FC<Props> = ({
         })}
       </>
     );
-  } else if (dataDisplay === 'Diff') {
-    return (
-      <>
-        {points
-          .filter((point) => {
-            return (
-              compPoints.filter((i) => i.label === point.label).length === 0 ||
-              compPoints.filter(
-                (d) => d.label === point.label && (d.x !== point.x || d.y !== point.y),
-              ).length > 0
-            );
-          })
-          .map((point) => {
-            if (compPoints !== null) {
-              //if the compPoint removed the point
-              if (compPoints.filter((d) => d.label === point.label).length === 0) {
+    } else if (dataDisplay === 'Diff') {
+        return (
+            <>
+              {points.map((point) => {
+                if (compPoints !== null) {
+                  //if the compPoint removed the point
+                  if (compPoints.filter((d) => d.label === point.label).length === 0) {
+                    return (
+                      <g
+                        key={point.label}
+                        className={`marks ${classes.removedMark} ${
+                          selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                        }`}
+                        id={`mark${point.id}`}
+                        opacity="0.5"
+                        transform={`translate(${xScale(point.x as number) - 3}, ${
+                          yScale(point.y as number) - 3
+                        })`}
+                      >
+                        <line x2="6" y2="6" />
+                        <line x1="6" y2="6" />
+                      </g>
+                    );
+                  }
+                }
+
+                if (compPoints !== null) {
+                  //if the compPoint removed the point
+                  const editGroup = compPoints.filter(
+                    (d) => d.label === point.label && (d.x !== point.x || d.y !== point.y),
+                  );
+
+                  if (editGroup.length > 0) {
+                    return (
+                      <g>
+                        <path
+                          className={`marks ${classes.movedLine} ${
+                            selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                          }`}
+                          d={createComet(
+                            xScale(point.x),
+                            xScale(editGroup[0].x),
+                            yScale(point.y),
+                            yScale(editGroup[0].y),
+                          )}
+                          style={{opacity: "0.4"}}
+                        />
+                        <circle
+                          key={point.label}
+                          className={`marks ${classes.movedPoint} ${
+                            selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                          }`}
+                          cx={xScale(point.x as number)}
+                          cy={yScale(point.y as number)}
+                          id={`mark${point.id}`}
+                          opacity="0.5"
+                          r="5"
+                        />
+                        <circle
+                          key={editGroup[0].label}
+                          className={`marks ${classes.movedPoint} ${
+                            selectedPoints.includes(editGroup[0].id)
+                              ? classes.unionMark
+                              : classes.regularMark
+                          }`}
+                          cx={xScale(editGroup[0].x as number)}
+                          cy={yScale(editGroup[0].y as number)}
+                          id={`mark${point.id}`}
+                          opacity="0.2"
+                          r="5"
+                        />
+                      </g>
+                    );
+                  }
+                }
+
                 return (
-                  <g
+                  <circle
                     key={point.label}
-                    className={`marks ${classes.removedMark} ${
+                    className={`marks ${
                       selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                     }`}
+                    cx={xScale(point.x as number)}
+                    cy={yScale(point.y as number)}
                     id={`mark${point.id}`}
-                    opacity="0.5"
-                    transform={`translate(${xScale(point.x as number) - 3}, ${
-                      yScale(point.y as number) - 3
-                    })`}
-                  >
-                    <line x2="6" y2="6" />
-                    <line x1="6" y2="6" />
-                  </g>
+                    opacity="0.1"
+                    r="5"
+                  />
                 );
-              }
-            }
+              })}
 
-            if (compPoints !== null) {
-              const editGroup = compPoints.filter(
-                (d) => d.label === point.label && (d.x !== point.x || d.y !== point.y),
-              );
-
-              //if the compPoint removed the point
-              if (editGroup.length > 0) {
-                return (
-                  <g>
-                    <circle
+              {compPoints
+                .filter((d) => {
+                  return points.filter((i) => i.label === d.label).length === 0;
+                })
+                .map((point) => {
+                  return (
+                    <g
                       key={point.label}
-                      className={`marks ${classes.movedPoint} ${
+                      className={`marks ${classes.newMark} ${
                         selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                       }`}
-                      cx={xScale(point.x as number)}
-                      cy={yScale(point.y as number)}
                       id={`mark${point.id}`}
                       opacity="0.5"
-                      r="5"
-                    />
-                    <line
-                      className={`marks ${classes.movedLine} ${
-                        selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                      }`}
-                      x1={xScale(point.x)}
-                      x2={xScale(editGroup[0].x)}
-                      y1={yScale(point.y)}
-                      y2={yScale(editGroup[0].y)}
-                    />
-                  </g>
-                );
-              }
-            }
-
-            return (
-              <circle
-                key={point.label}
-                className={`marks ${
-                  selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                } `}
-                cx={xScale(point.x as number)}
-                cy={yScale(point.y as number)}
-                id={`mark${point.id}`}
-                opacity="0.5"
-                r="5"
-              />
-            );
-          })}
-
-        {compPoints
-          .filter((d) => {
-            return points.filter((i) => i.label === d.label).length === 0;
-          })
-          .map((point) => {
-            return (
-              <g
-                key={point.label}
-                className={`marks ${classes.newMark} ${
-                  selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                }`}
-                id={`mark${point.id}`}
-                opacity="0.5"
-                transform={`translate(${xScale(point.x as number) - 5}, ${
-                  yScale(point.y as number) - 5
-                })`}
-              >
-                <polygon points="0 0, 5 10, 10 0" />
-              </g>
-            );
-          })}
-      </>
-    );
+                      transform={`translate(${xScale(point.x as number) - 5}, ${
+                        yScale(point.y as number) - 5
+                      })`}
+                    >
+                      <polygon points="0 0, 5 10, 10 0" />
+                    </g>
+                  );
+                })}
+            </>
+          );
   }
 
   return (
@@ -211,6 +218,18 @@ const Marks: FC<Props> = ({
           if (editGroup.length > 0) {
             return (
               <g>
+                <path
+                  className={`marks ${classes.movedLine} ${
+                    selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                  }`}
+                  d={createComet(
+                    xScale(point.x),
+                    xScale(editGroup[0].x),
+                    yScale(point.y),
+                    yScale(editGroup[0].y),
+                  )}
+                  style={{opacity: "0.4"}}
+                />
                 <circle
                   key={point.label}
                   className={`marks ${classes.movedPoint} ${
@@ -222,14 +241,18 @@ const Marks: FC<Props> = ({
                   opacity="0.5"
                   r="5"
                 />
-                <line
-                  className={`marks ${classes.movedLine} ${
-                    selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
+                <circle
+                  key={editGroup[0].label}
+                  className={`marks ${classes.movedPoint} ${
+                    selectedPoints.includes(editGroup[0].id)
+                      ? classes.unionMark
+                      : classes.regularMark
                   }`}
-                  x1={xScale(point.x)}
-                  x2={xScale(editGroup[0].x)}
-                  y1={yScale(point.y)}
-                  y2={yScale(editGroup[0].y)}
+                  cx={xScale(editGroup[0].x as number)}
+                  cy={yScale(editGroup[0].y as number)}
+                  id={`mark${point.id}`}
+                  opacity="0.2"
+                  r="5"
                 />
               </g>
             );
@@ -275,5 +298,14 @@ const Marks: FC<Props> = ({
     </>
   );
 };
+
+function createComet(x1: number, x2: number, y1: number, y2: number): string{
+
+
+  return `M ${Math.trunc(x1 + 4)} ${Math.trunc(y1)} 
+  L ${Math.trunc(x2) - 1} ${Math.trunc(y2)} 
+  L ${Math.trunc(x1 - 4)} ${Math.trunc(y1)}
+  z`;
+}
 
 export default observer(Marks);

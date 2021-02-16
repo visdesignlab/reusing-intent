@@ -119,7 +119,7 @@ export class ProjectStore {
     }).then(
       action((response: AxiosResponse<any>) => {
         console.log(response);
-        this.rootStore.compareStore.updatedActions = response.data.updated;
+        this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
   };

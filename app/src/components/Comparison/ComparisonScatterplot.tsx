@@ -36,6 +36,18 @@ export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All';
 
 const CompVis: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
+ const {
+   currentProject,
+ } = useContext(Store).projectStore;
+
+
+
+  const opts =
+    currentProject?.datasets.map((dataset) => ({
+      key: dataset.key,
+      desc: dataset.version,
+    })) || [];
+
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
@@ -66,7 +78,7 @@ const CompVis: FC = () => {
               setDataDisplay('Original');
             }}
           >
-            Original Data
+            {opts[0].desc}
           </Button>
           <Button
             color="primary"
@@ -78,7 +90,7 @@ const CompVis: FC = () => {
               setDataDisplay('Comparison');
             }}
           >
-            Comparison Data
+            {opts[1].desc}
           </Button>
           <Button
             color="primary"
@@ -89,9 +101,9 @@ const CompVis: FC = () => {
             onMouseOver={() => {
               setDataDisplay('Diff');
             }}
-          >
-            Shifted Data
-          </Button>
+           >
+             Changed Data
+             </Button>
         </div>
         <Scatterplot
           dataDisplay={dataDisplay}
