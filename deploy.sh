@@ -14,7 +14,6 @@ if ! ssh ubuntu@ec2-3-131-141-97.us-east-2.compute.amazonaws.com "
     git pull
     echo 'Pulled latest'
     sudo docker-compose up -d
-    python datasets/upload_datasets.py
     "
 then
     echo "Failure"
