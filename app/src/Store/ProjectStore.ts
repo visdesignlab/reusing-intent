@@ -119,8 +119,7 @@ export class ProjectStore {
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,
-      interactions:
-        this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact.interactions || [],
+      interactions: this.rootStore.exploreStore.interactions || [],
     }).then(
       action((response: AxiosResponse<unknown>) => {
         this.rootStore.compareStore.updatedActions = response.data;
@@ -143,8 +142,7 @@ export class ProjectStore {
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,
-      interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
-        .interactions,
+      interactions: this.rootStore.exploreStore.interactions,
     }).then(
       action((response: AxiosResponse<unknown>) => {
         this.rootStore.compareStore.updatedActions = response.data;

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
@@ -6,6 +5,10 @@ import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 
+import Store from '../../Store/Store';
+import { IntentEvents } from '../../Store/Types/IntentEvents';
+import { Plot } from '../../Store/Types/Plot';
+import { getPlotId } from '../../Utils/IDGens';
 import {
   AddBrush,
   AddPlot,
@@ -23,14 +26,10 @@ import {
   RemoveBrush,
   SwitchCategoryVisibility,
   TurnPrediction,
-} from './components/Icons';
-import Navbar from './components/Navbar';
-import PredictionTable from './components/Predictions/PredictionTable';
-import Visualization from './components/Visualization';
-import Store from './Store/Store';
-import { IntentEvents } from './Store/Types/IntentEvents';
-import { Plot } from './Store/Types/Plot';
-import { getPlotId } from './Utils/IDGens';
+} from '../Icons';
+import Navbar from '../Navbar';
+import PredictionTable from '../Predictions/PredictionTable';
+import Visualization from '../Visualization';
 
 export type Bundle = {
   metadata: unknown;
@@ -163,11 +162,11 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
+const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
 
   const {
-    exploreStore: { predictions, n_plots, addPlot, setPredictionSelection, setHoveredPrediction },
+    exploreStore: { n_plots, addPlot },
     projectStore: { loadedDataset },
     provenance,
     setQueryParams,
@@ -236,4 +235,4 @@ const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   );
 };
 
-export default observer(App);
+export default observer(ExploreHome);

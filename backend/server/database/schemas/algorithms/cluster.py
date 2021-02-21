@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.spatial import ConvexHull  # type: ignore
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.inference_core.prediction_stats import getStats
 from backend.inference_core.rankings import rank_jaccard
 from backend.server.database.schemas.algorithms.intent_base import IntentBase

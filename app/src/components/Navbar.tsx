@@ -35,7 +35,7 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadComparisonFilter },
+    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply },
     exploreStore: {
       state: { brushType },
       switchBrush,
@@ -100,7 +100,7 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              loadComparisonFilter("demo")
+              // loadComparisonFilter("demo")
               filter();
             }}
           >

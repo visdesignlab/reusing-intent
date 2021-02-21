@@ -88,7 +88,7 @@ def createProject(key: str):
 def processProvenance(project):
     baseDatasetKey = request.json["baseDataset"]
     updatedDatasetKey = request.json["updatedDataset"]
-    print(request.json)
+
     interactions = request.json["interactions"]
 
     engine = getEngine(project)
@@ -116,6 +116,6 @@ def processProvenance(project):
             results = reapply(baseDataset, updatedDataset, interactions)
 
             data = updatedDataset.drop(columns=["record_id"])
-            results["new_data"] = list(data.T.to_dict().values())
 
+            results["new_data"] = list(data.T.to_dict().values())
             return jsonify(results)

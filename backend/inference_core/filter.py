@@ -2,7 +2,7 @@ from typing import List
 
 import pandas as pd
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 
 
 def process_predictions(predictions: List[Prediction]) -> List[Prediction]:

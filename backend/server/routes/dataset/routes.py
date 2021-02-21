@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.server.celery.init import celery
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata

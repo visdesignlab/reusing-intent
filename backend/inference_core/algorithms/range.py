@@ -3,7 +3,7 @@ from typing import Any, List
 import numpy as np
 from sklearn import tree
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.inference_core.prediction_stats import getStats
 
 

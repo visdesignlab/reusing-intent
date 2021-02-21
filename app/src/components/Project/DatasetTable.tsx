@@ -1,4 +1,6 @@
-import { CellClassParams, ColDef, ValueFormatterParams, XGrid } from '@material-ui/x-grid';
+import { makeStyles, Typography } from '@material-ui/core';
+import { DataGrid } from '@material-ui/data-grid';
+import { CellClassParams, ColDef, ValueFormatterParams } from '@material-ui/x-grid';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
 import Store from '../../Store/Store';
@@ -99,22 +101,38 @@ type paramType = {
   columnNum: number;
 };
 
+const useStyles = makeStyles(() => ({
+  centerText: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));
+
 export const DatasetTable = (p: paramType) => {
   const ref = useRef<HTMLDivElement>(null);
+  const classes = useStyles();
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
   const { rows, columns } = useDataGridFormat(loadedDataset, comparisonDataset, headerHeight, true);
 
   return (
-    <div style={{ gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum }}>
-      <XGrid
-        ref={ref}
-        columns={columns}
-        headerHeight={headerHeight}
-        rows={rows}
-        autoPageSize
-        pagination
-      />
+    <div
+      className={classes.centerText}
+      style={{ gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum }}
+    >
+      {rows.length > 0 ? (
+        <DataGrid
+          ref={ref}
+          columns={columns}
+          headerHeight={headerHeight}
+          rows={rows}
+          autoPageSize
+          pagination
+        />
+      ) : (
+        <Typography variant="button">Please select a dataset</Typography>
+      )}
     </div>
   );
 };
@@ -132,7 +150,7 @@ export const ComparisonTable = () => {
 
   return (
     <div style={{ gridColumnStart: 2, gridColumnEnd: 3 }}>
-      <XGrid
+      <DataGrid
         ref={ref}
         columns={columns}
         headerHeight={headerHeight}

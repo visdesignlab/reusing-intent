@@ -1,6 +1,6 @@
 from typing import List
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.server.database.schemas.algorithms.cluster import (
     DBScanCluster,
     KMeansCluster,
