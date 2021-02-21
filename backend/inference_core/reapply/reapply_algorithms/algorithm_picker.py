@@ -35,8 +35,8 @@ def apply_prediction(base, data, prediction):
             ids = applyDBScanCluster(
                 data,
                 prediction.dimensions,
-                info["eps"],
-                info["min_samples"],
+                info["params"]["eps"],
+                info["params"]["min_samples"],
                 prediction.memberIds,
             )
         if intent == Intents.OUTLIER:
