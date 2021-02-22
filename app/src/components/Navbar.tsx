@@ -3,7 +3,6 @@ import {
   Button,
   Divider,
   FormControl,
-  FormGroup,
   makeStyles,
   Theme,
   Toolbar,
@@ -66,26 +65,25 @@ const Navbar: FC = () => {
     <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
-          <FormGroup row>
-            <AddPlot />
-            <Divider orientation="vertical" flexItem />
-            <FormControl className={classes.formControl}>
-              <ToggleButtonGroup
-                value={brushType}
-                exclusive
-                onChange={(_, bt) => {
-                  switchBrush(bt);
-                }}
-              >
-                <ToggleButton value="Rectangular">
-                  <CheckBoxOutlineBlankIcon />
-                </ToggleButton>
-                <ToggleButton value="Freeform Small">20</ToggleButton>
-                <ToggleButton value="Freeform Medium">35</ToggleButton>
-                <ToggleButton value="Freeform Large">50</ToggleButton>
-              </ToggleButtonGroup>
-            </FormControl>
-          </FormGroup>
+          <AddPlot />
+          <Divider orientation="vertical" flexItem />
+          <FormControl className={classes.formControl}>
+            <ToggleButtonGroup
+              value={brushType}
+              exclusive
+              onChange={(_, bt) => {
+                switchBrush(bt);
+              }}
+            >
+              <ToggleButton value="Rectangular">
+                <CheckBoxOutlineBlankIcon />
+              </ToggleButton>
+              <ToggleButton value="Freeform Small">20</ToggleButton>
+              <ToggleButton value="Freeform Medium">35</ToggleButton>
+              <ToggleButton value="Freeform Large">50</ToggleButton>
+            </ToggleButtonGroup>
+          </FormControl>
+          <Divider />
           <Button
             color="primary"
             component={Link}
@@ -95,6 +93,7 @@ const Navbar: FC = () => {
           >
             Apply
           </Button>
+          <ComparisonDropdown />
           <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +105,6 @@ const Navbar: FC = () => {
           >
             Filter
           </Button>
-          <ComparisonDropdown />
         </Toolbar>
       </AppBar>
     </div>
