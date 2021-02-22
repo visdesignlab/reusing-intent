@@ -15,55 +15,81 @@ const Skyline: FC<Props> = ({ info, xScale, yScale }: Props) => {
 
   const [x_sense, y_sense] = info.sense;
 
-  const scaled_frontier = useMemo(() => {
-    const front: { x: number; y: number }[] = frontier.map((val) => ({
+  const { scaled_frontier } = useMemo(() => {
+    const scaled_frontier: { x: number; y: number }[] = frontier.map((val) => ({
       x: xScale(val[0]),
       y: yScale(val[1]),
     }));
 
-    return front;
+    return { scaled_frontier };
   }, [xScale, yScale, frontier]);
+
+  const { x_lines, y_lines } = useMemo(() => {
+    let x_lines = <g />;
+    let y_lines = <g />;
+
+    console.log({ x_sense, y_sense });
+
+    x_lines = (
+      <g className="frontier-x">
+        {[...scaled_frontier]
+          .sort((a, b) => (x_sense === 'max' ? a.x - b.x : b.x - a.x))
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          .map((n, idx, arr) => {
+            const key = `${n.x}-${n.y}`;
+
+            if (idx === 0)
+              return (
+                <line
+                  key={key}
+                  stroke="black"
+                  x1={x_sense === 'max' ? xScale.range()[0] : n.x}
+                  x2={x_sense === 'max' ? n.x : xScale.range()[1]}
+                  y1={n.y}
+                  y2={n.y}
+                />
+              );
+
+            const p = arr[idx - 1];
+
+            return <line key={key} stroke="black" x1={p.x} x2={n.x} y1={n.y} y2={n.y} />;
+          })}
+      </g>
+    );
+
+    y_lines = (
+      <g>
+        {[...scaled_frontier]
+          .sort((a, b) => (y_sense === 'max' ? a.y - b.y : b.y - a.y))
+          .map((n, idx, arr) => {
+            const key = `${n.x}-${n.y}`;
+
+            if (idx === arr.length - 1)
+              return (
+                <line
+                  key={key}
+                  stroke="black"
+                  x1={n.x}
+                  x2={n.x}
+                  y1={y_sense === 'max' ? n.y : yScale.range()[1]}
+                  y2={y_sense === 'max' ? yScale.range()[0] : n.y}
+                />
+              );
+
+            const p = arr[idx + 1];
+
+            return <line key={key} stroke="black" x1={n.x} x2={n.x} y1={n.y} y2={p.y} />;
+          })}
+      </g>
+    );
+
+    return { x_lines, y_lines };
+  }, [scaled_frontier, x_sense, y_sense, xScale, yScale]);
 
   return (
     <g>
-      {scaled_frontier
-        .sort((a, b) => a.x - b.x)
-        .map((point, index, arr) => {
-          if (index === arr.length - 1) return <g key={point.x} />;
-
-          const next: { x: number; y: number } = arr[index + 1];
-
-          return (
-            <line
-              key={point.x}
-              stroke="black"
-              strokeWidth="1"
-              x1={point.x}
-              x2={next.x}
-              y1={y_sense === 'min' ? point.y : next.y}
-              y2={y_sense === 'min' ? point.y : next.y}
-            />
-          );
-        })}
-      {scaled_frontier
-        .sort((a, b) => a.y - b.y)
-        .map((point, index, arr) => {
-          if (index === arr.length - 1) return <g key={point.x} />;
-
-          const next: { x: number; y: number } = arr[index + 1];
-
-          return (
-            <line
-              key={point.x}
-              stroke="black"
-              strokeWidth="1"
-              x1={x_sense === 'min' ? next.x : point.x}
-              x2={x_sense === 'min' ? next.x : point.x}
-              y1={point.y}
-              y2={next.y}
-            />
-          );
-        })}
+      {x_lines}
+      {y_lines}
     </g>
   );
 };
