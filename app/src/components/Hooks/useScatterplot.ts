@@ -16,7 +16,11 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { loadedDataset: data, compDataset: compData } = useContext(Store).exploreStore;
+  const { compDataset: compData } = useContext(Store).exploreStore;
+  const { loadedDatasetValues: data } = useContext(Store).projectStore;
+
+  console.log("inside the hook", JSON.parse(JSON.stringify(data)))
+
   const dt =
     useMemo(() => {
       let points;
@@ -31,7 +35,7 @@ export function useScatterplotData(
           })) || [];
       } else {
         points =
-          data?.values.map((d) => ({
+          data.map((d) => ({
             id: d['id'] as string,
             x: d[x] as number,
             y: d[y] as number,
@@ -42,8 +46,10 @@ export function useScatterplotData(
       const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
       const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
 
+      console.log(points)
+
       return { points, x_extents, y_extents };
-    }, [compData, data, comparisonData, x, y, label]) || [];
+    }, [compData, comparisonData, x, y, label, data]);
 
   return dt;
 }

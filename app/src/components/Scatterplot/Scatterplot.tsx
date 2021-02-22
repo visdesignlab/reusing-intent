@@ -2,6 +2,7 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core';
 import { select } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext } from 'react';
+import { toJS } from 'mobx';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
@@ -54,7 +55,9 @@ const Scatterplot: FC<Props> = ({
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     loadedDataset: { labelColumn },
+    loadedDataset,
     setFreeformSelection,
     selectedPoints,
 
@@ -73,6 +76,8 @@ const Scatterplot: FC<Props> = ({
   const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, false);
   const { points: compPoints } = useScatterplotData(x, y, labelColumn, true);
 
+  console.log(toJS(loadedDataset))
+  
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
 

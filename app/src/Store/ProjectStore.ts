@@ -39,6 +39,10 @@ export class ProjectStore {
     return this.state.datasetKey;
   }
 
+  get loadedDatasetValues() {
+    return this.loadedDataset?.values || [];
+  }
+
   // ##################################################################### //
   // ########################### Store Helpers ########################### //
   // ##################################################################### //
@@ -129,27 +133,28 @@ export class ProjectStore {
   };
 
   //load the dataset into comparison
-  loadComparisonFilter = (datasetKey: string) => {
-    if (!this.currentProject) return;
+  loadComparisonFilter = (selectedIds: string[]) => {
+    const removeIds = this.workingDataset?.values.filter((d) => {
+      return !selectedIds.includes(d.id);
+    });
 
-    this.comparisonDatasetKey = datasetKey;
+    if (this.loadedDataset && removeIds) {
+      this.loadedDataset.values = removeIds;
 
-    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
-      action((response: AxiosResponse<Dataset>) => {
-        this.comparisonDataset = response.data;
-      }),
-    );
+      console.log(JSON.parse(JSON.stringify(this.loadedDataset)));
+    }
+  };
 
-    Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
-      baseDataset: this.loadedDatasetKey,
-      updatedDataset: datasetKey,
-      interactions: this.provenance.getLatestArtifact(this.provenance.current.id)?.artifact
-        .interactions,
-    }).then(
-      action((response: AxiosResponse<unknown>) => {
-        this.rootStore.compareStore.updatedActions = response.data;
-      }),
-    );
+  loadOnlyFilter = (selectedIds: string[]) => {
+    const removeIds = this.workingDataset?.values.filter((d) => {
+      return selectedIds.includes(d.id);
+    });
+
+    if (this.loadedDataset && removeIds) {
+      this.loadedDataset.values = removeIds;
+
+      console.log(JSON.parse(JSON.stringify(this.loadedDataset)));
+    }
   };
 
   // ##################################################################### //
