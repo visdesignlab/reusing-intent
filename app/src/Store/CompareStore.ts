@@ -27,7 +27,7 @@ export class CompareStore {
 
     let flag = false;
 
-    for (const i in graph.nodes[current].children) {
+    for (const i of graph.nodes[current].children) {
       if (!flag) flag = this.isBelowCurrent(id, i);
     }
 
@@ -39,15 +39,33 @@ export class CompareStore {
     const { plots } = this.rootStore.exploreStore.state;
     const graph = this.rootStore.exploreStore.provenance.graph;
 
+
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      if (!act || !act.added || graph.nodes[a].label === "Add Plot")
+      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || this.isBelowCurrent(a, graph.current))
       {
         continue;
-      }
+      } 
 
-      // selectedPoints.push(...removed);
+      if(graph.nodes[a].label === "Filter")
+      {
+        console.log(this.rootStore.state.filteredOutPoints)
+        this.rootStore.state.filteredOutPoints.push(...act.added);
+
+        for(const j of act.removed)
+        {
+          this.rootStore.state.filteredOutPoints.splice(
+            this.rootStore.state.filteredOutPoints.indexOf(j),
+            1,
+          );
+        }
+        console.log(this.rootStore.state.filteredOutPoints);
+
+        // this.rootStore.projectStore.filteredOutPoints(...act.added);
+
+        console.log(a, act)
+      }
     }
 
     Object.values(plots).forEach((plot) => {

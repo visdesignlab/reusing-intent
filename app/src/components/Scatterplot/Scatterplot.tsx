@@ -2,7 +2,6 @@ import { createStyles, makeStyles, useTheme } from '@material-ui/core';
 import { select } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useCallback, useContext } from 'react';
-import { toJS } from 'mobx';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
@@ -19,7 +18,6 @@ import FreeFormBrush, {
 } from '../Freeform/FreeFormBrush';
 import { useScale } from '../Hooks/useScale';
 import { useScatterplotData } from '../Hooks/useScatterplot';
-import ComparisonLegend from '../Comparison/ComparisonLegend';
 
 import Axis from './Axis';
 import Legend from './Legend';
@@ -50,7 +48,6 @@ const Scatterplot: FC<Props> = ({
   size,
   originalMarks = true,
   dataDisplay = 'Original',
-  setDataDisplay
 }: Props) => {
   const theme = useTheme();
   const dimension = size - 2 * theme.spacing(1);
@@ -58,7 +55,6 @@ const Scatterplot: FC<Props> = ({
   const {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     loadedDataset: { labelColumn },
-    loadedDataset,
     setFreeformSelection,
     selectedPoints,
 
@@ -77,8 +73,6 @@ const Scatterplot: FC<Props> = ({
 
   const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, false);
   const { points: compPoints } = useScatterplotData(x, y, labelColumn, true);
-
-  console.log(toJS(loadedDataset))
   
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
@@ -157,7 +151,7 @@ const Scatterplot: FC<Props> = ({
           bottom={sp_dimension}
           brushes={plot.brushes}
           data={points}
-          disableBrush={brushType !== 'Rectangular'}
+          disableBrush={brushType !== 'Rectangular' || !originalMarks}
           left={0}
           right={sp_dimension}
           top={0}
@@ -165,7 +159,7 @@ const Scatterplot: FC<Props> = ({
           yScale={yScale}
           onBrushHandler={rectBrushHandler}
         />
-        {brushSize && (
+        {brushSize && originalMarks && (
           <FreeFormBrush
             bottom={sp_dimension}
             brushSize={brushSize}
@@ -178,7 +172,7 @@ const Scatterplot: FC<Props> = ({
             onBrush={freeFormBrushHandler}
           />
         )}
-        
+
         {originalMarks ? (
           <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         ) : (
@@ -191,7 +185,6 @@ const Scatterplot: FC<Props> = ({
             yScale={yScale}
           />
         )}
-        {originalMarks ? null : <ComparisonLegend offset={sp_dimension - 55} setDataDisplay={setDataDisplay} />}
         {hoveredPrediction && (
           <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
         )}

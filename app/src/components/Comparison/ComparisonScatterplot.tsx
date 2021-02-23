@@ -67,6 +67,11 @@ const CompVis: FC = () => {
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
+      <ComparisonLegend
+        offset={spContainerDimension - 2 * theme.spacing(1) - 110}
+        setDataDisplay={setDataDisplay}
+      />
+
       <Paper elevation={3}>
         {n_plots > 1 && (
           <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
@@ -74,7 +79,7 @@ const CompVis: FC = () => {
           </IconButton>
         )}
         <div>
-          <Button
+          {/* <Button
             color="primary"
             variant="outlined"
             onMouseOut={() => {
@@ -109,14 +114,12 @@ const CompVis: FC = () => {
             }}
           >
             Changed Data
-          </Button>
-          {/* <ComparisonLegend offset={spContainerDimension - 2 * theme.spacing(1) - 110} /> */}
+          </Button> */}
         </div>
         <Scatterplot
           dataDisplay={dataDisplay}
           originalMarks={false}
           plot={plot}
-          setDataDisplay={setDataDisplay}
           size={spContainerDimension - 2 * theme.spacing(1)}
         />
       </Paper>

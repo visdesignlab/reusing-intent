@@ -77,7 +77,6 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <Navbar />
       <div className={classes.layout}>
         <ComparisonScatterplot />
         <ProvVis

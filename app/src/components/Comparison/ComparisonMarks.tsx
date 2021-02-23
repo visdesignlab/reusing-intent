@@ -1,9 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Tooltip } from '@material-ui/core';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC } from 'react';
+import React, { FC, useContext } from 'react';
+import { toJS } from 'mobx';
 
 import useScatterplotStyle from '../Scatterplot/styles';
+import Store from '../../Store/Store';
 
 import { DataDisplay } from './ComparisonScatterplot';
 
@@ -25,6 +28,10 @@ const Marks: FC<Props> = ({
   dataDisplay,
 }: Props) => {
   const classes = useScatterplotStyle();
+
+  const {
+    state
+  } = useContext(Store);
 
   if (!compPoints || dataDisplay === 'Original') {
     return (
@@ -50,13 +57,15 @@ const Marks: FC<Props> = ({
     );
   } 
   else if (dataDisplay === 'AddedOnly') {
+
     return (
       <>
         {compPoints
           .filter((d) => {
-            return points.filter((i) => i.label === d.label).length === 0;
+            return points.filter((i) => i.label === d.label).length === 0 && !state.filteredOutPoints.includes(d.id);
           })
           .map((point) => {
+
             return (
               <g
                 key={point.label}
@@ -278,7 +287,10 @@ const Marks: FC<Props> = ({
 
         {compPoints
           .filter((d) => {
-            return points.filter((i) => i.label === d.label).length === 0;
+            return (
+              points.filter((i) => i.label === d.label).length === 0 &&
+              !state.filteredOutPoints.includes(d.id)
+            );
           })
           .map((point) => {
             return (
@@ -400,7 +412,10 @@ const Marks: FC<Props> = ({
 
       {compPoints
         .filter((d) => {
-          return points.filter((i) => i.label === d.label).length === 0;
+          return (
+            points.filter((i) => i.label === d.label).length === 0 &&
+            !state.filteredOutPoints.includes(d.id)
+          );
         })
         .map((point) => {
           return (
@@ -433,7 +448,6 @@ export function createComet(x1: number, x2: number, y1: number, y2: number): str
   const yLength = 4.5 * Math.sin(theta);
 
 
-  console.log(xLength, yLength)
 
   return `M ${x2 + xLength} ${y2 - yLength} 
   L ${x1} ${y1} 

@@ -34,7 +34,7 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadComparisonFilter, loadOnlyFilter },
+    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadOnlyFilter },
     exploreStore: {
       state: { brushType },
       switchBrush,
@@ -100,8 +100,8 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              loadComparisonFilter(selectedPoints);
-              filter();
+              
+              filter(selectedPoints, "Out");
             }}
           >
             Filter Out
@@ -112,9 +112,9 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              loadOnlyFilter(selectedPoints);
+              
               // loadComparisonFilter("demo")
-              filter();
+              filter(loadOnlyFilter(selectedPoints), "In");
             }}
           >
             Filter

@@ -40,7 +40,17 @@ export class ProjectStore {
   }
 
   get loadedDatasetValues() {
-    return this.loadedDataset?.values || [];
+
+    return (
+      this.loadedDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
+    );
+  }
+
+  get compDatasetValues() {
+
+    return (
+      this.comparisonDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
+    );
   }
 
   // ##################################################################### //
@@ -126,43 +136,45 @@ export class ProjectStore {
       interactions: this.rootStore.exploreStore.interactions || [],
     }).then(
       action((response: AxiosResponse<unknown>) => {
+        console.log(response.data);
+        console.log(this.provenance.graph);
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
   };
 
   //load the dataset into comparison
-  loadComparisonFilter = (selectedIds: string[]) => {
-    const removeIds = this.workingDataset?.values.filter((d) => {
-      return !selectedIds.includes(d.id);
-    });
-
-    if (this.loadedDataset && removeIds) {
-      this.loadedDataset.values = removeIds;
-
-      console.log(JSON.parse(JSON.stringify(this.loadedDataset)));
-    }
-  };
-
-  loadOnlyFilter = (selectedIds: string[]) => {
+  loadComparisonFilter = (selectedIds: string[]): string[] => {
     const removeIds = this.workingDataset?.values.filter((d) => {
       return selectedIds.includes(d.id);
     });
 
-    if (this.loadedDataset && removeIds) {
-      this.loadedDataset.values = removeIds;
+    const idList = [];
 
-      console.log(JSON.parse(JSON.stringify(this.loadedDataset)));
+    if (this.workingDataset && removeIds) {
+      for (const j of removeIds) {
+        idList.push(j.id);
+      }
     }
-    // Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
-    //   baseDataset: this.loadedDatasetKey,
-    //   updatedDataset: datasetKey,
-    //   interactions: this.rootStore.exploreStore.interactions,
-    // }).then(
-    //   action((response: AxiosResponse<unknown>) => {
-    //     this.rootStore.compareStore.updatedActions = response.data;
-    //   }),
-    // );
+
+    return idList;
+  };
+
+  loadOnlyFilter = (selectedIds: string[]): string[] => {
+    const removeIds =
+      this.workingDataset?.values.filter((d) => {
+        return !selectedIds.includes(d.id);
+      }) || [];
+
+    const idList = [];
+
+    if (this.workingDataset && removeIds) {
+      for (const j of removeIds) {
+        idList.push(j.id);
+      }
+    }
+
+    return idList;
   };
 
   // ##################################################################### //
