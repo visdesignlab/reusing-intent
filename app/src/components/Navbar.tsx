@@ -100,8 +100,7 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              
-              filter(selectedPoints, "Out");
+              filter(selectedPoints, 'Out');
             }}
           >
             Filter Out
@@ -112,12 +111,11 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              
               // loadComparisonFilter("demo")
-              filter(loadOnlyFilter(selectedPoints), "In");
+              filter(loadOnlyFilter(selectedPoints), 'In');
             }}
           >
-            Filter
+            Filter In
           </Button>
         </Toolbar>
       </AppBar>

@@ -10,9 +10,10 @@ from backend.inference_core.reapply.data_structures.types import InteractionType
 
 
 class FilterInteraction(BaseInteraction):
-    def __init__(self, id, type, points, **kwargs):
+    def __init__(self, id, type, points, filterType, **kwargs):
         super().__init__(id, type)
         self.points: List[str] = points
+        self.filterType = filterType
         self.dependencies = [
             InteractionType.ADD_PLOT,
             InteractionType.POINT_SELECTION,
@@ -23,10 +24,20 @@ class FilterInteraction(BaseInteraction):
     def apply(self, base: pd.DataFrame, updated: pd.DataFrame):
         results = self.apply_parent(base, updated)
 
-        changes = get_changes_df(
-            base[base.id.isin(self.points)],  # type: ignore
-            updated[updated.id.isin(results.selected_points)],  # type: ignore
-        )
+        changes = None
+
+        print(self.filterType)
+
+        if self.filterType == "In":
+            changes = get_changes_df(
+                base[base.id.isin(self.points)],  # type: ignore
+                updated[updated.id.isin(results.selected_points)],  # type: ignore
+            )
+        else:
+            changes = get_changes_df(
+                base[~base.id.isin(self.points)],  # type: ignore
+                updated[~updated.id.isin(results.selected_points)],  # type: ignore
+            )
 
         results.add_change_record(self.id, changes)
 
