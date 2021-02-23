@@ -50,6 +50,10 @@ class Interactions(object):
         self.add_parents()
         # self.graph = self.create_graph()
 
+    @property
+    def interactions(self):
+        return list(map(lambda x: self.collection[x].type, self.order))
+
     def get_order(self):
         return self.order
 

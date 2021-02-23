@@ -116,6 +116,8 @@ export class ProjectStore {
       }),
     );
 
+    console.log(JSON.parse(JSON.stringify(this.rootStore.exploreStore.interactions)));
+
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any, List
 
 import pandas as pd
 
@@ -35,13 +35,12 @@ def reapply(base: pd.DataFrame, updated: pd.DataFrame, interactions: List[Any]):
 
 class Reapply:
     def __init__(self, interaction_history, base_dataset):
-        self.history: Dict[str, Any] = interaction_history
+        self.history = Interactions(interaction_history)
         self.base = base_dataset
 
     @property
     def interactions(self) -> List[str]:
-        return list(self.history.keys())
+        return self.interactions
 
     def apply(self, interaction: str, updated: pd.DataFrame):
-        interactions = Interactions(**self.history)
-        return interactions.reapply_interaction(self.base, updated, interaction)
+        return self.history.reapply_interaction(self.base, updated, interaction)
