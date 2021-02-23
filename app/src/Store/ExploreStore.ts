@@ -30,6 +30,10 @@ export class ExploreStore {
   // ############################## Getters ############################## //
   // ##################################################################### //
 
+  get showSkylineLegend() {
+    return this.hoveredPrediction && this.hoveredPrediction.intent === 'Skyline';
+  }
+
   get showMatchesLegend() {
     return this.hoveredPrediction ? true : false;
   }
@@ -59,7 +63,7 @@ export class ExploreStore {
       if (!artifacts)
         return {
           predictions: [],
-          interactions: [],
+          interaction: null,
         };
 
       return artifacts.artifact;
@@ -67,7 +71,7 @@ export class ExploreStore {
 
     return {
       predictions: [],
-      interactions: [],
+      interaction: null,
     };
   }
 
@@ -76,7 +80,30 @@ export class ExploreStore {
   }
 
   get interactions(): Interactions {
-    return this.artifact.interactions;
+    const {
+      current,
+      graph: { nodes },
+      root,
+    } = this.provenance;
+
+    let path = [];
+
+    let currentNode = current;
+
+    while (currentNode.id !== root.id) {
+      if (isChildNode(currentNode)) {
+        path.push(currentNode.id);
+        currentNode = nodes[currentNode.parent];
+      } else break;
+    }
+
+    path = path.reverse();
+
+    const interactions = path
+      .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
+      .filter((d) => d);
+
+    return interactions as any;
   }
 
   get loadedDatasetKey() {
@@ -180,6 +207,7 @@ export class ExploreStore {
     this.provenance.apply(filterAction());
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.addInteraction({ type: 'Filter', points: this.selectedPoints });
   };
 
   switchBrush = (brushType: BrushType) => {
@@ -319,28 +347,16 @@ export class ExploreStore {
   // ######################### Provenance Helpers ######################## //
   // ##################################################################### //
 
-  addInteraction = (interaction: BaseInteraction) => {
-    const { current } = this.provenance;
-
-    let interactions = this.artifact.interactions;
-
-    if (isChildNode(current)) {
-      const parentId = current.parent;
-      const artifacts = this.provenance.getLatestArtifact(parentId);
-
-      if (artifacts) {
-        interactions = artifacts.artifact.interactions;
-      }
-    }
-
+  addInteraction = (interaction: BaseInteraction | null) => {
     const id = this.provenance.current.id;
 
-    interactions.push({ id, ...interaction });
+    if (!interaction) {
+      this.provenance.addArtifact({ ...this.artifact, interaction });
 
-    this.provenance.addArtifact({
-      ...this.artifact,
-      interactions,
-    });
+      return;
+    }
+
+    this.provenance.addArtifact({ ...this.artifact, interaction: { id, ...interaction } });
   };
 
   addPredictions = () => {

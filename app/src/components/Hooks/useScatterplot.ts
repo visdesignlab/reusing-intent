@@ -16,40 +16,33 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { compDataset: compData } = useContext(Store).exploreStore;
-  const { loadedDatasetValues: data } = useContext(Store).projectStore;
+  const { loadedDataset: data, compDataset: compData } = useContext(Store).exploreStore;
+  const dt = useMemo(() => {
+    let points;
 
-  console.log("inside the hook", JSON.parse(JSON.stringify(data)))
+    if (comparisonData) {
+      points =
+        compData?.values.map((d) => ({
+          id: d['id'] as string,
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[label] as string,
+        })) || [];
+    } else {
+      points =
+        data?.values.map((d) => ({
+          id: d['id'] as string,
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[label] as string,
+        })) || [];
+    }
 
-  const dt =
-    useMemo(() => {
-      let points;
+    const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
+    const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
 
-      if (comparisonData) {
-        points =
-          compData?.values.map((d) => ({
-            id: d['id'] as string,
-            x: d[x] as number,
-            y: d[y] as number,
-            label: d[label] as string,
-          })) || [];
-      } else {
-        points =
-          data.map((d) => ({
-            id: d['id'] as string,
-            x: d[x] as number,
-            y: d[y] as number,
-            label: d[label] as string,
-          })) || [];
-      }
-
-      const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
-      const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
-
-      console.log(points)
-
-      return { points, x_extents, y_extents };
-    }, [compData, comparisonData, x, y, label, data]);
+    return { points, x_extents, y_extents };
+  }, [compData, data, comparisonData, x, y, label]);
 
   return dt;
 }

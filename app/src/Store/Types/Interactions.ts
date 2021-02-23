@@ -52,13 +52,19 @@ type SelectPredictionInteraction = {
   prediction: Prediction;
 };
 
+type FilterInteraction = {
+  type: 'Filter';
+  points: string[];
+};
+
 export type BaseInteraction =
   | AddPlotInteraction
   | PointSelectionInteraction
   | ToggleCategoryInteraction
   | ChangeCategoryInteraction
   | BrushInteraction
-  | SelectPredictionInteraction;
+  | SelectPredictionInteraction
+  | FilterInteraction;
 
 export type Interaction = BaseInteraction & {
   id: NodeID;

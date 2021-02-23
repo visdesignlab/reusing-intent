@@ -1,7 +1,7 @@
-import { Interactions } from './Interactions';
+import { Interaction } from './Interactions';
 import { Predictions } from './Prediction';
 
 export type InteractionArtifact = {
   predictions: Predictions;
-  interactions: Interactions;
+  interaction: Interaction | null;
 };

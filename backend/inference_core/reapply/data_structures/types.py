@@ -2,15 +2,24 @@ from enum import Enum
 
 
 ###########################################################################
+############################### Brush Action ##############################
+###########################################################################
+class BrushAction(Enum):
+    ADD = "Add"
+    UPDATE = "Update"
+    REMOVE = "Remove"
+
+
+###########################################################################
 ############################### Interactions ##############################
 ###########################################################################
-class Interactions(Enum):
+class InteractionType(Enum):
     ADD_PLOT = "AddPlot"
     BRUSH = "Brush"
-    TOGGLE_CATEGORY = "ToggleCategory"
-    CHANGE_CATEGORY = "Change_Category"
     SELECT_PREDICTION = "SelectPrediction"
     POINT_SELECTION = "PointSelection"
+    FILTER = "Filter"
+    NONE = "None"
 
 
 ###########################################################################

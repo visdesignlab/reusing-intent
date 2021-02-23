@@ -4,12 +4,12 @@ import { isChildNode } from '@visdesignlab/trrack';
 import { ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
 
-import { eventConfig } from '../../App';
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
+import { eventConfig } from '../Explore/ExploreHome';
 import Navbar from '../Navbar';
 
 import ComparisonScatterplot from './ComparisonScatterplot';
@@ -41,7 +41,7 @@ const useStyles = makeStyles(() => ({
 const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const {
     exploreStore: { n_plots, addPlot },
-    projectStore: { loadedDataset },
+    projectStore: { loadedDataset, comparisonDataset },
     provenance,
     setQueryParams,
   } = useContext(Store);
@@ -70,6 +70,9 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
   });
 
   const classes = useStyles();
+
+  if (!comparisonDataset)
+    return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   return (
     <div className={classes.root}>
