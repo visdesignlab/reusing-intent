@@ -23,6 +23,7 @@ import Axis from './Axis';
 import Legend from './Legend';
 import Marks from './Marks';
 import Overlay from './Overlay/Overlay';
+import SkylineLegend from './Overlay/SkylineLegend';
 import useScatterplotStyle from './styles';
 
 const useStyles = makeStyles(() =>
@@ -59,6 +60,7 @@ const Scatterplot: FC<Props> = ({
     setBrushSelection,
     state: { brushType },
     hoveredPrediction,
+    showSkylineLegend,
   } = useContext(Store).exploreStore;
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
@@ -142,6 +144,7 @@ const Scatterplot: FC<Props> = ({
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
+        {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
         <BrushComponent
           bottom={sp_dimension}
           brushes={plot.brushes}

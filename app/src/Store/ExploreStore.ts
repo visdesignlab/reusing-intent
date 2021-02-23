@@ -30,6 +30,10 @@ export class ExploreStore {
   // ############################## Getters ############################## //
   // ##################################################################### //
 
+  get showSkylineLegend() {
+    return this.hoveredPrediction && this.hoveredPrediction.intent === 'Skyline';
+  }
+
   get showMatchesLegend() {
     return this.hoveredPrediction ? true : false;
   }
