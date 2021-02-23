@@ -39,6 +39,20 @@ export class ProjectStore {
     return this.state.datasetKey;
   }
 
+  get loadedDatasetValues() {
+
+    return (
+      this.loadedDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
+    );
+  }
+
+  get compDatasetValues() {
+
+    return (
+      this.comparisonDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
+    );
+  }
+
   // ##################################################################### //
   // ########################### Store Helpers ########################### //
   // ##################################################################### //
@@ -124,32 +138,45 @@ export class ProjectStore {
       interactions: this.rootStore.exploreStore.interactions || [],
     }).then(
       action((response: AxiosResponse<unknown>) => {
+        console.log(response.data);
+        console.log(this.provenance.graph);
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );
   };
 
   //load the dataset into comparison
-  loadComparisonFilter = (datasetKey: string) => {
-    if (!this.currentProject) return;
+  loadComparisonFilter = (selectedIds: string[]): string[] => {
+    const removeIds = this.workingDataset?.values.filter((d) => {
+      return selectedIds.includes(d.id);
+    });
 
-    this.comparisonDatasetKey = datasetKey;
+    const idList = [];
 
-    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
-      action((response: AxiosResponse<Dataset>) => {
-        this.comparisonDataset = response.data;
-      }),
-    );
+    if (this.workingDataset && removeIds) {
+      for (const j of removeIds) {
+        idList.push(j.id);
+      }
+    }
 
-    Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
-      baseDataset: this.loadedDatasetKey,
-      updatedDataset: datasetKey,
-      interactions: this.rootStore.exploreStore.interactions,
-    }).then(
-      action((response: AxiosResponse<unknown>) => {
-        this.rootStore.compareStore.updatedActions = response.data;
-      }),
-    );
+    return idList;
+  };
+
+  loadOnlyFilter = (selectedIds: string[]): string[] => {
+    const removeIds =
+      this.workingDataset?.values.filter((d) => {
+        return !selectedIds.includes(d.id);
+      }) || [];
+
+    const idList = [];
+
+    if (this.workingDataset && removeIds) {
+      for (const j of removeIds) {
+        idList.push(j.id);
+      }
+    }
+
+    return idList;
   };
 
   // ##################################################################### //

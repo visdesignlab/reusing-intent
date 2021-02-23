@@ -40,6 +40,7 @@ type Props = {
   size: number;
   originalMarks?: boolean;
   dataDisplay?: DataDisplay;
+  setDataDisplay?: any;
 };
 
 const Scatterplot: FC<Props> = ({
@@ -52,6 +53,7 @@ const Scatterplot: FC<Props> = ({
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     loadedDataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
@@ -71,7 +73,7 @@ const Scatterplot: FC<Props> = ({
 
   const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, false);
   const { points: compPoints } = useScatterplotData(x, y, labelColumn, true);
-
+  
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
 
@@ -149,7 +151,7 @@ const Scatterplot: FC<Props> = ({
           bottom={sp_dimension}
           brushes={plot.brushes}
           data={points}
-          disableBrush={brushType !== 'Rectangular'}
+          disableBrush={brushType !== 'Rectangular' || !originalMarks}
           left={0}
           right={sp_dimension}
           top={0}
@@ -157,7 +159,7 @@ const Scatterplot: FC<Props> = ({
           yScale={yScale}
           onBrushHandler={rectBrushHandler}
         />
-        {brushSize && (
+        {brushSize && originalMarks && (
           <FreeFormBrush
             bottom={sp_dimension}
             brushSize={brushSize}
@@ -170,6 +172,7 @@ const Scatterplot: FC<Props> = ({
             onBrush={freeFormBrushHandler}
           />
         )}
+
         {originalMarks ? (
           <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         ) : (

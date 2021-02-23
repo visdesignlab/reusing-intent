@@ -54,8 +54,11 @@ type SelectPredictionInteraction = {
 
 type FilterInteraction = {
   type: 'Filter';
+  filterType: FilterType;
   points: string[];
 };
+
+export type FilterType = "In" | "Out";
 
 export type BaseInteraction =
   | AddPlotInteraction

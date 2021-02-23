@@ -13,9 +13,9 @@ const useScatterplotStyle = makeStyles({
 
   },
   movedLine: {
-    opacity: '0.5',
+    opacity: '0.2 !important',
     stroke: 'blue',
-    fill: 'blue !important',
+    fill: 'black !important',
     strokeWidth: '1',
     strokeLinecap: 'round',
   },

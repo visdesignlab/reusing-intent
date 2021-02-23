@@ -11,7 +11,7 @@ import { BrushType, ExtendedBrushCollection } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
 import { InteractionArtifact } from './Types/InteractionArtifact';
-import { BaseInteraction, Interactions } from './Types/Interactions';
+import { BaseInteraction, Interactions, FilterType } from './Types/Interactions';
 import { Plot } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
@@ -200,14 +200,14 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  filter = () => {
+  filter = (removeIds: string[], filterType: FilterType) => {
     const { filterAction } = this.rootStore.actions;
 
     filterAction.setLabel(`Filter`);
-    this.provenance.apply(filterAction());
+    this.provenance.apply(filterAction(removeIds));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
-    this.addInteraction({ type: 'Filter', points: this.selectedPoints });
+    this.addInteraction({ type: 'Filter', filterType, points: this.selectedPoints });
   };
 
   switchBrush = (brushType: BrushType) => {

@@ -16,33 +16,53 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { loadedDataset: data, compDataset: compData } = useContext(Store).exploreStore;
-  const dt = useMemo(() => {
-    let points;
+  const { compDataset: compDataFull, loadedDataset: fullData } = useContext(Store).exploreStore;
+  const { compDatasetValues: compData, loadedDatasetValues: data } = useContext(Store).projectStore;
 
-    if (comparisonData) {
-      points =
-        compData?.values.map((d) => ({
-          id: d['id'] as string,
-          x: d[x] as number,
-          y: d[y] as number,
-          label: d[label] as string,
-        })) || [];
-    } else {
-      points =
-        data?.values.map((d) => ({
-          id: d['id'] as string,
-          x: d[x] as number,
-          y: d[y] as number,
-          label: d[label] as string,
-        })) || [];
-    }
+  const dt =
+    useMemo(() => {
+      let points;
+      let allPoints;
 
-    const x_extents = extent(points.map((d) => d.x) as number[]) as [number, number];
-    const y_extents = extent(points.map((d) => d.y) as number[]) as [number, number];
+      if (comparisonData) {
+        points =
+          compData.map((d) => ({
+            id: d['id'] as string,
+            x: d[x] as number,
+            y: d[y] as number,
+            label: d[label] as string,
+          })) || [];
+        allPoints =
+          compDataFull?.values.map((d) => ({
+            id: d['id'] as string,
+            x: d[x] as number,
+            y: d[y] as number,
+            label: d[label] as string,
+          })) || [];
+      } else {
+        points =
+          data.map((d) => ({
+            id: d['id'] as string,
+            x: d[x] as number,
+            y: d[y] as number,
+            label: d[label] as string,
+          })) || [];
 
-    return { points, x_extents, y_extents };
-  }, [compData, data, comparisonData, x, y, label]);
+        allPoints =
+          fullData.values.map((d) => ({
+            id: d['id'] as string,
+            x: d[x] as number,
+            y: d[y] as number,
+            label: d[label] as string,
+          })) || [];
+      }
+
+    const x_extents = extent(allPoints.map((d) => d.x) as number[]) as [number, number];
+    const y_extents = extent(allPoints.map((d) => d.y) as number[]) as [number, number];
+
+
+      return { points, x_extents, y_extents };
+    }, [compData, comparisonData, x, y, label, data, fullData, compDataFull]);
 
   return dt;
 }

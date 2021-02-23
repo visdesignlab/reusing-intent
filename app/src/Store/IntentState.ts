@@ -40,6 +40,7 @@ export type IntentState = {
   plots: Plots;
   brushType: BrushType;
   selectedPrediction: Prediction | null;
+  filteredOutPoints: string[];
 };
 
 export const defaultState: IntentState = {
@@ -50,4 +51,5 @@ export const defaultState: IntentState = {
   plots: {},
   brushType: 'Freeform Small',
   selectedPrediction: null,
+  filteredOutPoints: [],
 };

@@ -27,8 +27,21 @@ const removePlotAction = createAction<IntentState, [Plot], IntentEvents>(
   },
 ).setEventType('Add Plot');
 
-const filterAction = createAction<IntentState, [], IntentEvents>(
-  (state: IntentState) => {
+const filterAction = createAction<IntentState, [string[]], IntentEvents>(
+  (state: IntentState, filter: string[]) => {
+    Object.values(state.plots).forEach((plot) => {
+      plot.brushes = {};
+      plot.selectedPoints = [];
+      state.plots[plot.id] = plot;
+    });
+
+    state.filteredOutPoints = filter
+
+    if (state.selectedPrediction)
+    {
+      state.selectedPrediction.memberIds = [];
+    } 
+
     return state;
   },
 ).setEventType('Filter');
