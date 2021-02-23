@@ -39,9 +39,25 @@ export class CompareStore {
     const { plots } = this.rootStore.exploreStore.state;
     const graph = this.rootStore.exploreStore.provenance.graph;
 
+    Object.values(plots).forEach((plot) => {
+      selectedPoints.push(...plot.selectedPoints);
+
+      const brushes = plot.brushes;
+      Object.values(brushes).forEach((brush) => {
+        if (brush.points) selectedPoints.push(...brush.points);
+      });
+    });
+
+    const { selectedPrediction } = this.rootStore.exploreStore.state;
+
+    if (!isEmptyOrNull(selectedPrediction))
+      selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
+
 
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
+
+      console.log(this.isBelowCurrent(a, graph.current));
 
       if (!act || !act.added || graph.nodes[a].label === "Add Plot" || this.isBelowCurrent(a, graph.current))
       {
@@ -65,22 +81,24 @@ export class CompareStore {
         // this.rootStore.projectStore.filteredOutPoints(...act.added);
 
         console.log(a, act)
+
+        continue;
       }
+
+      selectedPoints.push(...act.added)
+      console.log(selectedPoints)
+
+      console.log(act)
+
+
+
     }
 
-    Object.values(plots).forEach((plot) => {
-      selectedPoints.push(...plot.selectedPoints);
+    for (const j of this.rootStore.state.filteredOutPoints) {
+      selectedPoints.splice(selectedPoints.indexOf(j), 1);
+    }
 
-      const brushes = plot.brushes;
-      Object.values(brushes).forEach((brush) => {
-        if (brush.points) selectedPoints.push(...brush.points);
-      });
-    });
-
-    const { selectedPrediction } = this.rootStore.exploreStore.state;
-
-    if (!isEmptyOrNull(selectedPrediction))
-      selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
+    console.log(selectedPoints)
 
     return Array.from(new Set(selectedPoints));
   }

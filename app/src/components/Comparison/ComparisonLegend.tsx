@@ -10,10 +10,13 @@ import { createComet } from './ComparisonMarks';
 type Props = {
   offset?: number;
   setDataDisplay: any;
+  selectedPoints: boolean;
 };
 
-const Legend: FC<Props> = ({ offset = 0, setDataDisplay }: Props) => {
+const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false }: Props) => {
   const classes = useScatterplotStyle();
+
+  console.log(selectedPoints)
 
   return (
     <svg height={30} width={700}>
@@ -46,7 +49,13 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay }: Props) => {
           onMouseEnter={() => setDataDisplay('RemovedOnly')}
           onMouseLeave={() => setDataDisplay('All')}
         >
-          <g className={`marks ${classes.removedMark}`} opacity="0.5" transform={translate(10, 0)}>
+          <g
+            className={`marks ${classes.removedMark} ${
+              !selectedPoints ? classes.removedColor : ''
+            }`}
+            opacity="0.5"
+            transform={translate(10, 0)}
+          >
             <line x2="6" y2="6" />
             <line x1="6" y2="6" />
           </g>
@@ -59,7 +68,11 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay }: Props) => {
           onMouseEnter={() => setDataDisplay('AddedOnly')}
           onMouseLeave={() => setDataDisplay('All')}
         >
-          <g className={`marks ${classes.newMark}`} opacity="0.5" transform={translate(10, 0)}>
+          <g
+            className={`marks ${classes.newMark} ${!selectedPoints ? classes.newColor : ''}`}
+            opacity="0.5"
+            transform={translate(10, 0)}
+          >
             <polygon points="0 0, 5 10, 10 0" />
           </g>
           <text dominantBaseline="middle" dx="32" dy="5">
@@ -91,11 +104,21 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay }: Props) => {
           }}
           onMouseLeave={() => setDataDisplay('All')}
         >
-          <g className={`marks ${classes.removedMark}`} opacity="0.5" transform={translate(-15, 0)}>
+          <g
+            className={`marks ${classes.removedMark} ${
+              !selectedPoints ? classes.removedColor : ''
+            }`}
+            opacity="0.5"
+            transform={translate(-15, 0)}
+          >
             <line x2="6" y2="6" />
             <line x1="6" y2="6" />
           </g>
-          <g className={`marks ${classes.newMark}`} opacity="0.5" transform={translate(-35, 0)}>
+          <g
+            className={`marks ${classes.newMark} ${!selectedPoints ? classes.newColor : ''}`}
+            opacity="0.5"
+            transform={translate(-35, 0)}
+          >
             <polygon points="0 0, 5 10, 10 0" />
           </g>
           <path

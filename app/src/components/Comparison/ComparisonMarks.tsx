@@ -43,7 +43,7 @@ const Marks: FC<Props> = ({
                 key={point.label}
                 className={`marks ${
                   selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                }`}
+                } `}
                 cx={xScale(point.x as number)}
                 cy={yScale(point.y as number)}
                 id={`mark${point.id}`}
@@ -71,7 +71,7 @@ const Marks: FC<Props> = ({
                 key={point.label}
                 className={`marks ${classes.newMark} ${
                   selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                }`}
+                } ${selectedPoints.length === 0 ? classes.newColor : ''}`}
                 id={`mark${point.id}`}
                 opacity="0.5"
                 transform={`translate(${xScale(point.x as number) - 5}, ${
@@ -145,6 +145,9 @@ const Marks: FC<Props> = ({
       </>
     );
   } else if (dataDisplay === 'RemovedOnly') {
+    console.log(selectedPoints);
+    console.log(points);
+
     return (
       <>
         {points.map((point) => {
@@ -156,7 +159,7 @@ const Marks: FC<Props> = ({
                   key={point.label}
                   className={`marks ${classes.removedMark} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                  }`}
+                  } ${selectedPoints.length === 0 ? classes.removedColor : ''}`}
                   id={`mark${point.id}`}
                   opacity="0.5"
                   transform={`translate(${xScale(point.x as number) - 3}, ${
@@ -204,7 +207,7 @@ const Marks: FC<Props> = ({
                   key={point.label}
                   className={`marks ${classes.removedMark} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                  }`}
+                  } ${selectedPoints.length === 0 ? classes.removedColor : ''}`}
                   id={`mark${point.id}`}
                   opacity="0.5"
                   transform={`translate(${xScale(point.x as number) - 3}, ${
@@ -298,7 +301,7 @@ const Marks: FC<Props> = ({
                 key={point.label}
                 className={`marks ${classes.newMark} ${
                   selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                }`}
+                } ${selectedPoints.length === 0 ? classes.newColor : ''}`}
                 id={`mark${point.id}`}
                 opacity="0.5"
                 transform={`translate(${xScale(point.x as number) - 5}, ${
@@ -325,7 +328,7 @@ const Marks: FC<Props> = ({
                   key={point.label}
                   className={`marks ${classes.removedMark} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                  }`}
+                  } ${selectedPoints.length === 0 ? classes.removedColor : ''}`}
                   id={`mark${point.id}`}
                   opacity="0.5"
                   transform={`translate(${xScale(point.x as number) - 3}, ${
@@ -424,7 +427,7 @@ const Marks: FC<Props> = ({
                 key={point.label}
                 className={`marks ${classes.newMark} ${
                   selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
-                }`}
+                } ${selectedPoints.length === 0 ? classes.newColor : ''}`}
                 id={`mark${point.id}`}
                 opacity="0.5"
                 transform={`translate(${xScale(point.x as number) - 5}, ${

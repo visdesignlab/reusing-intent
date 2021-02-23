@@ -52,6 +52,8 @@ const CompVis: FC = () => {
       desc: dataset.version,
     })) || [];
 
+  const { selectedPoints } = useContext(Store).exploreStore;
+
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
@@ -69,6 +71,7 @@ const CompVis: FC = () => {
     <Grid key={plot.id} xs={xs} item>
       <ComparisonLegend
         offset={spContainerDimension - 2 * theme.spacing(1) - 110}
+        selectedPoints={selectedPoints.length > 0}
         setDataDisplay={setDataDisplay}
       />
 
