@@ -31,3 +31,16 @@ def reapply(base: pd.DataFrame, updated: pd.DataFrame, interactions: List[Any]):
     #     application[id] = changes
 
     return reapply_record
+
+
+class Reapply:
+    def __init__(self, interaction_history, base_dataset):
+        self.history = Interactions(interaction_history)
+        self.base = base_dataset
+
+    @property
+    def interactions(self) -> List[str]:
+        return self.interactions
+
+    def apply(self, interaction: str, updated: pd.DataFrame):
+        return self.history.reapply_interaction(self.base, updated, interaction)

@@ -49,7 +49,7 @@ export const defaultState: IntentState = {
   showCategories: false,
   categoryColumn: '',
   plots: {},
-  brushType: 'Freeform Small',
+  brushType: 'Rectangular',
   selectedPrediction: null,
   filteredOutPoints: [],
 };
