@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Dict, List
 
 import pandas as pd
 
@@ -70,7 +70,15 @@ class Interactions(object):
             if idx != 0:
                 self.collection[id].set_parent(self.collection[self.order[idx - 1]])
 
-    def reapply_interaction(self, base: pd.DataFrame, updated: pd.DataFrame):
-        application: Any = self.collection[self.order[-1]].apply(base, updated)
+    def reapply_interaction(self, base: pd.DataFrame, updated: pd.DataFrame, id=None):
+        application = None
+        if id is None or id not in self.order:
+            application = self.collection[self.order[-1]].apply(base, updated)
+        else:
+            idx = self.order.index(id)
+            application = self.collection[self.order[idx]].apply(base, updated)
 
         return application.serialize()
+
+    def get_interaction_by_id(self, id):
+        return self.collection[id]
