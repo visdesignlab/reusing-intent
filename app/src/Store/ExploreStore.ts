@@ -103,6 +103,9 @@ export class ExploreStore {
       .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
       .filter((d) => d);
 
+    console.log(path)
+    console.log(toJS(interactions))
+
     return interactions as any;
   }
 
@@ -203,11 +206,15 @@ export class ExploreStore {
   filter = (removeIds: string[], filterType: FilterType) => {
     const { filterAction } = this.rootStore.actions;
 
+    const currSelected = JSON.parse(JSON.stringify(this.selectedPoints));
+
     filterAction.setLabel(`Filter`);
 
-    this.rootStore.currentNodes.push(this.provenance.graph.current);
-    this.addInteraction({ type: 'Filter', filterType, points: this.selectedPoints });
     this.provenance.apply(filterAction(removeIds));
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+
+    this.addInteraction({ type: 'Filter', filterType, points: currSelected });
   };
 
   switchBrush = (brushType: BrushType) => {

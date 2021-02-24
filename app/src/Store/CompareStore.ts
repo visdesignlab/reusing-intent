@@ -34,6 +34,31 @@ export class CompareStore {
     return flag;
   }
 
+  get updatedFilterPoints() {
+    let arr = this.rootStore.state.filteredOutPoints;
+
+    console.log(arr);
+
+    const graph = this.rootStore.exploreStore.provenance.graph;
+
+    const filterNodes = Object.values(graph.nodes).filter(d => d.label === "Filter")
+
+    if(filterNodes.length > 0 && this.updatedActions)
+    {
+      filterNodes.forEach(d => {
+        const act = this.updatedActions[d.id]
+        arr.push(...act.added);
+
+        arr = arr.filter(d => !act.removed.includes(d))
+      })
+    }
+
+    console.log(arr);
+    this.rootStore.state.filteredOutPoints = arr;
+
+    return arr;
+  }
+
   get selectedPointsComparison() {
     let selectedPoints: string[] = [];
     const { plots } = this.rootStore.exploreStore.state;
@@ -59,39 +84,12 @@ export class CompareStore {
 
       console.log(this.isBelowCurrent(a, graph.current));
 
-      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || this.isBelowCurrent(a, graph.current))
+      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || graph.nodes[a].label === "Filter" || this.isBelowCurrent(a, graph.current) )
       {
         continue;
       } 
 
-      if(graph.nodes[a].label === "Filter")
-      {
-        console.log(this.rootStore.state.filteredOutPoints)
-        this.rootStore.state.filteredOutPoints.push(...act.added);
-
-        for(const j of act.removed)
-        {
-          this.rootStore.state.filteredOutPoints.splice(
-            this.rootStore.state.filteredOutPoints.indexOf(j),
-            1,
-          );
-        }
-        console.log(this.rootStore.state.filteredOutPoints);
-
-        // this.rootStore.projectStore.filteredOutPoints(...act.added);
-
-        console.log(a, act)
-
-        continue;
-      }
-
       selectedPoints.push(...act.added)
-      console.log(selectedPoints)
-
-      console.log(act)
-
-
-
     }
 
     for (const j of this.rootStore.state.filteredOutPoints) {

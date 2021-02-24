@@ -22,7 +22,7 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
     <svg height={30} width={700}>
       <g>
         <g
-          transform={translate(0, 0)}
+          transform={translate(0, 5)}
           onMouseEnter={() => setDataDisplay('Original')}
           onMouseLeave={() => setDataDisplay('All')}
         >
@@ -33,7 +33,7 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
           </text>
         </g>
         <g
-          transform={translate(100, 0)}
+          transform={translate(100, 5)}
           onMouseEnter={() => setDataDisplay('Comparison')}
           onMouseLeave={() => setDataDisplay('All')}
         >
@@ -45,7 +45,7 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
         </g>
 
         <g
-          transform={translate(200, 0)}
+          transform={translate(200, 5)}
           onMouseEnter={() => setDataDisplay('RemovedOnly')}
           onMouseLeave={() => setDataDisplay('All')}
         >
@@ -64,7 +64,7 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
           </text>
         </g>
         <g
-          transform={translate(300, 0)}
+          transform={translate(300, 5)}
           onMouseEnter={() => setDataDisplay('AddedOnly')}
           onMouseLeave={() => setDataDisplay('All')}
         >
@@ -80,7 +80,7 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
           </text>
         </g>
         <g
-          transform={translate(400, 0)}
+          transform={translate(400, 5)}
           onMouseEnter={() => {
             setDataDisplay('ChangedOnly');
           }}
@@ -98,36 +98,12 @@ const Legend: FC<Props> = ({ offset = 0, setDataDisplay, selectedPoints = false 
           </text>
         </g>
         <g
-          transform={translate(550, 0)}
+          transform={translate(550, 5)}
           onMouseEnter={() => {
             setDataDisplay('Diff');
           }}
           onMouseLeave={() => setDataDisplay('All')}
         >
-          <g
-            className={`marks ${classes.removedMark} ${
-              !selectedPoints ? classes.removedColor : ''
-            }`}
-            opacity="0.5"
-            transform={translate(-15, 0)}
-          >
-            <line x2="6" y2="6" />
-            <line x1="6" y2="6" />
-          </g>
-          <g
-            className={`marks ${classes.newMark} ${!selectedPoints ? classes.newColor : ''}`}
-            opacity="0.5"
-            transform={translate(-35, 0)}
-          >
-            <polygon points="0 0, 5 10, 10 0" />
-          </g>
-          <path
-            className={`marks ${classes.movedLine}`}
-            d={createComet(5, 25, 5, 5)}
-            style={{ opacity: '0.4' }}
-          />
-          <circle className={`marks ${classes.movedPoint}`} cx={5} cy={5} opacity=".2" r="5" />
-          <circle className={`marks ${classes.movedPoint}`} cx={25} cy={5} opacity="1" r="5" />
           <text dominantBaseline="middle" dx="32" dy="5">
             All Changed Data
           </text>

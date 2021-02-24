@@ -41,15 +41,15 @@ export class ProjectStore {
 
   get loadedDatasetValues() {
 
-    return (
-      this.loadedDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
-    );
+    return this.loadedDataset?.values.filter((d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id)) || [];
   }
 
   get compDatasetValues() {
 
     return (
-      this.comparisonDataset?.values.filter((d) => !this.state.filteredOutPoints.includes(d.id)) || []
+      this.comparisonDataset?.values.filter(
+        (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
+      ) || []
     );
   }
 

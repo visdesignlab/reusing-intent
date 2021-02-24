@@ -30,8 +30,8 @@ const Marks: FC<Props> = ({
   const classes = useScatterplotStyle();
 
   const {
-    state
-  } = useContext(Store);
+    updatedFilterPoints
+  } = useContext(Store).compareStore;
 
   if (!compPoints || dataDisplay === 'Original') {
     return (
@@ -62,7 +62,7 @@ const Marks: FC<Props> = ({
       <>
         {compPoints
           .filter((d) => {
-            return points.filter((i) => i.label === d.label).length === 0 && !state.filteredOutPoints.includes(d.id);
+            return points.filter((i) => i.label === d.label).length === 0 && !updatedFilterPoints.includes(d.id);
           })
           .map((point) => {
 
@@ -292,7 +292,7 @@ const Marks: FC<Props> = ({
           .filter((d) => {
             return (
               points.filter((i) => i.label === d.label).length === 0 &&
-              !state.filteredOutPoints.includes(d.id)
+              !updatedFilterPoints.includes(d.id)
             );
           })
           .map((point) => {
@@ -417,7 +417,7 @@ const Marks: FC<Props> = ({
         .filter((d) => {
           return (
             points.filter((i) => i.label === d.label).length === 0 &&
-            !state.filteredOutPoints.includes(d.id)
+            !updatedFilterPoints.includes(d.id)
           );
         })
         .map((point) => {
