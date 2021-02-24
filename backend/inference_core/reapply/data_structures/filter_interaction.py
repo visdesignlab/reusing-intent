@@ -26,10 +26,6 @@ class FilterInteraction(BaseInteraction):
 
         changes = None
 
-        print(self.filterType)
-
-        print(results.selected_points)
-
         if self.filterType == "Out":
             changes = get_changes_df(
                 base[base.id.isin(self.points)],  # type: ignore

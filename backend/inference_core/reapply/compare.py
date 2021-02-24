@@ -45,8 +45,6 @@ def get_changes_brush(base, updated, plot, brushId, type):
         base[base.id.isin(brush.points)], updated[updated.id.isin(ids)]
     )
 
-    print(ids)
-
     return Changes(
         **changes.serialize(),
         **{"plot_id": plot.id, "brush_id": brush.id, "type": type}
