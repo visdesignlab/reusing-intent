@@ -3,6 +3,7 @@ import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, toJS } from 'mobx';
 
+import deepCopy from '../Utils/DeepCopy';
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
@@ -103,8 +104,7 @@ export class ExploreStore {
       .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
       .filter((d) => d);
 
-    console.log(path)
-    console.log(toJS(interactions))
+    console.log(deepCopy(interactions));
 
     return interactions as any;
   }
