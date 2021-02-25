@@ -19,7 +19,7 @@ export class CompareStore {
   isBelowCurrent(id: string, current: string): boolean {
     const graph = this.rootStore.exploreStore.provenance.graph;
 
-    if (graph.nodes[current].children.length === 0) {
+    if (graph.nodes[current].children.length === 0 || id === current) {
       return false;
     } else if (graph.nodes[current].children.includes(id)) {
       return true;
@@ -45,7 +45,7 @@ export class CompareStore {
 
     if(filterNodes.length > 0 && this.updatedActions)
     {
-      filterNodes.forEach(d => {
+      filterNodes.filter(d => !this.isBelowCurrent(d.id, graph.current)).forEach(d => {
         const act = this.updatedActions[d.id]
         arr.push(...act.added);
 
@@ -78,13 +78,15 @@ export class CompareStore {
     if (!isEmptyOrNull(selectedPrediction))
       selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
 
+    console.log('SELECTED POINTS 1 HERE', selectedPoints);
+
 
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
       console.log(this.isBelowCurrent(a, graph.current));
 
-      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || graph.nodes[a].label === "Filter" || this.isBelowCurrent(a, graph.current) )
+      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || graph.nodes[a].label === "Filter" || this.isBelowCurrent(a, graph.current))
       {
         continue;
       } 
@@ -96,7 +98,7 @@ export class CompareStore {
       selectedPoints.splice(selectedPoints.indexOf(j), 1);
     }
 
-    console.log(selectedPoints)
+    console.log("SELECTED POINTS 2 HERE", selectedPoints)
 
     return Array.from(new Set(selectedPoints));
   }

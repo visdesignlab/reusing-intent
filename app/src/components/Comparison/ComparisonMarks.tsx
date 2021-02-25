@@ -450,8 +450,6 @@ export function createComet(x1: number, x2: number, y1: number, y2: number): str
   const xLength = 4.5 * Math.cos(theta);
   const yLength = 4.5 * Math.sin(theta);
 
-
-
   return `M ${x2 + xLength} ${y2 - yLength} 
   L ${x1} ${y1} 
   L ${x2-xLength} ${y2 + yLength}
