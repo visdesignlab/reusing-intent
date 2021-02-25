@@ -37,23 +37,21 @@ export class CompareStore {
   get updatedFilterPoints() {
     let arr = this.rootStore.state.filteredOutPoints;
 
-    console.log(arr);
-
     const graph = this.rootStore.exploreStore.provenance.graph;
 
-    const filterNodes = Object.values(graph.nodes).filter(d => d.label === "Filter")
+    const filterNodes = Object.values(graph.nodes).filter((d) => d.label === 'Filter');
 
-    if(filterNodes.length > 0 && this.updatedActions)
-    {
-      filterNodes.filter(d => !this.isBelowCurrent(d.id, graph.current)).forEach(d => {
-        const act = this.updatedActions[d.id]
-        arr.push(...act.added);
+    if (filterNodes.length > 0 && this.updatedActions) {
+      filterNodes
+        .filter((d) => !this.isBelowCurrent(d.id, graph.current))
+        .forEach((d) => {
+          const act = this.updatedActions[d.id];
+          arr.push(...act.added);
 
-        arr = arr.filter(d => !act.removed.includes(d))
-      })
+          arr = arr.filter((d) => !act.removed.includes(d));
+        });
     }
 
-    console.log(arr);
     this.rootStore.state.filteredOutPoints = arr;
 
     return arr;
@@ -78,27 +76,25 @@ export class CompareStore {
     if (!isEmptyOrNull(selectedPrediction))
       selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
 
-    console.log('SELECTED POINTS 1 HERE', selectedPoints);
-
-
     for (const a in this.updatedActions) {
       const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      console.log(this.isBelowCurrent(a, graph.current));
-
-      if (!act || !act.added || graph.nodes[a].label === "Add Plot" || graph.nodes[a].label === "Filter" || this.isBelowCurrent(a, graph.current))
-      {
+      if (
+        !act ||
+        !act.added ||
+        graph.nodes[a].label === 'Add Plot' ||
+        graph.nodes[a].label === 'Filter' ||
+        this.isBelowCurrent(a, graph.current)
+      ) {
         continue;
-      } 
+      }
 
-      selectedPoints.push(...act.added)
+      selectedPoints.push(...act.added);
     }
 
     for (const j of this.rootStore.state.filteredOutPoints) {
       selectedPoints.splice(selectedPoints.indexOf(j), 1);
     }
-
-    console.log("SELECTED POINTS 2 HERE", selectedPoints)
 
     return Array.from(new Set(selectedPoints));
   }

@@ -40,12 +40,14 @@ export class ProjectStore {
   }
 
   get loadedDatasetValues() {
-
-    return this.loadedDataset?.values.filter((d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id)) || [];
+    return (
+      this.loadedDataset?.values.filter(
+        (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
+      ) || []
+    );
   }
 
   get compDatasetValues() {
-
     return (
       this.comparisonDataset?.values.filter(
         (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
@@ -130,16 +132,12 @@ export class ProjectStore {
       }),
     );
 
-    console.log(JSON.parse(JSON.stringify(this.rootStore.exploreStore.interactions)));
-
     Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
       baseDataset: this.loadedDatasetKey,
       updatedDataset: datasetKey,
       interactions: this.rootStore.exploreStore.interactions || [],
     }).then(
       action((response: AxiosResponse<unknown>) => {
-        console.log(response.data);
-        console.log(this.provenance.graph);
         this.rootStore.compareStore.updatedActions = response.data;
       }),
     );

@@ -23,7 +23,9 @@ def applyDBScanCluster(
     return ids
 
 
-def applyDBScanOutlier(data: pd.DataFrame, dimensions, eps, min_samples):
+def applyDBScanOutlier(
+    data: pd.DataFrame, dimensions, eps, min_samples, intentOutlier=True
+):
     data = data.copy(deep=True)
     scaler = robustScaler2(data[dimensions].values)
     scaled_data = scaler.transform(data[dimensions].values)
@@ -34,4 +36,7 @@ def applyDBScanOutlier(data: pd.DataFrame, dimensions, eps, min_samples):
 
     outliers = groups.get_group(-1).id.tolist()
 
-    return outliers
+    if intentOutlier:
+        return outliers
+
+    return data[~data.id.isin(outliers)].id.tolist()

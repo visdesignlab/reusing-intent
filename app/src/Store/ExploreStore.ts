@@ -4,6 +4,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, toJS } from 'mobx';
 
 import deepCopy from '../Utils/DeepCopy';
+import { isNotNullOrUndefined } from '../Utils/FilterNull';
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
@@ -102,11 +103,11 @@ export class ExploreStore {
 
     const interactions = path
       .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
-      .filter((d) => d);
+      .filter(isNotNullOrUndefined);
 
     console.log(deepCopy(interactions));
 
-    return interactions as any;
+    return interactions;
   }
 
   get loadedDatasetKey() {

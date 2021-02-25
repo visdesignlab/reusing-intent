@@ -48,8 +48,6 @@ const Skyline: FC<Props> = ({ info, xScale, yScale }: Props) => {
     let x_lines = <g />;
     let y_lines = <g />;
 
-    console.log({ x_sense, y_sense });
-
     x_lines = (
       <g className="frontier-x">
         {[...scaled_frontier]
