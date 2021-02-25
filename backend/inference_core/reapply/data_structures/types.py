@@ -32,6 +32,7 @@ class Algorithms(Enum):
     DT = "DT"
     LR = "LR"
     QR = "QR"
+    DECISIONTREE = "DecisionTree"
 
 
 ###########################################################################
@@ -45,3 +46,4 @@ class Intents(Enum):
     LINEARREGRESSION = "LINEARREGRESSION"
     QUADRATICREGRESSION = "QUADRATICREGRESSION"
     NONOUTLIER = "NonOutlier"
+    SIMPLIFIEDRANGE = "SimplifiedRange"

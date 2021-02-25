@@ -7,6 +7,7 @@ from backend.inference_core.reapply.reapply_algorithms.dbscan import (
     applyDBScanOutlier,
 )
 from backend.inference_core.reapply.reapply_algorithms.kmeans import applyKMeans
+from backend.inference_core.reapply.reapply_algorithms.range import apply_range
 from backend.inference_core.reapply.reapply_algorithms.skyline import applySkyline
 
 
@@ -52,6 +53,8 @@ def apply_prediction(base, data, prediction: Prediction):
                 min_samples,
                 intent != Intents.NONOUTLIER,
             )
+    if algorithm == Algorithms.DECISIONTREE:
+        ids = apply_range(data, info["rules"])
 
     if algorithm == Algorithms.BNL:
         ids = applySkyline(data, prediction.dimensions, info["sense"])
