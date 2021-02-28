@@ -3,10 +3,9 @@ import { Tooltip } from '@material-ui/core';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useContext } from 'react';
-import { toJS } from 'mobx';
 
-import useScatterplotStyle from '../Scatterplot/styles';
 import Store from '../../Store/Store';
+import useScatterplotStyle from '../Scatterplot/styles';
 
 import { DataDisplay } from './ComparisonScatterplot';
 
@@ -29,9 +28,7 @@ const Marks: FC<Props> = ({
 }: Props) => {
   const classes = useScatterplotStyle();
 
-  const {
-    updatedFilterPoints
-  } = useContext(Store).compareStore;
+  const { updatedFilterPoints } = useContext(Store).compareStore;
 
   if (!compPoints || dataDisplay === 'Original') {
     return (
@@ -55,17 +52,17 @@ const Marks: FC<Props> = ({
         })}
       </>
     );
-  } 
-  else if (dataDisplay === 'AddedOnly') {
-
+  } else if (dataDisplay === 'AddedOnly') {
     return (
       <>
         {compPoints
           .filter((d) => {
-            return points.filter((i) => i.label === d.label).length === 0 && !updatedFilterPoints.includes(d.id);
+            return (
+              points.filter((i) => i.label === d.label).length === 0 &&
+              !updatedFilterPoints.includes(d.id)
+            );
           })
           .map((point) => {
-
             return (
               <g
                 key={point.label}
@@ -138,16 +135,11 @@ const Marks: FC<Props> = ({
             }
           }
 
-          return (
-            null
-          );
+          return null;
         })}
       </>
     );
   } else if (dataDisplay === 'RemovedOnly') {
-    console.log(selectedPoints);
-    console.log(points);
-
     return (
       <>
         {points.map((point) => {
@@ -156,7 +148,7 @@ const Marks: FC<Props> = ({
             if (compPoints.filter((d) => d.label === point.label).length === 0) {
               return (
                 <g
-                  key={point.label}
+                  key={point.id}
                   className={`marks ${classes.removedMark} ${
                     selectedPoints.includes(point.id) ? classes.unionMark : classes.regularMark
                   } ${selectedPoints.length === 0 ? classes.removedColor : ''}`}
@@ -172,6 +164,8 @@ const Marks: FC<Props> = ({
               );
             }
           }
+
+          return <g key={point.id} />;
         })}
       </>
     );
@@ -352,7 +346,6 @@ const Marks: FC<Props> = ({
           if (editGroup.length > 0) {
             return (
               <Tooltip key={point.label} title={<pre>{JSON.stringify(point, null, 2)}</pre>}>
-
                 <g>
                   <path
                     className={`marks ${classes.movedLine} ${
@@ -378,7 +371,7 @@ const Marks: FC<Props> = ({
                     r="5"
                   />
                   <circle
-                    key={editGroup[0].label + "2"}
+                    key={editGroup[0].label + '2'}
                     className={`marks ${classes.movedPoint} ${
                       selectedPoints.includes(editGroup[0].id)
                         ? classes.unionMark
@@ -443,16 +436,15 @@ const Marks: FC<Props> = ({
   );
 };
 
-export function createComet(x1: number, x2: number, y1: number, y2: number): string{
-
-  const theta = Math.atan((x1 - x2) / (y1 - y2))
+export function createComet(x1: number, x2: number, y1: number, y2: number): string {
+  const theta = Math.atan((x1 - x2) / (y1 - y2));
 
   const xLength = 4.5 * Math.cos(theta);
   const yLength = 4.5 * Math.sin(theta);
 
   return `M ${x2 + xLength} ${y2 - yLength} 
   L ${x1} ${y1} 
-  L ${x2-xLength} ${y2 + yLength}
+  L ${x2 - xLength} ${y2 + yLength}
   z`;
 }
 

@@ -4,7 +4,6 @@ import { makeAutoObservable } from 'mobx';
 import { isEmptyOrNull } from '../Utils/isEmpty';
 
 import { RootStore } from './Store';
-import { Dataset } from './Types/Dataset';
 
 export class CompareStore {
   rootStore: RootStore;
@@ -16,45 +15,14 @@ export class CompareStore {
     makeAutoObservable(this);
   }
 
-  isBelowCurrent(id: string, current: string): boolean {
-    const graph = this.rootStore.exploreStore.provenance.graph;
+  // ##################################################################### //
+  // ############################## Getters ############################## //
+  // ##################################################################### //
 
-    if (graph.nodes[current].children.length === 0 || id === current) {
-      return false;
-    } else if (graph.nodes[current].children.includes(id)) {
-      return true;
-    }
+  get compDataset() {
+    const dataset = this.rootStore.projectStore.comparisonDataset;
 
-    let flag = false;
-
-    for (const i of graph.nodes[current].children) {
-      if (!flag) flag = this.isBelowCurrent(id, i);
-    }
-
-    return flag;
-  }
-
-  get updatedFilterPoints() {
-    let arr = this.rootStore.state.filteredOutPoints;
-
-    const graph = this.rootStore.exploreStore.provenance.graph;
-
-    const filterNodes = Object.values(graph.nodes).filter((d) => d.label === 'Filter');
-
-    if (filterNodes.length > 0 && this.updatedActions) {
-      filterNodes
-        .filter((d) => !this.isBelowCurrent(d.id, graph.current))
-        .forEach((d) => {
-          const act = this.updatedActions[d.id];
-          arr.push(...act.added);
-
-          arr = arr.filter((d) => !act.removed.includes(d));
-        });
-    }
-
-    this.rootStore.state.filteredOutPoints = arr;
-
-    return arr;
+    return dataset;
   }
 
   get selectedPointsComparison() {
@@ -99,27 +67,48 @@ export class CompareStore {
     return Array.from(new Set(selectedPoints));
   }
 
-  loadedDataset() {
-    let dataset = this.rootStore.projectStore.loadedDataset;
+  get updatedFilterPoints() {
+    let arr = this.rootStore.state.filteredOutPoints;
 
-    if (!dataset) {
-      const dt_str = window.localStorage.getItem('dataset');
+    const graph = this.rootStore.exploreStore.provenance.graph;
 
-      if (!dt_str) throw new Error('Dataset not loaded');
+    const filterNodes = Object.values(graph.nodes).filter((d) => d.label === 'Filter');
 
-      dataset = JSON.parse(dt_str) as Dataset;
+    if (filterNodes.length > 0 && this.updatedActions) {
+      filterNodes
+        .filter((d) => !this.isBelowCurrent(d.id, graph.current))
+        .forEach((d) => {
+          const act = this.updatedActions[d.id];
+          arr.push(...act.added);
 
-      return dataset;
+          arr = arr.filter((d) => !act.removed.includes(d));
+        });
     }
 
-    window.localStorage.setItem('dataset', JSON.stringify(dataset));
+    this.rootStore.state.filteredOutPoints = arr;
 
-    return dataset;
+    return arr;
   }
 
-  get compDataset() {
-    const dataset = this.rootStore.projectStore.comparisonDataset;
+  // ##################################################################### //
+  // ############################## Helpers ############################## //
+  // ##################################################################### //
 
-    return dataset;
+  isBelowCurrent(id: string, current: string): boolean {
+    const graph = this.rootStore.exploreStore.provenance.graph;
+
+    if (graph.nodes[current].children.length === 0 || id === current) {
+      return false;
+    } else if (graph.nodes[current].children.includes(id)) {
+      return true;
+    }
+
+    let flag = false;
+
+    for (const i of graph.nodes[current].children) {
+      if (!flag) flag = this.isBelowCurrent(id, i);
+    }
+
+    return flag;
   }
 }

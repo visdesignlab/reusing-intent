@@ -124,6 +124,8 @@ def getDatasetByKey(project: str, key: str):
                 "numericColumns": numericColumns,
                 "columns": columns,
                 "values": data,
+                "version": record.version,
+                "key": record.key,
             }
 
             return jsonify(dataset)

@@ -46,15 +46,6 @@ export type DatasetColumn = string;
 
 export type DataPoint = { id: string; [key: string]: string | number };
 
-// export type Dataset = {
-//   columns: Columns;
-//   values: DataPoint[];
-//   categoricalColumns: string[];
-//   numericColumns: string[];
-//   labelColumn: string;
-//   allColumns: string[];
-// };
-
 export type Dataset = {
   columns: string[];
   categoricalColumns: string[];
@@ -62,4 +53,6 @@ export type Dataset = {
   labelColumn: string;
   values: DataPoint[];
   columnInfo: ColumnInfo;
+  version: string;
+  key: string;
 };

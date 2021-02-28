@@ -14,6 +14,7 @@ from backend.inference_core.reapply.reapply_algorithms.skyline import applySkyli
 def apply_prediction(base, data, prediction: Prediction):
     info = prediction.info
     changes = {}
+    new_info = {}
     ids = None
 
     print(prediction.algorithm, prediction.intent)
@@ -57,10 +58,12 @@ def apply_prediction(base, data, prediction: Prediction):
         ids = apply_range(data, info["rules"])
 
     if algorithm == Algorithms.BNL:
-        ids = applySkyline(data, prediction.dimensions, info["sense"])
+        ids, new_info = applySkyline(data, prediction.dimensions, info["sense"])
 
     changes = get_changes_df(
         base[base.id.isin(prediction.memberIds)], data[data.id.isin(ids)]
     )
+
+    changes.info = new_info
 
     return changes

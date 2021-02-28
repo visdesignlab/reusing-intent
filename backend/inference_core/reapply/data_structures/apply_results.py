@@ -9,6 +9,7 @@ class Changes(object):
         self.changed: List[str] = changed
         self.removed: List[str] = removed
         self.result: List[str] = result
+        self.info: dict = {}
         for k, v in kwargs.items():
             setattr(self, k, v)
 
