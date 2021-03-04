@@ -1,10 +1,11 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
-import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 
+import { EventConfig } from '../../trrack-vis/Utils/EventConfig';
+import {  ProvVis } from '../../trrack-vis/index';
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';
 import { Plot } from '../../Store/Types/Plot';
@@ -118,7 +119,7 @@ export const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <LockPrediction size={16} />,
     bundleGlyph: <LockPrediction fill="rgb(248, 191, 132)" size={22} />,
   },
-  'Turn Prediction': {
+  'Prediction Selection': {
     backboneGlyph: <TurnPrediction size={22} />,
     currentGlyph: <TurnPrediction fill="#2185d0" size={22} />,
     regularGlyph: <TurnPrediction size={16} />,
@@ -142,7 +143,7 @@ export const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <RemoveBrush size={16} />,
     bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
   },
-  'Clear All': {
+  'Filter': {
     backboneGlyph: <ClearAll size={22} />,
     currentGlyph: <ClearAll fill="#2185d0" size={22} />,
     regularGlyph: <ClearAll size={16} />,
@@ -166,7 +167,7 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
   const classes = useStyles();
 
   const {
-    exploreStore: { n_plots, addPlot },
+    exploreStore: { n_plots, addPlot, updateBrushed },
     projectStore: { loadedDataset },
     provenance,
     setQueryParams,
@@ -212,6 +213,12 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     };
   }
 
+  function brushedNodes(selected: string[])
+  {
+    //TODO:: do this in smarter, value based way 
+    updateBrushed(selected)
+  }
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -220,6 +227,7 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
         <Visualization />
         <PredictionTable />
         <ProvVis
+          brushCallback={brushedNodes}
           bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}

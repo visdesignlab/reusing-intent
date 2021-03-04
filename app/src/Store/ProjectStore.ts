@@ -152,6 +152,8 @@ export class ProjectStore {
     const idList = [];
 
     if (this.workingDataset && removeIds) {
+      this.workingDataset.values = removeIds;
+
       for (const j of removeIds) {
         idList.push(j.id);
       }
@@ -169,10 +171,13 @@ export class ProjectStore {
     const idList = [];
 
     if (this.workingDataset && removeIds) {
+      this.workingDataset.values = removeIds;
+
       for (const j of removeIds) {
         idList.push(j.id);
       }
     }
+
 
     return idList;
   };

@@ -35,7 +35,9 @@ const filterAction = createAction<IntentState, [string[]], IntentEvents>(
       state.plots[plot.id] = plot;
     });
 
-    state.filteredOutPoints = filter
+    console.log(JSON.parse(JSON.stringify(state.filteredOutPoints)));
+    state.filteredOutPoints.push(...filter)
+    console.log(JSON.parse(JSON.stringify(state.filteredOutPoints)));
 
     if (state.selectedPrediction)
     {

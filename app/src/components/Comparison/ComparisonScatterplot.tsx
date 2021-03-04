@@ -70,6 +70,7 @@ const CompVis: FC = () => {
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
       <ComparisonLegend
+        dataDisplay={dataDisplay}
         offset={spContainerDimension - 2 * theme.spacing(1) - 110}
         selectedPoints={selectedPoints.length > 0}
         setDataDisplay={setDataDisplay}

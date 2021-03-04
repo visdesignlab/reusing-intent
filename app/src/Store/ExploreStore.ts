@@ -22,6 +22,7 @@ export class ExploreStore {
   isLoadingData = false;
   isLoadingPredictions = false;
   hoveredPrediction: Prediction | null = null;
+  currBrushed: string[] = [];
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -182,6 +183,14 @@ export class ExploreStore {
 
     return dataset;
   }
+
+  // ##################################################################### //
+  // ########################### Store Helpers ########################### //
+  // ##################################################################### //
+
+  updateBrushed = (newSelected: string[]) => {
+    this.currBrushed = newSelected;
+  };
 
   // ##################################################################### //
   // ######################### Provenance Actions ######################## //

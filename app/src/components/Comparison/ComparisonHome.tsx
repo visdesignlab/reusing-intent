@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
-import { ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 
+import { ProvVis } from '../../trrack-vis/index';
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
@@ -80,6 +80,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
       <div className={classes.layout}>
         <ComparisonScatterplot />
         <ProvVis
+          brushCallback={(nodes) => console.log(nodes)}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
           ephemeralUndo={false}

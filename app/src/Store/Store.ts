@@ -56,6 +56,10 @@ export class RootStore {
     return JSON.parse(JSON.stringify(state)) as IntentState;
   }
 
+  addBundle = (selected: string[]) => {
+    this.bundledNodes.push(selected)
+  }
+
   setQueryParams = (search: string) => {
     if (this.search === search) return;
     this.search = search;

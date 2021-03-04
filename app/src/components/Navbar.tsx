@@ -6,11 +6,15 @@ import {
   makeStyles,
   Theme,
   Toolbar,
+  Dialog,
+  TextField,
+  DialogContent,
+  DialogActions
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useMemo } from 'react';
+import React, { FC, useContext, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Store from '../Store/Store';
@@ -30,8 +34,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Navbar: FC = () => {
   const classes = useStyles();
+  const [open, setOpen] = useState(false)
   const store = useContext(Store);
-  const { search } = store;
+  const { search, addBundle } = store;
 
   const {
     projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadOnlyFilter },
@@ -40,6 +45,7 @@ const Navbar: FC = () => {
       switchBrush,
       filter,
       selectedPoints,
+      currBrushed
     },
   } = useContext(Store);
 
@@ -61,6 +67,16 @@ const Navbar: FC = () => {
     comparisonDatasetKey || '',
     loadComparisonApply,
   );
+
+  const bundleName = ""
+
+  const handleClose = () => 
+  {
+    console.log(currBrushed)
+    console.log(bundleName)
+    addBundle(currBrushed.reverse());
+    setOpen(false)
+  }
 
   return (
     <div>
@@ -117,6 +133,39 @@ const Navbar: FC = () => {
           >
             Filter In
           </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Bundle
+          </Button>
+
+          <Dialog aria-labelledby="form-dialog-title" open={open} onClose={handleClose}>
+            <DialogContent>
+              <TextField
+                id="name"
+                label="Bundle Name"
+                margin="dense"
+                type="email"
+                autoFocus
+                fullWidth
+                onChange= {(e) => console.log(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button color="primary" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button color="primary" onClick={handleClose}>
+                Create Bundle
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Toolbar>
       </AppBar>
     </div>
