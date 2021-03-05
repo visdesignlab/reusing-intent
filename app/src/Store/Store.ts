@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { initProvenance } from '@visdesignlab/trrack';
+import { initProvenance, isChildNode } from '@visdesignlab/trrack';
 import { makeAutoObservable } from 'mobx';
 import { createContext } from 'react';
 
+import deepCopy from '../Utils/DeepCopy';
+
 import { CompareStore } from './CompareStore';
 import { ExploreStore } from './ExploreStore';
-import { defaultState, IntentState } from './IntentState';
 import { ProjectStore } from './ProjectStore';
 import { provenanceActions } from './ProvenanceActions';
+import { VersionStatus } from './Types/Artifacts';
 import { IntentEvents } from './Types/IntentEvents';
-import { InteractionArtifact } from './Types/InteractionArtifact';
+import { State } from './Types/Interactions';
 import { IntentProvenance } from './Types/ProvenanceType';
 
 export class RootStore {
@@ -31,8 +33,31 @@ export class RootStore {
   bundledNodes: string[][];
 
   constructor() {
-    this.provenance = initProvenance<IntentState, IntentEvents, InteractionArtifact>(defaultState, {
-      loadFromUrl: false,
+    this.provenance = initProvenance<State, IntentEvents, VersionStatus>(
+      { interaction: { type: 'Root' } },
+      {
+        loadFromUrl: false,
+      },
+    );
+
+    this.provenance.addGlobalObserver((graph) => {
+      if (!graph) return;
+
+      Object.entries(graph.nodes).forEach((ent) => {
+        const [key, val] = ent;
+
+        if (isChildNode(val)) {
+          (val as any).state = this.provenance.getState(val);
+        }
+
+        graph.nodes[key] = val;
+      });
+
+      console.log({
+        graph,
+        state: (graph.nodes[graph.current] as any).state,
+        interactions: deepCopy(this.exploreStore.interactions),
+      });
     });
 
     this.provenance.done();
@@ -48,12 +73,6 @@ export class RootStore {
       actions: false,
       provenance: false,
     });
-  }
-
-  get state() {
-    const state = this.provenance.getState(this.provenance.current);
-
-    return JSON.parse(JSON.stringify(state)) as IntentState;
   }
 
   setQueryParams = (search: string) => {

@@ -170,6 +170,7 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     projectStore: { loadedDataset },
     provenance,
     setQueryParams,
+    bundledNodes,
   } = useContext(Store);
 
   useEffect(() => {
@@ -194,8 +195,6 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     };
     addPlot(plot);
   });
-
-  const { bundledNodes } = useContext(Store);
 
   if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 

@@ -1,123 +1,142 @@
 import { createAction } from '@visdesignlab/trrack';
 
-import { BrushType, ExtendedBrushCollection, IntentState } from './IntentState';
+import { Brush } from '../components/Brush/Types/Brush';
+
 import { IntentEvents } from './Types/IntentEvents';
+import { State } from './Types/Interactions';
 import { Plot } from './Types/Plot';
 import { Prediction } from './Types/Prediction';
 
-const addPlotAction = createAction<IntentState, [Plot], IntentEvents>(
-  (state: IntentState, plot: Plot) => {
-    state.plots[plot.id] = plot;
+const addPlotAction = createAction<State, [Plot], IntentEvents>((state: State, plot: Plot) => {
+  state.interaction = {
+    type: 'AddPlot',
+    plot,
+  };
+})
+  .saveStateMode('Complete')
+  .setEventType('Add Plot');
+
+const removePlotAction = createAction<State, [Plot], IntentEvents>((state: State, plot: Plot) => {
+  state.interaction = {
+    type: 'RemovePlot',
+    plot: plot.id,
+  };
+})
+  .saveStateMode('Complete')
+  .setEventType('Add Plot');
+
+const pointSelectionAction = createAction<State, [Plot, string[]], IntentEvents>(
+  (state: State, plot: Plot, points: string[]) => {
+    state.interaction = {
+      type: 'PointSelection',
+      action: 'Add',
+      plot: plot.id,
+      selected: points,
+    };
   },
-).setEventType('Add Plot');
+)
+  .saveStateMode('Complete')
+  .setEventType('Point Selection');
 
-const changeDatasetAction = createAction<IntentState, [string], IntentEvents>(
-  (state: IntentState, dataset: string) => {
-    state.datasetKey = dataset;
+const addBrushAction = createAction<State, [Plot, Brush], IntentEvents>(
+  (state: State, plot: Plot, brush: Brush) => {
+    state.interaction = {
+      type: 'Brush',
+      action: 'Add',
+      plot: plot.id,
+      brush,
+    };
   },
-).setEventType('Add Plot');
+)
+  .saveStateMode('Complete')
+  .setEventType('Add Brush');
 
-const removePlotAction = createAction<IntentState, [Plot], IntentEvents>(
-  (state: IntentState, plot: Plot) => {
-    const { plots } = state;
-
-    delete plots[plot.id];
-
-    state.plots = plots;
+const updateBrushAction = createAction<State, [Plot, Brush], IntentEvents>(
+  (state: State, plot: Plot, brush: Brush) => {
+    state.interaction = {
+      type: 'Brush',
+      action: 'Update',
+      plot: plot.id,
+      brush,
+    };
   },
-).setEventType('Add Plot');
+)
+  .saveStateMode('Complete')
+  .setEventType('Update Brush');
 
-const filterAction = createAction<IntentState, [string[]], IntentEvents>(
-  (state: IntentState, filter: string[]) => {
-    Object.values(state.plots).forEach((plot) => {
-      plot.brushes = {};
-      plot.selectedPoints = [];
-      state.plots[plot.id] = plot;
-    });
-
-    state.filteredOutPoints = filter
-
-    if (state.selectedPrediction)
-    {
-      state.selectedPrediction.memberIds = [];
-    } 
-
-    return state;
+const removeBrushAction = createAction<State, [Plot, Brush], IntentEvents>(
+  (state: State, plot: Plot, brush: Brush) => {
+    state.interaction = {
+      type: 'Brush',
+      action: 'Remove',
+      plot: plot.id,
+      brush,
+    };
   },
-).setEventType('Filter');
+)
+  .saveStateMode('Complete')
+  .setEventType('Remove Brush');
 
-const pointSelectionAction = createAction<IntentState, [Plot, string[]], IntentEvents>(
-  (state: IntentState, plot: Plot, points: string[]) => {
-    plot.selectedPoints = [...new Set([...plot.selectedPoints, ...points])];
-    state.plots[plot.id] = plot;
+const predictionSelectionAction = createAction<State, [Prediction], IntentEvents>(
+  (state: State, prediction: Prediction) => {
+    state.interaction = {
+      type: 'SelectPrediction',
+      prediction,
+    };
   },
-).setEventType('Point Selection');
+)
+  .saveStateMode('Complete')
+  .setEventType('Prediction Selection');
 
-const predictionSelectionAction = createAction<IntentState, [Prediction], IntentEvents>(
-  (state: IntentState, prediction: Prediction) => {
-    Object.values(state.plots).forEach((plot) => {
-      plot.brushes = {};
-      plot.selectedPoints = [];
-      state.plots[plot.id] = plot;
-    });
-    state.selectedPrediction = prediction;
+const filterAction = createAction<State, ['In' | 'Out'], IntentEvents>(
+  (state: State, filterType: 'In' | 'Out') => {
+    state.interaction = {
+      type: 'Filter',
+      filterType,
+    };
   },
-).setEventType('Prediction Selection');
+)
+  .saveStateMode('Complete')
+  .setEventType('Filter');
 
-const changeCategoryAction = createAction<IntentState, [string], IntentEvents>(
-  (state: IntentState, category: string) => {
-    state.categoryColumn = category;
-  },
-).setEventType('Change Category');
+// const changeCategoryAction = createAction<IntentState, [string], IntentEvents>(
+//   (state: IntentState, category: string) => {
+//     state.categoryColumn = category;
+//   },
+// )
+//   .saveStateMode('Complete')
+//   .setEventType('Change Category');
 
-const toggleCategoryAction = createAction<IntentState, [boolean, string], IntentEvents>(
-  (state: IntentState, show: boolean, category: string) => {
-    state.showCategories = show;
+// const toggleCategoryAction = createAction<IntentState, [boolean, string], IntentEvents>(
+//   (state: IntentState, show: boolean, category: string) => {
+//     state.showCategories = show;
 
-    if (!show) return;
+//     if (!show) return;
 
-    state.categoryColumn = category;
-  },
-).setEventType('Toggle Category');
+//     state.categoryColumn = category;
+//   },
+// )
+//   .saveStateMode('Complete')
+//   .setEventType('Toggle Category');
 
-const addBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
-  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
-    plot.brushes = brushes;
-    state.plots[plot.id] = plot;
-  },
-).setEventType('Add Brush');
-
-const updateBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
-  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
-    plot.brushes = brushes;
-    state.plots[plot.id] = plot;
-  },
-).setEventType('Update Brush');
-
-const removeBrushAction = createAction<IntentState, [Plot, ExtendedBrushCollection], IntentEvents>(
-  (state: IntentState, plot: Plot, brushes: ExtendedBrushCollection) => {
-    plot.brushes = brushes;
-    state.plots[plot.id] = plot;
-  },
-).setEventType('Remove Brush');
-
-const switchBrushTypeAction = createAction<IntentState, [BrushType], IntentEvents>(
-  (state: IntentState, type: BrushType) => {
-    state.brushType = type;
-  },
-).setEventType('Change Brush Type');
+// const switchBrushTypeAction = createAction<IntentState, [BrushType], IntentEvents>(
+//   (state: IntentState, type: BrushType) => {
+//     state.brushType = type;
+//   },
+// )
+//   .saveStateMode('Complete')
+//   .setEventType('Change Brush Type');
 
 export const provenanceActions = {
   addPlotAction,
-  changeDatasetAction,
   removePlotAction,
   filterAction,
   pointSelectionAction,
   predictionSelectionAction,
-  changeCategoryAction,
-  toggleCategoryAction,
   addBrushAction,
   updateBrushAction,
   removeBrushAction,
-  switchBrushTypeAction,
+  // changeCategoryAction,
+  // toggleCategoryAction,
+  // switchBrushTypeAction,
 };

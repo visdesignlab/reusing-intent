@@ -20,7 +20,7 @@ const useStyles = makeStyles(() =>
 const ProjectHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
   const {
-    projectStore: { currentProject, loadedDatasetKey },
+    projectStore: { currentProject, loadedDataset },
     setQueryParams,
     debug,
     redirectPath,
@@ -33,7 +33,7 @@ const ProjectHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
 
   const instructions = 'Please select a project';
 
-  if (debug && redirectPath === 'explore' && loadedDatasetKey)
+  if (debug && redirectPath === 'explore' && loadedDataset)
     return <Redirect to={{ pathname: '/explore', search }} />;
 
   return (

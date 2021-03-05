@@ -1,5 +1,6 @@
+import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable } from 'mobx';
+import { action, makeAutoObservable, reaction } from 'mobx';
 
 import { SERVER } from '../consts';
 
@@ -16,27 +17,31 @@ export class ProjectStore {
   loadedDataset: Dataset | null = null;
   workingDataset: Dataset | null = null;
   comparisonDataset: Dataset | null = null;
+  currentDatasetKey: string | null = null;
+
+  isReapplying = false;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this);
     this.loadProjects();
+
+    reaction(
+      () => this.currentDatasetKey,
+      () => this.fetchCurrentDataset(),
+    );
   }
 
   // ##################################################################### //
   // ############################## Getters ############################## //
   // ##################################################################### //
 
-  get state() {
-    return this.rootStore.state;
-  }
-
   get provenance() {
     return this.rootStore.provenance;
   }
 
   get loadedDatasetKey() {
-    return this.state.datasetKey;
+    return this.currentDatasetKey || '';
   }
 
   get loadedDatasetValues() {
@@ -63,6 +68,17 @@ export class ProjectStore {
     const proj = this.projects.find((p) => p.key === key);
 
     return proj;
+  };
+
+  fetchCurrentDataset = () => {
+    if (!this.currentProject || !this.currentDatasetKey) return;
+
+    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${this.currentDatasetKey}`).then(
+      action((response: AxiosResponse<Dataset>) => {
+        this.loadedDataset = response.data;
+        this.workingDataset = response.data;
+      }),
+    );
   };
 
   // ##################################################################### //
@@ -182,23 +198,39 @@ export class ProjectStore {
   // ##################################################################### //
 
   loadDataset = (datasetKey: string) => {
-    if (!this.currentProject) return;
+    this.currentDatasetKey = datasetKey;
+  };
 
-    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
-      action((response: AxiosResponse<Dataset>) => {
-        const { changeDatasetAction } = this.rootStore.actions;
+  loadDatasetWithReapply = (datasetKey: string) => {
+    if (!this.currentProject || !this.currentDatasetKey) return;
+    this.isReapplying = true;
 
-        this.rootStore.bundledNodes.push(this.rootStore.currentNodes);
-        this.rootStore.currentNodes = [];
+    const graph = this.provenance.graph;
 
-        changeDatasetAction.setLabel(`Load ${datasetKey} dataset`);
-        this.provenance.apply(changeDatasetAction(datasetKey));
+    Object.entries(graph.nodes).forEach((ent) => {
+      const [key, val] = ent;
 
-        this.rootStore.currentNodes.push(this.provenance.graph.current);
+      if (isChildNode(val)) {
+        (val as any).state = this.provenance.getState(val);
+      }
 
-        this.loadedDataset = response.data;
-        this.workingDataset = response.data;
-      }),
-    );
+      graph.nodes[key] = val;
+    });
+
+    console.log({
+      base: this.currentDatasetKey,
+      target: datasetKey,
+      provenance: graph,
+    });
+
+    Axios.post(`${SERVER}/project/${this.currentProject.key}/reapply`, {
+      base: this.currentDatasetKey,
+      target: datasetKey,
+      provenance: graph,
+    }).then((res) => {
+      this.provenance.importProvenanceGraph(res.data.graph);
+      this.currentDatasetKey = datasetKey;
+      this.isReapplying = false;
+    });
   };
 }

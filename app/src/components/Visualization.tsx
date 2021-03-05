@@ -1,4 +1,5 @@
 import {
+  Chip,
   CircularProgress,
   createStyles,
   Grid,
@@ -23,6 +24,14 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(2),
       overflow: 'auto',
     },
+    chips: {
+      display: 'flex',
+      justifyContent: 'center',
+      flexWrap: 'wrap',
+      '& > *': {
+        margin: theme.spacing(0.5),
+      },
+    },
     grid: {
       height: '100%',
     },
@@ -33,7 +42,10 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const Visualization: FC = () => {
-  const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
+  const {
+    exploreStore: { plots, removePlot, isLoadingData, n_plots },
+    projectStore: { currentProject, currentDatasetKey, loadDatasetWithReapply, isReapplying },
+  } = useContext(Store);
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
@@ -56,12 +68,22 @@ const Visualization: FC = () => {
     </Grid>
   ));
 
-  // console.log(prov);
+  if (!currentProject || !currentDatasetKey) return <div />;
 
   return (
     <div className={classes.root}>
+      <div className={classes.chips}>
+        {currentProject.datasets.map((d) => (
+          <Chip
+            key={d.key}
+            color={currentDatasetKey === d.key ? 'primary' : 'default'}
+            label={d.version}
+            onClick={() => loadDatasetWithReapply(d.key)}
+          />
+        ))}
+      </div>
       <Grid alignItems="center" className={classes.grid} justify="center" spacing={2} container>
-        {isLoadingData ? loader : scatterPlots}
+        {isLoadingData || isReapplying ? loader : scatterPlots}
       </Grid>
     </div>
   );

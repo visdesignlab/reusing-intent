@@ -60,7 +60,7 @@ export class CompareStore {
       selectedPoints.push(...act.added);
     }
 
-    for (const j of this.rootStore.state.filteredOutPoints) {
+    for (const j of this.rootStore.state.filterList) {
       selectedPoints.splice(selectedPoints.indexOf(j), 1);
     }
 
@@ -68,7 +68,7 @@ export class CompareStore {
   }
 
   get updatedFilterPoints() {
-    let arr = this.rootStore.state.filteredOutPoints;
+    let arr = this.rootStore.state.filterList;
 
     const graph = this.rootStore.exploreStore.provenance.graph;
 
@@ -85,7 +85,7 @@ export class CompareStore {
         });
     }
 
-    this.rootStore.state.filteredOutPoints = arr;
+    this.rootStore.state.filterList = arr;
 
     return arr;
   }

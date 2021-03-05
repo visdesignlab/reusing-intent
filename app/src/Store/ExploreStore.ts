@@ -1,27 +1,34 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { isChildNode, NodeID } from '@visdesignlab/trrack';
+import { NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, toJS } from 'mobx';
-
-import deepCopy from '../Utils/DeepCopy';
-import { isNotNullOrUndefined } from '../Utils/FilterNull';
-import { isEmptyOrNull } from '../Utils/isEmpty';
+import { action, makeAutoObservable } from 'mobx';
 
 import { BrushAffectType } from './../components/Brush/Types/Brush';
 import { SERVER } from './../consts';
-import { BrushType, ExtendedBrushCollection } from './IntentState';
+import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
-import { InteractionArtifact } from './Types/InteractionArtifact';
-import { BaseInteraction, FilterType, Interactions } from './Types/Interactions';
-import { Plot } from './Types/Plot';
+import { Plot, Plots } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
+type DatasetRecord = {
+  [key: string]: {
+    plots: Plots;
+    selectedPrediction: Prediction;
+    filterList: string[];
+  };
+};
+
+type NodeRecords = { [key: string]: DatasetRecord };
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
   isLoadingPredictions = false;
   hoveredPrediction: Prediction | null = null;
+  records: NodeRecords = {};
+  multiBrushBehaviour: MultiBrushBehaviour = 'Union';
+  showCategories = false;
+  brushType: BrushType = 'Rectangular';
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -32,16 +39,32 @@ export class ExploreStore {
   // ############################## Getters ############################## //
   // ##################################################################### //
 
+  get currentNode() {
+    return this.provenance.current.id;
+  }
+
+  get state() {
+    return this.records[this.currentNode][this.currentDataset.key];
+  }
+
+  get currentDataset() {
+    const dataset = this.rootStore.projectStore.loadedDataset;
+
+    if (!dataset) throw new Error('Dataset not loaded');
+
+    return dataset;
+  }
+
+  get currentDatasetKey() {
+    return this.currentDataset.key;
+  }
+
   get showSkylineLegend() {
     return this.hoveredPrediction && this.hoveredPrediction.intent === 'Skyline';
   }
 
   get showMatchesLegend() {
     return this.hoveredPrediction ? true : false;
-  }
-
-  get state() {
-    return this.rootStore.state;
   }
 
   get provenance() {
@@ -56,95 +79,10 @@ export class ExploreStore {
     return curr;
   }
 
-  get artifact(): InteractionArtifact {
-    const currentNode = this.provenance.current;
-
-    if (isChildNode(currentNode)) {
-      const artifacts = this.provenance.getLatestArtifact(currentNode.id);
-
-      if (!artifacts)
-        return {
-          predictions: [],
-          interaction: null,
-        };
-
-      return artifacts.artifact;
-    }
-
-    return {
-      predictions: [],
-      interaction: null,
-    };
-  }
-
-  get predictions(): Predictions {
-    return this.artifact.predictions;
-  }
-
-  get interactions(): Interactions {
-    const {
-      current,
-      graph: { nodes },
-      root,
-    } = this.provenance;
-
-    let path = [];
-
-    let currentNode = current;
-
-    while (currentNode.id !== root.id) {
-      if (isChildNode(currentNode)) {
-        path.push(currentNode.id);
-        currentNode = nodes[currentNode.parent];
-      } else break;
-    }
-
-    path = path.reverse();
-
-    const interactions = path
-      .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
-      .filter(isNotNullOrUndefined);
-
-    console.log(deepCopy(interactions));
-
-    return interactions;
-  }
-
-  get loadedDatasetKey() {
-    const { datasetKey } = this.state;
-
-    if (!datasetKey) throw new Error();
-
-    return datasetKey;
-  }
-
-  get selectedPoints() {
-    let selectedPoints: string[] = [];
+  get n_plots() {
     const { plots } = this.state;
 
-    Object.values(plots).forEach((plot) => {
-      selectedPoints.push(...plot.selectedPoints);
-
-      const brushes = plot.brushes;
-      Object.values(brushes).forEach((brush) => {
-        if (brush.points) selectedPoints.push(...brush.points);
-      });
-    });
-
-    const { selectedPrediction } = this.state;
-
-    if (!isEmptyOrNull(selectedPrediction))
-      selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
-
-    return Array.from(new Set(selectedPoints));
-  }
-
-  get n_plots() {
-    return Object.values(this.state.plots).length;
-  }
-
-  get plots() {
-    return Object.values(toJS(this.state.plots));
+    return Object.values(plots).length;
   }
 
   get loadedDataset() {
@@ -310,38 +248,38 @@ export class ExploreStore {
     this.addPredictions();
   };
 
-  changeCategory = (category: string) => {
-    const { changeCategoryAction } = this.rootStore.actions;
+  // changeCategory = (category: string) => {
+  //   const { changeCategoryAction } = this.rootStore.actions;
 
-    changeCategoryAction.setLabel(`Category: ${category}`);
-    this.provenance.apply(changeCategoryAction(category));
-    this.addInteraction({ type: 'ChangeCategory', category });
-    this.rootStore.currentNodes.push(this.provenance.graph.current);
-  };
+  //   changeCategoryAction.setLabel(`Category: ${category}`);
+  //   this.provenance.apply(changeCategoryAction(category));
+  //   this.addInteraction({ type: 'ChangeCategory', category });
+  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
+  // };
 
-  toggleCategories = (show: boolean, categories: string[] = []) => {
-    const { toggleCategoryAction } = this.rootStore.actions;
+  // toggleCategories = (show: boolean, categories: string[] = []) => {
+  //   const { toggleCategoryAction } = this.rootStore.actions;
 
-    if (!show) {
-      toggleCategoryAction.setLabel('Hide Categories');
-      this.provenance.apply(toggleCategoryAction(show, ''));
-      this.addInteraction({ type: 'ToggleCategory', show });
+  //   if (!show) {
+  //     toggleCategoryAction.setLabel('Hide Categories');
+  //     this.provenance.apply(toggleCategoryAction(show, ''));
+  //     this.addInteraction({ type: 'ToggleCategory', show });
 
-      return;
-    }
+  //     return;
+  //   }
 
-    if (categories.length === 0) throw new Error('No category columns');
+  //   if (categories.length === 0) throw new Error('No category columns');
 
-    let category = categories[0];
+  //   let category = categories[0];
 
-    if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
+  //   if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
 
-    toggleCategoryAction.setLabel('Show Categories');
-    this.provenance.apply(toggleCategoryAction(show, category));
-    this.addInteraction({ type: 'ToggleCategory', show });
-    this.addInteraction({ type: 'ChangeCategory', category });
-    this.rootStore.currentNodes.push(this.provenance.graph.current);
-  };
+  //   toggleCategoryAction.setLabel('Show Categories');
+  //   this.provenance.apply(toggleCategoryAction(show, category));
+  //   this.addInteraction({ type: 'ToggleCategory', show });
+  //   this.addInteraction({ type: 'ChangeCategory', category });
+  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
+  // };
 
   // ##################################################################### //
   // ########################### Store Actions ########################### //
