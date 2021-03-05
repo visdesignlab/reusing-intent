@@ -31,11 +31,15 @@ class FilterInteraction(BaseInteraction):
                 base[base.id.isin(self.points)],  # type: ignore
                 updated[updated.id.isin(results.selected_points)],  # type: ignore
             )
+            changes.set_result(
+                updated[~updated.id.isin(results.selected_points)].id.values.tolist()
+            )
         else:
             changes = get_changes_df(
                 base[~base.id.isin(self.points)],  # type: ignore
                 updated[~updated.id.isin(results.selected_points)],  # type: ignore
             )
+            changes.set_result(results.selected_points)
 
         results.add_change_record(self.id, changes)
 
