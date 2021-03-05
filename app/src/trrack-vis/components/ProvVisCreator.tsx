@@ -5,7 +5,7 @@ import { Provenance, ProvenanceGraph, NodeID } from '@visdesignlab/trrack';
 import { configure } from 'mobx';
 
 import { EventConfig } from '../Utils/EventConfig';
-import { BundleMap } from '../Utils/BundleMap';
+import { BundleMap, OriginMap } from '../Utils/BundleMap';
 
 import ProvVis from './ProvVis';
 import UndoRedoButton from './UndoRedoButton';
@@ -35,22 +35,31 @@ configure({ isolateGlobalState: true });
 export function ProvVisCreator<T, S extends string, A>(
   node: Element,
   prov: Provenance<T, S, A>,
+  currentDataset: string,
+  approvedFunction: (id: NodeID) => void,
+  rejectedFunction: (id: NodeID) => void,
+  nodeCreationMap: OriginMap,
   callback?: (id: NodeID) => void,
-  brushCallback?:(selected: string[]) => void,
+  brushCallback?: (selected: string[]) => void,
   ephemeralUndo = false,
   fauxRoot: NodeID = prov.graph.root,
+
   config: Partial<ProvVisConfig> = {},
 ) {
   prov.addGlobalObserver(() => {
     ReactDOM.render(
       <ProvVis
         {...config}
-        brushCallback = {brushCallback}
+        approvedFunction={approvedFunction}
+        brushCallback={brushCallback}
         changeCurrent={callback}
         current={prov.graph.current}
+        currentDataset={currentDataset}
         ephemeralUndo={ephemeralUndo}
+        nodeCreationMap={nodeCreationMap}
         nodeMap={prov.graph.nodes}
         prov={prov}
+        rejectedFunction={rejectedFunction}
         root={fauxRoot}
         undoRedoButtons
       />,
@@ -61,12 +70,16 @@ export function ProvVisCreator<T, S extends string, A>(
   ReactDOM.render(
     <ProvVis
       {...config}
+      approvedFunction={approvedFunction}
       brushCallback={brushCallback}
       changeCurrent={callback}
       current={prov.graph.current}
+      currentDataset={currentDataset}
       ephemeralUndo={ephemeralUndo}
+      nodeCreationMap={nodeCreationMap}
       nodeMap={prov.graph.nodes}
       prov={prov}
+      rejectedFunction={rejectedFunction}
       root={fauxRoot}
       undoRedoButtons
     />,

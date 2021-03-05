@@ -21,7 +21,7 @@ import { NodeGroup } from 'react-move';
 import { Popup, Tab } from 'semantic-ui-react';
 import { style } from 'typestyle';
 
-import { BundleMap } from '../Utils/BundleMap';
+import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
 import findBundleParent from '../Utils/findBundleParent';
 import translate from '../Utils/translate';
@@ -42,6 +42,10 @@ type ProvVisProps<T, S extends string, A> = {
   iconOnly?: boolean;
   current: NodeID;
   nodeMap: Nodes<T, S, A>;
+  approvedFunction: (id: NodeID) => void;
+  rejectedFunction: (id: NodeID) => void;
+  nodeCreationMap: OriginMap;
+  currentDataset: string;
   backboneGutter?: number;
   gutter?: number;
   verticalSpace?: number;
@@ -64,13 +68,14 @@ type ProvVisProps<T, S extends string, A> = {
   brushCallback?: (selected: string[]) => void;
   popupContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
   annotationContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
+
   undoRedoButtons?: boolean;
   bookmarkToggle?: boolean;
   bookmarkListView?: boolean;
   editAnnotations?: boolean;
   prov?: Provenance<T, S, A>;
   ephemeralUndo?: boolean;
-}
+};
 
 export type StratifiedMap<T, S, A> = {
   [key: string]: d3.HierarchyNode<ProvenanceNode<T, S, A>>;
@@ -106,6 +111,10 @@ function ProvVis<T, S extends string, A>({
   brushCallback,
   popupContent,
   annotationContent,
+  approvedFunction,
+  rejectedFunction,
+  currentDataset,
+  nodeCreationMap,
   editAnnotations = false,
   prov,
   ephemeralUndo = false,
@@ -565,10 +574,12 @@ function ProvVis<T, S extends string, A>({
                           <BackboneNode
                             annotationContent={annotationContent}
                             annotationOpen={annotationOpen}
+                            approvedFunction={approvedFunction}
                             bookmark={bookmark}
                             bundleMap={bundleMap}
                             clusterLabels={clusterLabels}
                             current={current === d.id}
+                            currentDataset={currentDataset}
                             duration={duration}
                             editAnnotations={editAnnotations}
                             eventConfig={eventConfig}
@@ -577,10 +588,12 @@ function ProvVis<T, S extends string, A>({
                             first={first}
                             iconOnly={iconOnly}
                             node={d.data}
+                            nodeCreationMap={nodeCreationMap}
                             nodeMap={stratifiedMap}
                             popupContent={popupContent}
                             prov={prov}
                             radius={backboneCircleRadius}
+                            rejectedFunction={rejectedFunction}
                             setAnnotationOpen={setAnnotationOpen}
                             setBookmark={setBookmark}
                             setExemptList={setExpandedClusterList}

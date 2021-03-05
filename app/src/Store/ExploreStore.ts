@@ -202,6 +202,7 @@ export class ExploreStore {
     this.provenance.apply(addPlotAction(plot));
     this.addInteraction({ type: 'AddPlot', plot });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   removePlot = (plot: Plot) => {
@@ -211,6 +212,8 @@ export class ExploreStore {
     this.provenance.apply(removePlotAction(plot));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
+
   };
 
   filter = (removeIds: string[], filterType: FilterType) => {
@@ -223,8 +226,10 @@ export class ExploreStore {
     this.provenance.apply(filterAction(removeIds));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
 
     this.addInteraction({ type: 'Filter', filterType, points: currSelected });
+    
   };
 
   switchBrush = (brushType: BrushType) => {
@@ -252,6 +257,8 @@ export class ExploreStore {
 
     this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
     this.addPredictions();
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
+    
   };
 
   setFreeformSelection = (plot: Plot, points: string[]) => {
@@ -272,6 +279,7 @@ export class ExploreStore {
     this.addPredictions();
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   setBrushSelection = (
@@ -307,6 +315,7 @@ export class ExploreStore {
         break;
     }
     this.addPredictions();
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
     //
   };
 
@@ -317,6 +326,7 @@ export class ExploreStore {
     this.provenance.apply(predictionSelectionAction(prediction));
     this.addInteraction({ type: 'SelectPrediction', prediction });
     this.addPredictions();
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   changeCategory = (category: string) => {
@@ -326,6 +336,7 @@ export class ExploreStore {
     this.provenance.apply(changeCategoryAction(category));
     this.addInteraction({ type: 'ChangeCategory', category });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   toggleCategories = (show: boolean, categories: string[] = []) => {
@@ -350,6 +361,7 @@ export class ExploreStore {
     this.addInteraction({ type: 'ToggleCategory', show });
     this.addInteraction({ type: 'ChangeCategory', category });
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   // ##################################################################### //

@@ -2,6 +2,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable } from 'mobx';
 
 import { SERVER } from '../consts';
+import { OriginMap } from '../trrack-vis/Utils/BundleMap';
 
 import { ExploreStore } from './ExploreStore';
 import { RootStore } from './Store';
@@ -16,9 +17,11 @@ export class ProjectStore {
   loadedDataset: Dataset | null = null;
   workingDataset: Dataset | null = null;
   comparisonDataset: Dataset | null = null;
+  nodeCreationMap: OriginMap;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.nodeCreationMap = {};
     makeAutoObservable(this);
     this.loadProjects();
   }
@@ -63,6 +66,14 @@ export class ProjectStore {
     const proj = this.projects.find((p) => p.key === key);
 
     return proj;
+  };
+
+  addToCreationMap = (node: string) => {
+    console.log("creaiton map added to");
+    this.nodeCreationMap[node] = {
+      createdIn: this.loadedDataset!.labelColumn,
+      approvedIn: [this.loadedDataset!.labelColumn]
+    }
   };
 
   // ##################################################################### //
@@ -177,7 +188,6 @@ export class ProjectStore {
         idList.push(j.id);
       }
     }
-
 
     return idList;
   };

@@ -3,6 +3,7 @@ import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
+import { toJS } from 'mobx';
 
 import { EventConfig } from '../../trrack-vis/Utils/EventConfig';
 import {  ProvVis } from '../../trrack-vis/index';
@@ -168,7 +169,7 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
 
   const {
     exploreStore: { n_plots, addPlot, updateBrushed },
-    projectStore: { loadedDataset },
+    projectStore: { loadedDataset, nodeCreationMap },
     provenance,
     setQueryParams,
   } = useContext(Store);
@@ -219,6 +220,8 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     updateBrushed(selected)
   }
 
+  console.log(toJS(nodeCreationMap));
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -227,14 +230,18 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
         <Visualization />
         <PredictionTable />
         <ProvVis
+          approvedFunction={() => console.log('approved')}
           brushCallback={brushedNodes}
           bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
+          currentDataset={loadedDataset.key}
           ephemeralUndo={false}
           eventConfig={eventConfig}
+          nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
           prov={provenance}
+          rejectedFunction={() => console.log('rejected')}
           root={provenance.graph.root}
           undoRedoButtons
         />
