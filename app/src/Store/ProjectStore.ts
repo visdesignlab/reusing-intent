@@ -44,14 +44,6 @@ export class ProjectStore {
     return this.currentDatasetKey || '';
   }
 
-  get loadedDatasetValues() {
-    return (
-      this.loadedDataset?.values.filter(
-        (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
-      ) || []
-    );
-  }
-
   get compDatasetValues() {
     return (
       this.comparisonDataset?.values.filter(
@@ -194,7 +186,6 @@ export class ProjectStore {
       }
     }
 
-
     return idList;
   };
 
@@ -220,12 +211,6 @@ export class ProjectStore {
       }
 
       graph.nodes[key] = val;
-    });
-
-    console.log({
-      base: this.currentDatasetKey,
-      target: datasetKey,
-      provenance: graph,
     });
 
     Axios.post(`${SERVER}/project/${this.currentProject.key}/reapply`, {

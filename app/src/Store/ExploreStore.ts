@@ -19,8 +19,14 @@ function getDefaultRecord(): Record {
     brushSelections: {},
     pointSelection: {},
     prediction: null,
+    filter: null,
   };
 }
+
+type Filter = {
+  type: 'In' | 'Out';
+  points: string[];
+};
 
 type Record = {
   plots: Plots;
@@ -28,6 +34,7 @@ type Record = {
   brushSelections: { [key: string]: string[] };
   pointSelection: { [key: string]: string[] };
   prediction: Prediction | null;
+  filter: Filter | null;
 };
 
 export class ExploreStore {
@@ -128,7 +135,23 @@ export class ExploreStore {
 
     if (this.state.prediction) selections.push(...this.state.prediction.memberIds);
 
-    return Array.from(new Set(selections));
+    return deepCopy(Array.from(new Set(selections)));
+  }
+
+  get workingValues() {
+    const { filter } = this.state;
+
+    if (!filter) return this.loadedDataset.values;
+
+    const { type, points } = filter;
+
+    console.log(deepCopy(points));
+
+    if (type === 'In') {
+      return this.loadedDataset.values.filter((d) => points.includes(d.id));
+    }
+
+    return this.loadedDataset.values.filter((d) => !points.includes(d.id));
   }
 
   get artifact() {
@@ -228,43 +251,28 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  filter = (removeIds: string[], filterType: 'In' | 'Out') => {
+  filter = (filterType: 'In' | 'Out') => {
     const { filterAction } = this.rootStore.actions;
 
-    filterAction.setLabel(`Filter`);
+    filterAction.setLabel(`Filter: ${filterType}`);
+    const { state } = this;
+    const filter: Filter = { type: filterType, points: this.selectedPoints };
 
     this.provenance.apply(filterAction(filterType));
+
+    state.brushes = {};
+    state.brushSelections = {};
+    state.pointSelection = {};
+    state.prediction = null;
+    state.filter = filter;
+
+    this.stateRecord[this.currentNode] = state;
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
   switchBrush = (brushType: BrushType) => {
     this.brushType = brushType;
-
-    // const { switchBrushTypeAction } = this.rootStore.actions;
-
-    // let label = 'None';
-
-    // switch (brushType) {
-    //   case 'Rectangular':
-    //     label = 'Rectangular Brush';
-    //     break;
-    //   case 'Freeform Large':
-    //     label = 'Large Paint Brush';
-    //     break;
-    //   case 'Freeform Medium':
-    //     label = 'Medium Paint Brush';
-    //     break;
-    //   case 'Freeform Small':
-    //     label = 'Small Paint Brush';
-    //     break;
-    //   default:
-    //     label = 'Disable Brush';
-    //     break;
-    // }
-
-    // this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
-    // this.addPredictions();
   };
 
   setFreeformSelection = (plot: Plot, points: string[]) => {

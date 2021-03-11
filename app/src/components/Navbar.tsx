@@ -34,8 +34,7 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    projectStore: { loadOnlyFilter },
-    exploreStore: { brushType, switchBrush, filter, selectedPoints },
+    exploreStore: { brushType, switchBrush, filter },
   } = useContext(Store);
 
   // const datasetOptions = useMemo(() => {
@@ -95,7 +94,7 @@ const Navbar: FC = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              filter(selectedPoints, 'Out');
+              filter('Out');
             }}
           >
             Filter Out
@@ -107,7 +106,7 @@ const Navbar: FC = () => {
             variant="outlined"
             onClick={() => {
               // loadComparisonFilter("demo")
-              filter(loadOnlyFilter(selectedPoints), 'In');
+              filter('In');
             }}
           >
             Filter In

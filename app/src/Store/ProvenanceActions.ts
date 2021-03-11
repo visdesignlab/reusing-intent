@@ -99,34 +99,6 @@ const filterAction = createAction<State, ['In' | 'Out'], IntentEvents>(
   .saveStateMode('Complete')
   .setEventType('Filter');
 
-// const changeCategoryAction = createAction<IntentState, [string], IntentEvents>(
-//   (state: IntentState, category: string) => {
-//     state.categoryColumn = category;
-//   },
-// )
-//   .saveStateMode('Complete')
-//   .setEventType('Change Category');
-
-// const toggleCategoryAction = createAction<IntentState, [boolean, string], IntentEvents>(
-//   (state: IntentState, show: boolean, category: string) => {
-//     state.showCategories = show;
-
-//     if (!show) return;
-
-//     state.categoryColumn = category;
-//   },
-// )
-//   .saveStateMode('Complete')
-//   .setEventType('Toggle Category');
-
-// const switchBrushTypeAction = createAction<IntentState, [BrushType], IntentEvents>(
-//   (state: IntentState, type: BrushType) => {
-//     state.brushType = type;
-//   },
-// )
-//   .saveStateMode('Complete')
-//   .setEventType('Change Brush Type');
-
 export const provenanceActions = {
   addPlotAction,
   removePlotAction,
@@ -136,7 +108,4 @@ export const provenanceActions = {
   addBrushAction,
   updateBrushAction,
   removeBrushAction,
-  // changeCategoryAction,
-  // toggleCategoryAction,
-  // switchBrushTypeAction,
 };
