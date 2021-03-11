@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-nested-ternary */
@@ -5,18 +7,16 @@
 /* eslint-disable guard-for-in */
 /* eslint-disable no-unused-vars */
 import {
-  Provenance,
+  DiffNode,
   isChildNode,
   NodeID,
   Nodes,
+  Provenance,
   ProvenanceNode,
   StateNode,
-  DiffNode,
 } from '@visdesignlab/trrack';
 import * as d3 from 'd3';
-import React, {
-  ReactChild, useEffect, useState, useCallback,
-} from 'react';
+import React, { ReactChild, useEffect, useState } from 'react';
 import { NodeGroup } from 'react-move';
 import { Popup, Tab } from 'semantic-ui-react';
 import { style } from 'typestyle';
@@ -27,14 +27,20 @@ import findBundleParent from '../Utils/findBundleParent';
 import translate from '../Utils/translate';
 import { treeLayout } from '../Utils/TreeLayout';
 
-import UndoRedoButton from './UndoRedoButton';
-import BookmarkListView from './BookmarkListView';
 import BackboneNode from './BackboneNode';
+import BookmarkListView from './BookmarkListView';
 import bundleTransitions from './BundleTransitions';
 import Link from './Link';
 import linkTransitions from './LinkTransitions';
 import nodeTransitions from './NodeTransitions';
 import { treeColor } from './Styles';
+import UndoRedoButton from './UndoRedoButton';
+
+const container = style({
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'auto',
+});
 
 type ProvVisProps<T, S extends string, A> = {
   root: NodeID;
@@ -70,7 +76,7 @@ type ProvVisProps<T, S extends string, A> = {
   editAnnotations?: boolean;
   prov?: Provenance<T, S, A>;
   ephemeralUndo?: boolean;
-}
+};
 
 export type StratifiedMap<T, S, A> = {
   [key: string]: d3.HierarchyNode<ProvenanceNode<T, S, A>>;
@@ -114,7 +120,6 @@ function ProvVis<T, S extends string, A>({
   const [bookmark, setBookmark] = useState<any>(null);
   const [annotationOpen, setAnnotationOpen] = useState(-1);
 
-
   let list: string[] = [];
   const eventTypes = new Set<string>();
 
@@ -127,10 +132,10 @@ function ProvVis<T, S extends string, A>({
       }
 
       if (
-        child.actionType === 'Ephemeral'
-        && child.children.length === 1
-        && (nodeMap[child.parent].actionType !== 'Ephemeral'
-          || nodeMap[child.parent].children.length > 1)
+        child.actionType === 'Ephemeral' &&
+        child.children.length === 1 &&
+        (nodeMap[child.parent].actionType !== 'Ephemeral' ||
+          nodeMap[child.parent].children.length > 1)
       ) {
         const group: string[] = [];
         let curr = child;
@@ -138,10 +143,7 @@ function ProvVis<T, S extends string, A>({
         while (curr.actionType === 'Ephemeral') {
           group.push(curr.id);
 
-          if (
-            curr.children.length === 1
-            && nodeMap[curr.children[0]].actionType === 'Ephemeral'
-          ) {
+          if (curr.children.length === 1 && nodeMap[curr.children[0]].actionType === 'Ephemeral') {
             curr = nodeMap[curr.children[0]] as DiffNode<T, S, A>;
           } else {
             break;
@@ -161,9 +163,7 @@ function ProvVis<T, S extends string, A>({
     list = list.concat(Object.keys(bundleMap));
   }
 
-  function setDefaultConfig<E extends string>(
-    types: Set<string>,
-  ): EventConfig<E> {
+  function setDefaultConfig<E extends string>(types: Set<string>): EventConfig<E> {
     const symbols = [
       d3.symbol().type(d3.symbolStar).size(50),
       d3.symbol().type(d3.symbolDiamond),
@@ -181,35 +181,19 @@ function ProvVis<T, S extends string, A>({
     for (const j of types) {
       conf[j] = {};
       conf[j].backboneGlyph = (
-        <path
-          className={treeColor(false)}
-          d={symbols[counter]()!}
-          strokeWidth={2}
-        />
+        <path className={treeColor(false)} d={symbols[counter]()!} strokeWidth={2} />
       );
 
       conf[j].bundleGlyph = (
-        <path
-          className={treeColor(false)}
-          d={symbols[counter]()!}
-          strokeWidth={2}
-        />
+        <path className={treeColor(false)} d={symbols[counter]()!} strokeWidth={2} />
       );
 
       conf[j].currentGlyph = (
-        <path
-          className={treeColor(true)}
-          d={symbols[counter]()!}
-          strokeWidth={2}
-        />
+        <path className={treeColor(true)} d={symbols[counter]()!} strokeWidth={2} />
       );
 
       conf[j].regularGlyph = (
-        <path
-          className={treeColor(false)}
-          d={symbols[counter]()!}
-          strokeWidth={2}
-        />
+        <path className={treeColor(false)} d={symbols[counter]()!} strokeWidth={2} />
       );
 
       counter += 1;
@@ -218,9 +202,7 @@ function ProvVis<T, S extends string, A>({
     return conf;
   }
 
-  const [expandedClusterList, setExpandedClusterList] = useState<string[]>(
-    Object.keys(bundleMap),
-  );
+  const [expandedClusterList, setExpandedClusterList] = useState<string[]>(Object.keys(bundleMap));
 
   if (!eventConfig && eventTypes.size > 0 && eventTypes.size < 8) {
     eventConfig = setDefaultConfig<S>(eventTypes);
@@ -246,7 +228,8 @@ function ProvVis<T, S extends string, A>({
     }
   }
 
-  const strat = d3.stratify<ProvenanceNode<T, S, A>>()
+  const strat = d3
+    .stratify<ProvenanceNode<T, S, A>>()
     .id((d) => d.id)
     .parentId((d) => {
       if (d.id === root) return null;
@@ -254,9 +237,9 @@ function ProvVis<T, S extends string, A>({
       if (isChildNode(d)) {
         // If you are a unexpanded bundle, find your parent by going straight up.
         if (
-          bundleMap
-          && Object.keys(bundleMap).includes(d.id)
-          && !expandedClusterList.includes(d.id)
+          bundleMap &&
+          Object.keys(bundleMap).includes(d.id) &&
+          !expandedClusterList.includes(d.id)
         ) {
           let curr = d;
 
@@ -265,8 +248,8 @@ function ProvVis<T, S extends string, A>({
             const localCurr = curr;
 
             if (
-              !bundledNodes.includes(localCurr.parent)
-              || Object.keys(bundleMap).includes(localCurr.parent)
+              !bundledNodes.includes(localCurr.parent) ||
+              Object.keys(bundleMap).includes(localCurr.parent)
             ) {
               return localCurr.parent;
             }
@@ -293,10 +276,10 @@ function ProvVis<T, S extends string, A>({
         }
 
         if (
-          bundledNodes.includes(d.parent)
-          && bundleMap
-          && !Object.keys(bundleMap).includes(d.parent)
-          && !allExpanded
+          bundledNodes.includes(d.parent) &&
+          bundleMap &&
+          !Object.keys(bundleMap).includes(d.parent) &&
+          !allExpanded
         ) {
           return collapsedParent;
         }
@@ -320,10 +303,10 @@ function ProvVis<T, S extends string, A>({
     }
 
     if (
-      bundledNodes.includes(nodeList[i].id)
-      && !allExpanded
-      && bundleMap
-      && !Object.keys(bundleMap).includes(nodeList[i].id)
+      bundledNodes.includes(nodeList[i].id) &&
+      !allExpanded &&
+      bundleMap &&
+      !Object.keys(bundleMap).includes(nodeList[i].id)
     ) {
       nodeList.splice(i, 1);
       i--;
@@ -365,10 +348,10 @@ function ProvVis<T, S extends string, A>({
       const { eventType } = node.metadata;
 
       if (
-        eventType
-        && eventType in eventConfig
-        && eventType !== 'Root'
-        && eventConfig[eventType].regularGlyph
+        eventType &&
+        eventType in eventConfig &&
+        eventType !== 'Root' &&
+        eventConfig[eventType].regularGlyph
       ) {
         return eventConfig[eventType].regularGlyph;
       }
@@ -383,15 +366,11 @@ function ProvVis<T, S extends string, A>({
     );
   }
 
-  function getY(height: number)
-  {
+  function getY(height: number) {
     const y = yOffset * height + 25;
 
-    return y
+    return y;
   }
-
-
-
 
   function bundleGlyph(node: ProvenanceNode<T, S, A>) {
     if (eventConfig) {
@@ -504,12 +483,7 @@ function ProvVis<T, S extends string, A>({
 
                   return (
                     <g key={key}>
-                      <Link
-                        {...state}
-                        fill="#ccc"
-                        stroke="#ccc"
-                        strokeWidth={linkWidth}
-                      />
+                      <Link {...state} fill="#ccc" stroke="#ccc" strokeWidth={linkWidth} />
                     </g>
                   );
                 })}
@@ -537,9 +511,7 @@ function ProvVis<T, S extends string, A>({
                     <g
                       key={key}
                       transform={
-                        d.width === 0
-                          ? translate(state.x, state.y)
-                          : translate(state.x, state.y)
+                        d.width === 0 ? translate(state.x, state.y) : translate(state.x, state.y)
                       }
                       onClick={() => {
                         if (changeCurrent) {
@@ -560,7 +532,7 @@ function ProvVis<T, S extends string, A>({
                             opacity="0"
                             transform="translate(0, -12.5)"
                             width="200"
-                           />
+                          />
                           ,
                           <BackboneNode
                             annotationContent={annotationContent}
@@ -597,9 +569,7 @@ function ProvVis<T, S extends string, A>({
                                 setAnnotationOpen(-1);
                               }}
                             >
-                              {keys.includes(d.id)
-                                ? bundleGlyph(d.data)
-                                : regularGlyph(d.data)}
+                              {keys.includes(d.id) ? bundleGlyph(d.data) : regularGlyph(d.data)}
                             </g>
                           }
                         />
@@ -643,9 +613,9 @@ function ProvVis<T, S extends string, A>({
                   const { key, state } = b;
 
                   if (
-                    bundleMap === undefined
-                    || (stratifiedMap[b.key] as any).width !== 0
-                    || state.validity === false
+                    bundleMap === undefined ||
+                    (stratifiedMap[b.key] as any).width !== 0 ||
+                    state.validity === false
                   ) {
                     return null;
                   }
@@ -667,7 +637,7 @@ function ProvVis<T, S extends string, A>({
                         strokeWidth="2px"
                         style={{ opacity: state.opacity }}
                         width={iconOnly ? 42 : sideOffset - 15}
-                       />
+                      />
                     </g>
                   );
                 })}
@@ -685,7 +655,11 @@ function ProvVis<T, S extends string, A>({
       render: () => <Tab.Pane attached={false}>{graphTabView}</Tab.Pane>,
     },
     {
-      menuItem: { key: 'Bookmarks/Annotations', icon: 'bookmark', content: 'Bookmarks/Annotations' },
+      menuItem: {
+        key: 'Bookmarks/Annotations',
+        icon: 'bookmark',
+        content: 'Bookmarks/Annotations',
+      },
       render: () => <Tab.Pane attached={false}>{bookmarkTabView}</Tab.Pane>,
     },
   ];
@@ -728,9 +702,3 @@ function ProvVis<T, S extends string, A>({
 }
 
 export default ProvVis;
-
-const container = style({
-  alignItems: 'center',
-  justifyContent: 'center',
-  overflow: 'auto',
-});

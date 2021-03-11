@@ -1,56 +1,13 @@
 import { ProvenanceGraph } from '@visdesignlab/trrack';
-
 import React from 'react';
+import { Button } from 'semantic-ui-react';
 import { style } from 'typestyle';
 
-import { Button } from 'semantic-ui-react';
-
-export interface UndoRedoConfig<T, S extends string, A> {
+export type UndoRedoConfig<T, S extends string, A> = {
   undoCallback: () => void;
   redoCallback: () => void;
   graph?: ProvenanceGraph<T, S, A>;
-}
-
-function UndoRedoButton<T, S extends string, A>({
-  graph,
-  undoCallback,
-  redoCallback,
-} : UndoRedoConfig<T, S, A>) {
-  if (graph === undefined) {
-    return null;
-  }
-
-  const isAtRoot = graph.root === graph.current;
-  const isAtLatest = graph.nodes[graph.current].children.length === 0;
-
-  const margin = {
-    marginRight: '3px',
-  } as React.CSSProperties;
-
-  return (
-    <div>
-      <Button
-        variant="outlined"
-        className={undoButtonStyle}
-        disabled={isAtRoot}
-        onClick={undoCallback}
-      >
-        <i style={margin} className="fas fa-undo marginRight"></i>
-        Undo
-      </Button>
-
-      <Button
-        variant="outlined"
-        className={redoButtonStyle}
-        disabled={isAtLatest}
-        onClick={redoCallback}
-      >
-        <i style={margin} className="fas fa-redo marginRight"></i>
-        Redo
-      </Button>
-    </div>
-  );
-}
+};
 
 const undoButtonStyle = style({
   marginTop: '2px',
@@ -86,9 +43,48 @@ const redoButtonStyle = style({
     '&:active': {
       backgroundColor: '#6c7c7c',
     },
-
   },
-
 });
+
+function UndoRedoButton<T, S extends string, A>({
+  graph,
+  undoCallback,
+  redoCallback,
+}: UndoRedoConfig<T, S, A>) {
+  if (graph === undefined) {
+    return null;
+  }
+
+  const isAtRoot = graph.root === graph.current;
+  const isAtLatest = graph.nodes[graph.current].children.length === 0;
+
+  const margin = {
+    marginRight: '3px',
+  } as React.CSSProperties;
+
+  return (
+    <div>
+      <Button
+        className={undoButtonStyle}
+        disabled={isAtRoot}
+        variant="outlined"
+        onClick={undoCallback}
+      >
+        <i className="fas fa-undo marginRight" style={margin} />
+        Undo
+      </Button>
+
+      <Button
+        className={redoButtonStyle}
+        disabled={isAtLatest}
+        variant="outlined"
+        onClick={redoCallback}
+      >
+        <i className="fas fa-redo marginRight" style={margin} />
+        Redo
+      </Button>
+    </div>
+  );
+}
 
 export default UndoRedoButton;
