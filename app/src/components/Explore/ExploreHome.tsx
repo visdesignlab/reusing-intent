@@ -169,7 +169,7 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
 
   const {
     exploreStore: { n_plots, addPlot, updateBrushed },
-    projectStore: { loadedDataset, nodeCreationMap },
+    projectStore: { loadedDataset, nodeCreationMap, addToApproved },
     provenance,
     setQueryParams,
   } = useContext(Store);
@@ -230,12 +230,13 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
         <Visualization />
         <PredictionTable />
         <ProvVis
-          approvedFunction={() => console.log('approved')}
+          approvedFunction={(node: string) => addToApproved(node)}
+          backboneGutter={40}
+          // bundleMap={bundle}
           brushCallback={brushedNodes}
-          bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
-          currentDataset={loadedDataset.key}
+          currentDataset={loadedDataset.version}
           ephemeralUndo={false}
           eventConfig={eventConfig}
           nodeCreationMap={nodeCreationMap}

@@ -69,11 +69,15 @@ export class ProjectStore {
   };
 
   addToCreationMap = (node: string) => {
-    console.log("creaiton map added to");
+    console.log('creaiton map added to');
     this.nodeCreationMap[node] = {
-      createdIn: this.loadedDataset!.labelColumn,
-      approvedIn: [this.loadedDataset!.labelColumn]
-    }
+      createdIn: this.loadedDataset!.version,
+      approvedIn: [this.loadedDataset!.version],
+    };
+  };
+
+  addToApproved = (node: string) => {
+    this.nodeCreationMap[node].approvedIn.push(this.loadedDataset!.version)
   };
 
   // ##################################################################### //

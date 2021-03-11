@@ -4,6 +4,7 @@ import { Provenance, ProvenanceNode, StateNode, NodeID } from '@visdesignlab/trr
 import React, { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
 import { Popup, Button, Icon } from 'semantic-ui-react';
+import { toJS } from 'mobx';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
@@ -151,6 +152,9 @@ function BackboneNode<T, S extends string, A>({
   // console.log(bundleMap)
   // console.log(nodeMap[node.id]);
 
+  console.log(currentDataset)
+  console.log(toJS(nodeCreationMap))
+
   if (
     bundleMap
     && Object.keys(bundleMap).includes(node.id)
@@ -187,24 +191,29 @@ function BackboneNode<T, S extends string, A>({
 
   const labelG = (
     <g style={{ opacity: 1 }} transform={translate(padding, 0)}>
-      <g transform={translate(-10, -10)}>
-        <circle fill="lightgrey" opacity="1" r="7" />
+      {nodeCreationMap[node.id] ? (
+      <g>
+        <g transform={translate(-10, -10)}>
+        <circle fill="white" opacity="1" r="7" />
 
         <text
           alignmentBaseline="middle"
-          fill="black"
+          fill={
+            nodeCreationMap[node.id] && nodeCreationMap[node.id].createdIn === currentDataset ? "green" : "grey"
+          }
           fontSize={10}
+          fontWeight="bold"
           style={cursorStyle}
           textAnchor="middle"
           x={0}
           y={0}
         >
-          {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ""}
+          {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
         </text>
       </g>
 
       <g transform={translate(-10, 10)}>
-        <circle fill="lightgrey" opacity="1" r="7" />
+        <circle fill="white" opacity="1" r="7" />
 
         <text
           alignmentBaseline="middle"
@@ -216,9 +225,11 @@ function BackboneNode<T, S extends string, A>({
           x={0}
           y={0}
         >
-          {nodeCreationMap[node.id] && !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? '\uf00c' : '\uf128'}
+          {nodeCreationMap[node.id] && nodeCreationMap[node.id].approvedIn.includes(currentDataset)
+            ? '\uf00c'
+            : '\uf128'}
         </text>
-      </g>
+      </g></g>) : null }
       {nodeCreationMap[node.id] && !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? (
         <g transform={translate(-10, 10)}>
           <foreignObject height="100" width="50" x="-45" y="-30">
