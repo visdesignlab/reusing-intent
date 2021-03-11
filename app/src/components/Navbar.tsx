@@ -6,21 +6,16 @@ import {
   makeStyles,
   Theme,
   Toolbar,
-  Dialog,
-  TextField,
-  DialogContent,
-  DialogActions
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useMemo, useState } from 'react';
+import React, { FC, useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import Store from '../Store/Store';
 
 import AddPlot from './AddPlotComponent/AddPlot';
-import useDropdown from './Dropdown';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -34,49 +29,33 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Navbar: FC = () => {
   const classes = useStyles();
-  const [open, setOpen] = useState(false)
+  // const [open, setOpen] = useState(false);
   const store = useContext(Store);
-  const { search, addBundle } = store;
+  const { search } = store;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadOnlyFilter },
-    exploreStore: {
-      state: { brushType },
-      switchBrush,
-      filter,
-      selectedPoints,
-      currBrushed
-    },
+    projectStore: { loadOnlyFilter },
+    exploreStore: { brushType, switchBrush, filter, selectedPoints },
   } = useContext(Store);
 
-  const datasetOptions = useMemo(() => {
-    const opts =
-      currentProject?.datasets.map((dataset) => ({
-        key: dataset.key,
-        desc: dataset.version,
-      })) || [];
+  // const datasetOptions = useMemo(() => {
+  //   const opts =
+  //     currentProject?.datasets.map((dataset) => ({
+  //       key: dataset.key,
+  //       desc: dataset.version,
+  //     })) || [];
 
-    return opts;
-  }, [currentProject]);
+  //   return opts;
+  // }, [currentProject]);
 
-  const { Dropdown: ComparisonDropdown } = useDropdown(
-    'dataset-dropdown',
-    'Comparison Dataset',
-    '',
-    datasetOptions,
-    comparisonDatasetKey || '',
-    loadComparisonApply,
-  );
-
-  const bundleName = ""
-
-  const handleClose = () => 
-  {
-    console.log(currBrushed)
-    console.log(bundleName)
-    addBundle(currBrushed.reverse());
-    setOpen(false)
-  }
+  // const { Dropdown: ComparisonDropdown } = useDropdown(
+  //   'dataset-dropdown',
+  //   'Comparison Dataset',
+  //   '',
+  //   datasetOptions,
+  //   comparisonDatasetKey || '',
+  //   loadComparisonApply,
+  // );
 
   return (
     <div>
@@ -110,7 +89,7 @@ const Navbar: FC = () => {
           >
             Apply
           </Button>
-          <ComparisonDropdown />
+          {/* <ComparisonDropdown /> */}
           <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,7 +113,7 @@ const Navbar: FC = () => {
             Filter In
           </Button>
 
-          <Button
+          {/* <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
@@ -143,9 +122,9 @@ const Navbar: FC = () => {
             }}
           >
             Bundle
-          </Button>
+          </Button> */}
 
-          <Dialog aria-labelledby="form-dialog-title" open={open} onClose={handleClose}>
+          {/* <Dialog aria-labelledby="form-dialog-title" open={open} onClose={handleClose}>
             <DialogContent>
               <TextField
                 id="name"
@@ -154,7 +133,7 @@ const Navbar: FC = () => {
                 type="email"
                 autoFocus
                 fullWidth
-                onChange= {(e) => console.log(e.target.value)}
+                onChange={(e) => console.log(e.target.value)}
               />
             </DialogContent>
             <DialogActions>
@@ -165,7 +144,7 @@ const Navbar: FC = () => {
                 Create Bundle
               </Button>
             </DialogActions>
-          </Dialog>
+          </Dialog> */}
         </Toolbar>
       </AppBar>
     </div>

@@ -1,6 +1,7 @@
 import { makeStyles, Typography } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { CellClassParams, ColDef, ValueFormatterParams } from '@material-ui/x-grid';
+import { observer } from 'mobx-react';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
 import Store from '../../Store/Store';
@@ -109,7 +110,7 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const DatasetTable = (p: paramType) => {
+export const DatasetTable = observer((p: paramType) => {
   const ref = useRef<HTMLDivElement>(null);
   const classes = useStyles();
   const headerHeight = 56;
@@ -135,9 +136,9 @@ export const DatasetTable = (p: paramType) => {
       )}
     </div>
   );
-};
+});
 
-export const ComparisonTable = () => {
+export const ComparisonTable = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
@@ -160,4 +161,4 @@ export const ComparisonTable = () => {
       />
     </div>
   );
-};
+});

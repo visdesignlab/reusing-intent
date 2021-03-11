@@ -7,6 +7,7 @@ from backend.inference_core.reapply.data_structures.add_plot_interaction import 
 )
 from backend.inference_core.reapply.data_structures.base_interaction import (
     BaseInteraction,
+    NoneInteraction,
 )
 from backend.inference_core.reapply.data_structures.brush_interaction import (
     BrushInteraction,

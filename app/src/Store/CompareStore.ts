@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { makeAutoObservable } from 'mobx';
 
-import { isEmptyOrNull } from '../Utils/isEmpty';
-
 import { RootStore } from './Store';
 
 export class CompareStore {
@@ -26,68 +24,74 @@ export class CompareStore {
   }
 
   get selectedPointsComparison() {
-    let selectedPoints: string[] = [];
-    const { plots } = this.rootStore.exploreStore.state;
-    const graph = this.rootStore.exploreStore.provenance.graph;
+    const t: string[] = [];
 
-    Object.values(plots).forEach((plot) => {
-      selectedPoints.push(...plot.selectedPoints);
+    return t;
+    // let selectedPoints: string[] = [];
+    // const { plots } = this.rootStore.exploreStore.state;
+    // const graph = this.rootStore.exploreStore.provenance.graph;
 
-      const brushes = plot.brushes;
-      Object.values(brushes).forEach((brush) => {
-        if (brush.points) selectedPoints.push(...brush.points);
-      });
-    });
+    // Object.values(plots).forEach((plot) => {
+    //   selectedPoints.push(...plot.selectedPoints);
 
-    const { selectedPrediction } = this.rootStore.exploreStore.state;
+    //   const brushes = plot.brushes;
+    //   Object.values(brushes).forEach((brush) => {
+    //     if (brush.points) selectedPoints.push(...brush.points);
+    //   });
+    // });
 
-    if (!isEmptyOrNull(selectedPrediction))
-      selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
+    // const { selectedPrediction } = this.rootStore.exploreStore.state;
 
-    for (const a in this.updatedActions) {
-      const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
+    // if (!isEmptyOrNull(selectedPrediction))
+    //   selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
 
-      if (
-        !act ||
-        !act.added ||
-        graph.nodes[a].label === 'Add Plot' ||
-        graph.nodes[a].label === 'Filter' ||
-        this.isBelowCurrent(a, graph.current)
-      ) {
-        continue;
-      }
+    // for (const a in this.updatedActions) {
+    //   const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
 
-      selectedPoints.push(...act.added);
-    }
+    //   if (
+    //     !act ||
+    //     !act.added ||
+    //     graph.nodes[a].label === 'Add Plot' ||
+    //     graph.nodes[a].label === 'Filter' ||
+    //     this.isBelowCurrent(a, graph.current)
+    //   ) {
+    //     continue;
+    //   }
 
-    for (const j of this.rootStore.state.filteredOutPoints) {
-      selectedPoints.splice(selectedPoints.indexOf(j), 1);
-    }
+    //   selectedPoints.push(...act.added);
+    // }
 
-    return Array.from(new Set(selectedPoints));
+    // for (const j of this.rootStore.state.filterList) {
+    //   selectedPoints.splice(selectedPoints.indexOf(j), 1);
+    // }
+
+    // return Array.from(new Set(selectedPoints));
   }
 
   get updatedFilterPoints() {
-    let arr = this.rootStore.state.filteredOutPoints;
+    const t: string[] = [];
 
-    const graph = this.rootStore.exploreStore.provenance.graph;
+    return t;
+    // let arr = this.rootStore.state.filterList;
 
-    const filterNodes = Object.values(graph.nodes).filter((d) => d.label === 'Filter');
+    // const graph = this.rootStore.exploreStore.provenance.graph;
 
-    if (filterNodes.length > 0 && this.updatedActions) {
-      filterNodes
-        .filter((d) => !this.isBelowCurrent(d.id, graph.current))
-        .forEach((d) => {
-          const act = this.updatedActions[d.id];
-          arr.push(...act.added);
+    // const filterNodes = Object.values(graph.nodes).filter((d) => d.label === 'Filter');
 
-          arr = arr.filter((d) => !act.removed.includes(d));
-        });
-    }
+    // if (filterNodes.length > 0 && this.updatedActions) {
+    //   filterNodes
+    //     .filter((d) => !this.isBelowCurrent(d.id, graph.current))
+    //     .forEach((d) => {
+    //       const act = this.updatedActions[d.id];
+    //       arr.push(...act.added);
 
-    this.rootStore.state.filteredOutPoints = arr;
+    //       arr = arr.filter((d) => !act.removed.includes(d));
+    //     });
+    // }
 
-    return arr;
+    // this.rootStore.state.filterList = arr;
+
+    // return arr;
   }
 
   // ##################################################################### //

@@ -1,7 +1,7 @@
 export type BrushID = string;
 
 export type Brush = {
-  id: string;
+  id: BrushID;
   extents: {
     x1: number;
     y1: number;

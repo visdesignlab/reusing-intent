@@ -27,29 +27,25 @@ export function getDefaultPlot(): Plot {
     id: '',
     x: '',
     y: '',
-    brushes: {},
-    selectedPoints: [],
   };
 }
 
 export type IntentState = {
-  datasetKey: string;
   showCategories: boolean;
   categoryColumn: string;
   multiBrushBehaviour: MultiBrushBehaviour;
   plots: Plots;
   brushType: BrushType;
   selectedPrediction: Prediction | null;
-  filteredOutPoints: string[];
+  filterList: string[];
 };
 
 export const defaultState: IntentState = {
-  datasetKey: '',
   multiBrushBehaviour: 'Union',
   showCategories: false,
   categoryColumn: '',
   plots: {},
   brushType: 'Rectangular',
   selectedPrediction: null,
-  filteredOutPoints: [],
+  filterList: [],
 };

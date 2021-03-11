@@ -4,6 +4,7 @@ import shutil
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
+from backend.inference_core.reapply.data_structures.Provenance.graph import Graph
 from backend.inference_core.reapply.reapply import reapply
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.schemas.project import Project
@@ -119,3 +120,36 @@ def processProvenance(project):
 
             results["new_data"] = list(data.T.to_dict().values())
             return jsonify(results)
+
+
+@projectRoute.route("/project/<project>/reapply", methods=["POST"])
+def reapplyProvenance(project):
+    targetKey = request.json["target"]
+    baseKey = request.json["base"]
+
+    provenance = request.json["provenance"]
+
+    engine = getEngine(project)
+
+    with engine.begin() as connection:
+        with getSessionScopeFromEngine(connection) as session:
+            targetDatasetRecord = (
+                session.query(DatasetRecord)
+                .filter(DatasetRecord.key == targetKey)
+                .one()
+            )
+            baseDatasetRecord = (
+                session.query(DatasetRecord).filter(DatasetRecord.key == baseKey).one()
+            )
+
+            graph = Graph(**provenance)
+
+            allData = pd.read_sql("Dataset", con=connection)
+
+            targetDataset = allData[allData["record_id"] == str(targetDatasetRecord.id)]
+            targetDataset = targetDataset.drop("record_id", axis=1)
+
+            baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
+            baseDataset = baseDataset.drop("record_id", axis=1)
+
+            return jsonify({"graph": graph.apply(baseDataset, targetDataset)})

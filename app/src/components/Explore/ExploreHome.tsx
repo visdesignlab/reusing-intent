@@ -1,14 +1,13 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
 
-import { EventConfig } from '../../trrack-vis/Utils/EventConfig';
-import {  ProvVis } from '../../trrack-vis/index';
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';
 import { Plot } from '../../Store/Types/Plot';
+import { ProvVis } from '../../trrack-vis/index';
+import { EventConfig } from '../../trrack-vis/Utils/EventConfig';
 import { getPlotId } from '../../Utils/IDGens';
 import {
   AddBrush,
@@ -143,7 +142,7 @@ export const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <RemoveBrush size={16} />,
     bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
   },
-  'Filter': {
+  Filter: {
     backboneGlyph: <ClearAll size={22} />,
     currentGlyph: <ClearAll fill="#2185d0" size={22} />,
     regularGlyph: <ClearAll size={16} />,
@@ -163,19 +162,15 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
+const ExploreHome = () => {
   const classes = useStyles();
 
   const {
-    exploreStore: { n_plots, addPlot, updateBrushed },
+    exploreStore,
     projectStore: { loadedDataset },
     provenance,
-    setQueryParams,
+    bundledNodes,
   } = useContext(Store);
-
-  useEffect(() => {
-    setQueryParams(location.search);
-  }, [location.search, setQueryParams]);
 
   useEffect(() => {
     const current = provenance.current;
@@ -184,21 +179,17 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
       if (current.children.length > 0) return;
     }
 
-    if (n_plots > 0 || !loadedDataset) return;
+    if (!loadedDataset || exploreStore.n_plots > 0) return;
+
     const { numericColumns } = loadedDataset;
+
     const plot: Plot = {
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
-      brushes: {},
-      selectedPoints: [],
     };
-    addPlot(plot);
+    exploreStore.addPlot(plot);
   });
-
-  const { bundledNodes } = useContext(Store);
-
-  if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   const bundle: BundleMap = {};
 
@@ -213,11 +204,11 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     };
   }
 
-  function brushedNodes(selected: string[])
-  {
-    //TODO:: do this in smarter, value based way 
-    updateBrushed(selected)
-  }
+  // function brushedNodes(selected: string[])
+  // {
+  //   //TODO:: do this in smarter, value based way
+  //   // updateBrushed(selected)
+  // }
 
   return (
     <div className={classes.root}>
@@ -227,7 +218,6 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
         <Visualization />
         <PredictionTable />
         <ProvVis
-          brushCallback={brushedNodes}
           bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}

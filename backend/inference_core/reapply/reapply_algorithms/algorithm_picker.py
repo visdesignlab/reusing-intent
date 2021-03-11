@@ -33,6 +33,7 @@ def apply_prediction(base, data, prediction: Prediction):
         changes = get_changes_df(
             base[base.id.isin(prediction.memberIds)], data[data.id.isin(ids)]
         )
+        changes.set_result(ids.values.tolist())
         changes = Changes(**changes.serialize(), **{"center": closest_center})
         return changes
     if algorithm == Algorithms.DBSCAN:
@@ -63,6 +64,7 @@ def apply_prediction(base, data, prediction: Prediction):
     changes = get_changes_df(
         base[base.id.isin(prediction.memberIds)], data[data.id.isin(ids)]
     )
+    changes.set_result(ids)
 
     changes.info = new_info
 

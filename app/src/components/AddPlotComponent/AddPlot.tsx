@@ -64,8 +64,6 @@ const AddPlot: FC = () => {
       id: getPlotId(),
       x: xCol,
       y: yCol,
-      brushes: {},
-      selectedPoints: [],
     };
 
     addPlot(plot);

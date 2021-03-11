@@ -15,9 +15,10 @@ class Changes(object):
 
     def serialize(self, final=False):
         ret = self.__dict__
-        if final and "result" in ret:
-            del ret["result"]
         return ret
+
+    def set_result(self, res):
+        self.result = res
 
 
 class ApplyResults(object):

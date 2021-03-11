@@ -1,37 +1,91 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { isChildNode, NodeID } from '@visdesignlab/trrack';
+import { NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, toJS } from 'mobx';
+import { action, makeAutoObservable, reaction } from 'mobx';
 
 import deepCopy from '../Utils/DeepCopy';
-import { isNotNullOrUndefined } from '../Utils/FilterNull';
-import { isEmptyOrNull } from '../Utils/isEmpty';
 
-import { BrushAffectType } from './../components/Brush/Types/Brush';
+import { BrushAffectType, BrushCollection } from './../components/Brush/Types/Brush';
 import { SERVER } from './../consts';
-import { BrushType, ExtendedBrushCollection } from './IntentState';
+import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './IntentState';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
-import { InteractionArtifact } from './Types/InteractionArtifact';
-import { BaseInteraction, FilterType, Interactions } from './Types/Interactions';
-import { Plot } from './Types/Plot';
+import { Plot, Plots } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
+
+function getDefaultRecord(): Record {
+  return {
+    plots: {},
+    brushes: {},
+    brushSelections: {},
+    pointSelection: {},
+    prediction: null,
+  };
+}
+
+type Record = {
+  plots: Plots;
+  brushes: { [key: string]: BrushCollection };
+  brushSelections: { [key: string]: string[] };
+  pointSelection: { [key: string]: string[] };
+  prediction: Prediction | null;
+};
 
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
   isLoadingPredictions = false;
   hoveredPrediction: Prediction | null = null;
+  multiBrushBehaviour: MultiBrushBehaviour = 'Union';
+  showCategories = false;
+  brushType: BrushType = 'Rectangular';
+  // key here is DatasetID
+  stateRecord: { [key: string]: Record } = {};
+  predictions: Predictions = [];
   currBrushed: string[] = [];
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this);
+    reaction(
+      () => this.state,
+      () => this.addPredictions(),
+    );
+
+    reaction(
+      () => Object.values(this.provenance.graph.nodes).length,
+      () =>
+        this.provenance.addArtifact({
+          original_dataset: this.currentDatasetKey,
+          status_record: {},
+        }),
+    );
   }
 
   // ##################################################################### //
   // ############################## Getters ############################## //
   // ##################################################################### //
+
+  get state() {
+    if (!this.currentNode || !(this.currentNode in this.stateRecord)) return getDefaultRecord();
+
+    return deepCopy(this.stateRecord[this.currentNode]);
+  }
+
+  get currentNode() {
+    return this.provenance.current.id;
+  }
+
+  get currentDatasetKey() {
+    return this.currentDataset.key;
+  }
+
+  get currentDataset() {
+    const dataset = this.rootStore.projectStore.loadedDataset;
+
+    if (!dataset) throw new Error('Dataset not loaded');
+
+    return dataset;
+  }
 
   get showSkylineLegend() {
     return this.hoveredPrediction && this.hoveredPrediction.intent === 'Skyline';
@@ -39,10 +93,6 @@ export class ExploreStore {
 
   get showMatchesLegend() {
     return this.hoveredPrediction ? true : false;
-  }
-
-  get state() {
-    return this.rootStore.state;
   }
 
   get provenance() {
@@ -57,96 +107,45 @@ export class ExploreStore {
     return curr;
   }
 
-  get artifact(): InteractionArtifact {
-    const currentNode = this.provenance.current;
-
-    if (isChildNode(currentNode)) {
-      const artifacts = this.provenance.getLatestArtifact(currentNode.id);
-
-      if (!artifacts)
-        return {
-          predictions: [],
-          interaction: null,
-        };
-
-      return artifacts.artifact;
-    }
-
-    return {
-      predictions: [],
-      interaction: null,
-    };
-  }
-
-  get predictions(): Predictions {
-    return this.artifact.predictions;
-  }
-
-  get interactions(): Interactions {
-    const {
-      current,
-      graph: { nodes },
-      root,
-    } = this.provenance;
-
-    let path = [];
-
-    let currentNode = current;
-
-    while (currentNode.id !== root.id) {
-      if (isChildNode(currentNode)) {
-        path.push(currentNode.id);
-        currentNode = nodes[currentNode.parent];
-      } else break;
-    }
-
-    path = path.reverse();
-
-    const interactions = path
-      .map((id) => this.provenance.getLatestArtifact(id)?.artifact.interaction)
-      .filter(isNotNullOrUndefined);
-
-    console.log(deepCopy(interactions));
-
-    return interactions;
-  }
-
-  get loadedDatasetKey() {
-    const { datasetKey } = this.state;
-
-    if (!datasetKey) throw new Error();
-
-    return datasetKey;
-  }
-
-  get selectedPoints() {
-    let selectedPoints: string[] = [];
-    const { plots } = this.state;
-
-    Object.values(plots).forEach((plot) => {
-      selectedPoints.push(...plot.selectedPoints);
-
-      const brushes = plot.brushes;
-      Object.values(brushes).forEach((brush) => {
-        if (brush.points) selectedPoints.push(...brush.points);
-      });
-    });
-
-    const { selectedPrediction } = this.state;
-
-    if (!isEmptyOrNull(selectedPrediction))
-      selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
-
-    return Array.from(new Set(selectedPoints));
-  }
-
   get n_plots() {
-    return Object.values(this.state.plots).length;
+    return this.plots.length;
   }
 
   get plots() {
-    return Object.values(toJS(this.state.plots));
+    return Object.values(this.state.plots);
   }
+
+  get selectedPoints() {
+    const selections: string[] = [];
+
+    const { brushSelections } = this.state;
+
+    Object.values(brushSelections).forEach((sel) => {
+      selections.push(...sel);
+    });
+
+    Object.values(this.state.pointSelection).forEach((sel) => selections.push(...sel));
+
+    if (this.state.prediction) selections.push(...this.state.prediction.memberIds);
+
+    return Array.from(new Set(selections));
+  }
+
+  get artifact() {
+    const art = this.provenance.getLatestArtifact();
+
+    if (!art)
+      return {
+        original_dataset: null,
+        status_record: {},
+      };
+
+    return art.artifact;
+  }
+
+  // get predictions() {
+  //   return this.artifact.predictions || [];
+  // }
 
   get loadedDataset() {
     let dataset = this.rootStore.projectStore.loadedDataset;
@@ -197,10 +196,17 @@ export class ExploreStore {
   // ##################################################################### //
 
   addPlot = (plot: Plot): void => {
+    if (!this.currentDatasetKey) return;
     const { addPlotAction } = this.rootStore.actions;
     addPlotAction.setLabel('Add Plot');
+    const { state } = this;
+
     this.provenance.apply(addPlotAction(plot));
-    this.addInteraction({ type: 'AddPlot', plot });
+
+    state.plots[plot.id] = plot;
+
+    this.stateRecord[this.currentNode] = state;
+
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
@@ -208,50 +214,57 @@ export class ExploreStore {
     const { removePlotAction } = this.rootStore.actions;
 
     removePlotAction.setLabel(`Remove plot: ${plot.x} - ${plot.y}`);
+
+    const { state } = this;
     this.provenance.apply(removePlotAction(plot));
+    delete state.plots[plot.id];
+
+    if (plot.id in state.brushes) delete state.brushes[plot.id];
+
+    if (plot.id in state.pointSelection) delete state.pointSelection[plot.id];
+
+    this.stateRecord[this.currentNode] = state;
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  filter = (removeIds: string[], filterType: FilterType) => {
+  filter = (removeIds: string[], filterType: 'In' | 'Out') => {
     const { filterAction } = this.rootStore.actions;
-
-    const currSelected = JSON.parse(JSON.stringify(this.selectedPoints));
 
     filterAction.setLabel(`Filter`);
 
-    this.provenance.apply(filterAction(removeIds));
+    this.provenance.apply(filterAction(filterType));
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
-
-    this.addInteraction({ type: 'Filter', filterType, points: currSelected });
   };
 
   switchBrush = (brushType: BrushType) => {
-    const { switchBrushTypeAction } = this.rootStore.actions;
+    this.brushType = brushType;
 
-    let label = 'None';
+    // const { switchBrushTypeAction } = this.rootStore.actions;
 
-    switch (brushType) {
-      case 'Rectangular':
-        label = 'Rectangular Brush';
-        break;
-      case 'Freeform Large':
-        label = 'Large Paint Brush';
-        break;
-      case 'Freeform Medium':
-        label = 'Medium Paint Brush';
-        break;
-      case 'Freeform Small':
-        label = 'Small Paint Brush';
-        break;
-      default:
-        label = 'Disable Brush';
-        break;
-    }
+    // let label = 'None';
 
-    this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
-    this.addPredictions();
+    // switch (brushType) {
+    //   case 'Rectangular':
+    //     label = 'Rectangular Brush';
+    //     break;
+    //   case 'Freeform Large':
+    //     label = 'Large Paint Brush';
+    //     break;
+    //   case 'Freeform Medium':
+    //     label = 'Medium Paint Brush';
+    //     break;
+    //   case 'Freeform Small':
+    //     label = 'Small Paint Brush';
+    //     break;
+    //   default:
+    //     label = 'Disable Brush';
+    //     break;
+    // }
+
+    // this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
+    // this.addPredictions();
   };
 
   setFreeformSelection = (plot: Plot, points: string[]) => {
@@ -261,6 +274,8 @@ export class ExploreStore {
   addPointSelection = (plot: Plot, points: string[], isPaintBrush = false) => {
     if (points.length === 0) return;
 
+    const { state } = this;
+
     const { pointSelectionAction } = this.rootStore.actions;
 
     pointSelectionAction.setLabel(
@@ -268,10 +283,13 @@ export class ExploreStore {
     );
     this.provenance.apply(pointSelectionAction(plot, points));
 
-    this.addInteraction({ type: 'PointSelection', selected: points, plot });
-    this.addPredictions();
+    state.pointSelection[plot.id] = points;
+
+    this.stateRecord[this.currentNode] = state;
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
+
+    this.addPredictions();
   };
 
   setBrushSelection = (
@@ -281,76 +299,85 @@ export class ExploreStore {
     affectedId: string,
   ) => {
     const { addBrushAction, updateBrushAction, removeBrushAction } = this.rootStore.actions;
+    const { state } = this;
 
     switch (type) {
       case 'Add':
         addBrushAction.setLabel(`Added brush to: ${plot.x}-${plot.y}`);
-        this.provenance.apply(addBrushAction(plot, brushes));
-        this.addInteraction({ type: 'Brush', plot, action: 'Add', brush: affectedId });
+        this.provenance.apply(addBrushAction(plot, brushes[affectedId]));
+        state.brushSelections[affectedId] = brushes[affectedId].points;
+        state.brushes[plot.id] = brushes;
         break;
       case 'Update':
         updateBrushAction.setLabel(`Updated brush in: ${plot.x}-${plot.y}`);
-        this.provenance.apply(updateBrushAction(plot, brushes));
-        this.addInteraction({ type: 'Brush', plot, action: 'Update', brush: affectedId });
+        this.provenance.apply(updateBrushAction(plot, brushes[affectedId]));
+        state.brushSelections[affectedId] = brushes[affectedId].points;
+        state.brushes[plot.id] = brushes;
         break;
       case 'Remove':
         removeBrushAction.setLabel(`Removed brush in: ${plot.x}-${plot.y}`);
-        this.provenance.apply(removeBrushAction(plot, brushes));
-        this.addInteraction({
-          type: 'Brush',
-          plot,
-          action: 'Remove',
-          brush: affectedId,
-        });
+        this.provenance.apply(removeBrushAction(plot, brushes[affectedId]));
+        delete state.brushSelections[affectedId];
+        delete brushes[affectedId];
+        state.brushes[plot.id] = brushes;
         break;
       default:
         break;
     }
+
+    this.stateRecord[this.currentNode] = state;
     this.addPredictions();
     //
   };
 
   setPredictionSelection = (prediction: Prediction) => {
     const { predictionSelectionAction } = this.rootStore.actions;
-
+    const { state } = this;
     predictionSelectionAction.setLabel(`${prediction.intent} Selection`);
     this.provenance.apply(predictionSelectionAction(prediction));
-    this.addInteraction({ type: 'SelectPrediction', prediction });
+
+    state.brushes = {};
+    state.brushSelections = {};
+    state.pointSelection = {};
+    state.prediction = prediction;
+
+    this.stateRecord[this.currentNode] = state;
+
     this.addPredictions();
   };
 
-  changeCategory = (category: string) => {
-    const { changeCategoryAction } = this.rootStore.actions;
+  // changeCategory = (category: string) => {
+  //   const { changeCategoryAction } = this.rootStore.actions;
 
-    changeCategoryAction.setLabel(`Category: ${category}`);
-    this.provenance.apply(changeCategoryAction(category));
-    this.addInteraction({ type: 'ChangeCategory', category });
-    this.rootStore.currentNodes.push(this.provenance.graph.current);
-  };
+  //   changeCategoryAction.setLabel(`Category: ${category}`);
+  //   this.provenance.apply(changeCategoryAction(category));
+  //   this.addInteraction({ type: 'ChangeCategory', category });
+  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
+  // };
 
-  toggleCategories = (show: boolean, categories: string[] = []) => {
-    const { toggleCategoryAction } = this.rootStore.actions;
+  // toggleCategories = (show: boolean, categories: string[] = []) => {
+  //   const { toggleCategoryAction } = this.rootStore.actions;
 
-    if (!show) {
-      toggleCategoryAction.setLabel('Hide Categories');
-      this.provenance.apply(toggleCategoryAction(show, ''));
-      this.addInteraction({ type: 'ToggleCategory', show });
+  //   if (!show) {
+  //     toggleCategoryAction.setLabel('Hide Categories');
+  //     this.provenance.apply(toggleCategoryAction(show, ''));
+  //     this.addInteraction({ type: 'ToggleCategory', show });
 
-      return;
-    }
+  //     return;
+  //   }
 
-    if (categories.length === 0) throw new Error('No category columns');
+  //   if (categories.length === 0) throw new Error('No category columns');
 
-    let category = categories[0];
+  //   let category = categories[0];
 
-    if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
+  //   if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
 
-    toggleCategoryAction.setLabel('Show Categories');
-    this.provenance.apply(toggleCategoryAction(show, category));
-    this.addInteraction({ type: 'ToggleCategory', show });
-    this.addInteraction({ type: 'ChangeCategory', category });
-    this.rootStore.currentNodes.push(this.provenance.graph.current);
-  };
+  //   toggleCategoryAction.setLabel('Show Categories');
+  //   this.provenance.apply(toggleCategoryAction(show, category));
+  //   this.addInteraction({ type: 'ToggleCategory', show });
+  //   this.addInteraction({ type: 'ChangeCategory', category });
+  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
+  // };
 
   // ##################################################################### //
   // ########################### Store Actions ########################### //
@@ -364,17 +391,17 @@ export class ExploreStore {
   // ######################### Provenance Helpers ######################## //
   // ##################################################################### //
 
-  addInteraction = (interaction: BaseInteraction | null) => {
-    const id = this.provenance.current.id;
+  // addInteraction = (interaction: BaseInteraction | null) => {
+  //   const id = this.provenance.current.id;
 
-    if (!interaction) {
-      this.provenance.addArtifact({ ...this.artifact, interaction });
+  //   if (!interaction) {
+  //     this.provenance.addArtifact({ ...this.artifact, interaction });
 
-      return;
-    }
+  //     return;
+  //   }
 
-    this.provenance.addArtifact({ ...this.artifact, interaction: { id, ...interaction } });
-  };
+  //   this.provenance.addArtifact({ ...this.artifact, interaction: { id, ...interaction } });
+  // };
 
   addPredictions = () => {
     this.hoveredPrediction = null;
@@ -388,13 +415,14 @@ export class ExploreStore {
       dimensions.push(...[plt.x, plt.y]);
     });
 
-    Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.loadedDatasetKey}`, {
+    Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.currentDatasetKey}`, {
       selections: this.selectedPoints,
       dimensions,
     }).then(
       action((response: AxiosResponse<Predictions>) => {
         const { data = [] } = response;
-        this.provenance.addArtifact({ ...this.artifact, predictions: data });
+        // this.provenance.addArtifact({ ...this.artifact, predictions: data });
+        this.predictions = data;
         this.isLoadingPredictions = false;
       }),
     );

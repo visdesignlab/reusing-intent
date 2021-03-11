@@ -1,4 +1,5 @@
 export type IntentEvents =
+  | 'Set Project'
   | 'Load Dataset'
   | 'Change Dataset'
   | 'Add Plot'
