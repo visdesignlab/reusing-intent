@@ -57,12 +57,12 @@ const Scatterplot: FC<Props> = ({
     loadedDataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
-
     showMatchesLegend,
     setBrushSelection,
-    state: { brushType },
+    brushType,
     hoveredPrediction,
     showSkylineLegend,
+    state,
   } = useContext(Store).exploreStore;
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
@@ -73,7 +73,7 @@ const Scatterplot: FC<Props> = ({
 
   const { points, x_extents, y_extents } = useScatterplotData(x, y, labelColumn, false);
   const { points: compPoints } = useScatterplotData(x, y, labelColumn, true);
-  
+
   const margin = theme.spacing(10);
   const sp_dimension = dimension - 2 * margin;
 
@@ -149,7 +149,8 @@ const Scatterplot: FC<Props> = ({
         {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
         <BrushComponent
           bottom={sp_dimension}
-          brushes={plot.brushes}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          brushes={state.brushes[plot.id] || {}}
           data={points}
           disableBrush={brushType !== 'Rectangular' || !originalMarks}
           left={0}

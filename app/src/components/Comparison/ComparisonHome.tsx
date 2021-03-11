@@ -10,7 +10,6 @@ import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
 import { eventConfig } from '../Explore/ExploreHome';
-import Navbar from '../Navbar';
 
 import ComparisonScatterplot from './ComparisonScatterplot';
 
@@ -63,8 +62,6 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
-      brushes: {},
-      selectedPoints: [],
     };
     addPlot(plot);
   });

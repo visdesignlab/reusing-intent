@@ -27,8 +27,6 @@ export function getDefaultPlot(): Plot {
     id: '',
     x: '',
     y: '',
-    brushes: {},
-    selectedPoints: [],
   };
 }
 

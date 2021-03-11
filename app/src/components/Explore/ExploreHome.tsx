@@ -2,8 +2,7 @@ import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
 
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';
@@ -162,20 +161,15 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
+const ExploreHome = () => {
   const classes = useStyles();
 
   const {
-    exploreStore: { n_plots, addPlot },
+    exploreStore,
     projectStore: { loadedDataset },
     provenance,
-    setQueryParams,
     bundledNodes,
   } = useContext(Store);
-
-  useEffect(() => {
-    setQueryParams(location.search);
-  }, [location.search, setQueryParams]);
 
   useEffect(() => {
     const current = provenance.current;
@@ -184,19 +178,17 @@ const ExploreHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
       if (current.children.length > 0) return;
     }
 
-    if (n_plots > 0 || !loadedDataset) return;
+    if (!loadedDataset || exploreStore.n_plots > 0) return;
+
     const { numericColumns } = loadedDataset;
+
     const plot: Plot = {
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
-      brushes: {},
-      selectedPoints: [],
     };
-    addPlot(plot);
+    exploreStore.addPlot(plot);
   });
-
-  if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   const bundle: BundleMap = {};
 

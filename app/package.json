@@ -21,7 +21,7 @@
     "@visdesignlab/trrack": "^2.0.0-alpha.5",
     "@visdesignlab/trrack-vis": "^2.0.0-alpha.9",
     "@welldone-software/why-did-you-render": "^6.0.3",
-    "axios": "^0.21.0",
+    "axios": "^0.21.1",
     "clsx": "^1.1.1",
     "d3": "^6.2.0",
     "debounce": "^1.2.0",

@@ -10,13 +10,12 @@ import {
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useMemo } from 'react';
+import React, { FC, useContext } from 'react';
 import { Link } from 'react-router-dom';
 
 import Store from '../Store/Store';
 
 import AddPlot from './AddPlotComponent/AddPlot';
-import useDropdown from './Dropdown';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -34,33 +33,28 @@ const Navbar: FC = () => {
   const { search } = store;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadOnlyFilter },
-    exploreStore: {
-      state: { brushType },
-      switchBrush,
-      filter,
-      selectedPoints,
-    },
+    projectStore: { loadOnlyFilter },
+    exploreStore: { brushType, switchBrush, filter, selectedPoints },
   } = useContext(Store);
 
-  const datasetOptions = useMemo(() => {
-    const opts =
-      currentProject?.datasets.map((dataset) => ({
-        key: dataset.key,
-        desc: dataset.version,
-      })) || [];
+  // const datasetOptions = useMemo(() => {
+  //   const opts =
+  //     currentProject?.datasets.map((dataset) => ({
+  //       key: dataset.key,
+  //       desc: dataset.version,
+  //     })) || [];
 
-    return opts;
-  }, [currentProject]);
+  //   return opts;
+  // }, [currentProject]);
 
-  const { Dropdown: ComparisonDropdown } = useDropdown(
-    'dataset-dropdown',
-    'Comparison Dataset',
-    '',
-    datasetOptions,
-    comparisonDatasetKey || '',
-    loadComparisonApply,
-  );
+  // const { Dropdown: ComparisonDropdown } = useDropdown(
+  //   'dataset-dropdown',
+  //   'Comparison Dataset',
+  //   '',
+  //   datasetOptions,
+  //   comparisonDatasetKey || '',
+  //   loadComparisonApply,
+  // );
 
   return (
     <div>
@@ -94,7 +88,7 @@ const Navbar: FC = () => {
           >
             Apply
           </Button>
-          <ComparisonDropdown />
+          {/* <ComparisonDropdown /> */}
           <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

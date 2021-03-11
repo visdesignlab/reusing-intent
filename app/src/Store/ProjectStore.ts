@@ -137,27 +137,27 @@ export class ProjectStore {
     );
   };
 
-  loadComparisonApply = (datasetKey: string) => {
-    if (!this.currentProject) return;
+  // loadComparisonApply = (datasetKey: string) => {
+  //   if (!this.currentProject) return;
 
-    this.comparisonDatasetKey = datasetKey;
+  //   this.comparisonDatasetKey = datasetKey;
 
-    Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
-      action((response: AxiosResponse<Dataset>) => {
-        this.comparisonDataset = response.data;
-      }),
-    );
+  //   Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
+  //     action((response: AxiosResponse<Dataset>) => {
+  //       this.comparisonDataset = response.data;
+  //     }),
+  //   );
 
-    Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
-      baseDataset: this.loadedDatasetKey,
-      updatedDataset: datasetKey,
-      interactions: this.rootStore.exploreStore.interactions || [],
-    }).then(
-      action((response: AxiosResponse<unknown>) => {
-        this.rootStore.compareStore.updatedActions = response.data;
-      }),
-    );
-  };
+  //   Axios.post(`${SERVER}/project/${this.currentProject.key}/apply`, {
+  //     baseDataset: this.loadedDatasetKey,
+  //     updatedDataset: datasetKey,
+  //     interactions: this.rootStore.exploreStore.interactions || [],
+  //   }).then(
+  //     action((response: AxiosResponse<unknown>) => {
+  //       this.rootStore.compareStore.updatedActions = response.data;
+  //     }),
+  //   );
+  // };
 
   //load the dataset into comparison
   loadComparisonFilter = (selectedIds: string[]): string[] => {
