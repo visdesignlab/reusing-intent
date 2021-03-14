@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-param-reassign */
 import { getX } from './LinkTransitions';
 
 export default function nodeTransitions(
@@ -18,7 +20,8 @@ export default function nodeTransitions(
 
     const x = getX(data.width, xOffset, backboneOffset);
     // eslint-disable-next-line max-len
-    clusteredNodesInFront = clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
+    clusteredNodesInFront =
+      clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
 
     let y = yOffset * data.depth - (yOffset - clusterOffset) * clusteredNodesInFront;
 
@@ -35,7 +38,8 @@ export default function nodeTransitions(
     const x = getX(data.width, xOffset, backboneOffset);
 
     // eslint-disable-next-line max-len
-    clusteredNodesInFront = clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
+    clusteredNodesInFront =
+      clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
 
     let y = yOffset * data.depth - (yOffset - clusterOffset) * clusteredNodesInFront;
 
@@ -57,7 +61,8 @@ export default function nodeTransitions(
     const x = getX(data.width, xOffset, backboneOffset);
 
     // eslint-disable-next-line max-len
-    clusteredNodesInFront = clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
+    clusteredNodesInFront =
+      clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
 
     let y = yOffset * data.depth - (yOffset - clusterOffset) * clusteredNodesInFront;
 
@@ -74,6 +79,9 @@ export default function nodeTransitions(
   };
 
   return {
-    enter, leave: start, update, start,
+    enter,
+    leave: start,
+    update,
+    start,
   };
 }

@@ -221,6 +221,7 @@ export class ProjectStore {
       const [key, val] = ent;
 
       if (isChildNode(val)) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (val as any).state = this.provenance.getState(val);
       }
 

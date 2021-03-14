@@ -1,5 +1,7 @@
 import { createAction } from '@visdesignlab/trrack';
+
 import { Brush } from '../components/Brush/Types/Brush';
+
 import { IntentEvents } from './Types/IntentEvents';
 import { State } from './Types/Interactions';
 import { Plot } from './Types/Plot';

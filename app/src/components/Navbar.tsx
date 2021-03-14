@@ -37,25 +37,6 @@ const Navbar: FC = () => {
     exploreStore: { brushType, switchBrush, filter },
   } = useContext(Store);
 
-  // const datasetOptions = useMemo(() => {
-  //   const opts =
-  //     currentProject?.datasets.map((dataset) => ({
-  //       key: dataset.key,
-  //       desc: dataset.version,
-  //     })) || [];
-
-  //   return opts;
-  // }, [currentProject]);
-
-  // const { Dropdown: ComparisonDropdown } = useDropdown(
-  //   'dataset-dropdown',
-  //   'Comparison Dataset',
-  //   '',
-  //   datasetOptions,
-  //   comparisonDatasetKey || '',
-  //   loadComparisonApply,
-  // );
-
   return (
     <div>
       <AppBar color="transparent" position="static">

@@ -1,7 +1,9 @@
 import { quadtree, ScaleLinear } from 'd3';
 import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+
 import { getBrushId } from '../../../Utils/IDGens';
 import { Brush, BrushAffectType, BrushCollection } from '../Types/Brush';
+
 import RectBrush from './RectBrush';
 
 export type BrushSelections = { [key: string]: string[] };

@@ -40,6 +40,7 @@ type Props = {
   size: number;
   originalMarks?: boolean;
   dataDisplay?: DataDisplay;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setDataDisplay?: any;
 };
 

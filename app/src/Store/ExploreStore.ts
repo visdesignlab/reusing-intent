@@ -274,14 +274,13 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  // switchBrush = (brushType: BrushType) => {
-  //   this.brushType = brushType;
-  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
-  //   this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
+  switchBrush = (brushType: BrushType) => {
+    this.brushType = brushType;
+    // this.rootStore.currentNodes.push(this.provenance.graph.current);
+    // this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
 
-  //   this.addInteraction({ type: 'Filter', filterType, points: currSelected });
-
-  // };
+    // this.addInteraction({ type: 'Filter', filterType, points: currSelected });
+  };
 
   // switchBrush = (brushType: BrushType) => {
   //   const { switchBrushTypeAction } = this.rootStore.actions;

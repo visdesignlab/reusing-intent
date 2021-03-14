@@ -1,10 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 /* eslint-disable no-unused-vars */
-import { Provenance, ProvenanceNode, StateNode, NodeID } from '@visdesignlab/trrack';
+import { NodeID, Provenance, ProvenanceNode, StateNode } from '@visdesignlab/trrack';
 import React, { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
-import { Popup, Button, Icon } from 'semantic-ui-react';
-import { toJS } from 'mobx';
+import { Button, Icon, Popup } from 'semantic-ui-react';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
@@ -64,9 +64,9 @@ function BackboneNode<T, S extends string, A>({
   popupContent,
   editAnnotations,
   annotationContent,
-  approvedFunction, 
+  approvedFunction,
   rejectedFunction,
-  currentDataset, 
+  currentDataset,
   nodeCreationMap,
   expandedClusterList,
 }: BackboneNodeProps<T, S, A>) {
@@ -117,9 +117,7 @@ function BackboneNode<T, S extends string, A>({
     const { eventType } = node.metadata;
 
     if (eventType && eventType in eventConfig && eventType !== 'Root') {
-      const { bundleGlyph, currentGlyph, backboneGlyph } = eventConfig[
-        eventType
-      ];
+      const { bundleGlyph, currentGlyph, backboneGlyph } = eventConfig[eventType];
 
       if (bundleMap && Object.keys(bundleMap).includes(node.id)) {
         dropDownAdded = true;
@@ -152,20 +150,15 @@ function BackboneNode<T, S extends string, A>({
   // console.log(bundleMap)
   // console.log(nodeMap[node.id]);
 
-  console.log(currentDataset)
-  console.log(toJS(nodeCreationMap))
-
   if (
-    bundleMap
-    && Object.keys(bundleMap).includes(node.id)
-    && node.actionType === 'Ephemeral'
-    && expandedClusterList
-    && !expandedClusterList.includes(node.id)
+    bundleMap &&
+    Object.keys(bundleMap).includes(node.id) &&
+    node.actionType === 'Ephemeral' &&
+    expandedClusterList &&
+    !expandedClusterList.includes(node.id)
   ) {
     if (node.metadata && node.metadata.eventType) {
-      label = `[${bundleMap[node.id].bunchedNodes.length}] ${
-        node.metadata.eventType
-      }`;
+      label = `[${bundleMap[node.id].bunchedNodes.length}] ${node.metadata.eventType}`;
     } else {
       label = `[${bundleMap[node.id].bunchedNodes.length}]`;
     }
@@ -174,9 +167,9 @@ function BackboneNode<T, S extends string, A>({
   }
 
   if (
-    node.artifacts
-    && node.artifacts.annotations.length > 0
-    && annotationOpen !== nodeMap[node.id].depth
+    node.artifacts &&
+    node.artifacts.annotations.length > 0 &&
+    annotationOpen !== nodeMap[node.id].depth
   ) {
     annotate = node.artifacts.annotations[0].annotation;
   }
@@ -192,44 +185,49 @@ function BackboneNode<T, S extends string, A>({
   const labelG = (
     <g style={{ opacity: 1 }} transform={translate(padding, 0)}>
       {nodeCreationMap[node.id] ? (
-      <g>
-        <g transform={translate(-10, -10)}>
-        <circle fill="white" opacity="1" r="7" />
+        <g>
+          <g transform={translate(-10, -10)}>
+            <circle fill="white" opacity="1" r="7" />
 
-        <text
-          alignmentBaseline="middle"
-          fill={
-            nodeCreationMap[node.id] && nodeCreationMap[node.id].createdIn === currentDataset ? "green" : "grey"
-          }
-          fontSize={10}
-          fontWeight="bold"
-          style={cursorStyle}
-          textAnchor="middle"
-          x={0}
-          y={0}
-        >
-          {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
-        </text>
-      </g>
+            <text
+              alignmentBaseline="middle"
+              fill={
+                nodeCreationMap[node.id] && nodeCreationMap[node.id].createdIn === currentDataset
+                  ? 'green'
+                  : 'grey'
+              }
+              fontSize={10}
+              fontWeight="bold"
+              style={cursorStyle}
+              textAnchor="middle"
+              x={0}
+              y={0}
+            >
+              {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
+            </text>
+          </g>
 
-      <g transform={translate(-10, 10)}>
-        <circle fill="white" opacity="1" r="7" />
+          <g transform={translate(-10, 10)}>
+            <circle fill="white" opacity="1" r="7" />
 
-        <text
-          alignmentBaseline="middle"
-          fill="black"
-          fontFamily="Icons"
-          fontSize={10}
-          style={cursorStyle}
-          textAnchor="middle"
-          x={0}
-          y={0}
-        >
-          {nodeCreationMap[node.id] && nodeCreationMap[node.id].approvedIn.includes(currentDataset)
-            ? '\uf00c'
-            : '\uf128'}
-        </text>
-      </g></g>) : null }
+            <text
+              alignmentBaseline="middle"
+              fill="black"
+              fontFamily="Icons"
+              fontSize={10}
+              style={cursorStyle}
+              textAnchor="middle"
+              x={0}
+              y={0}
+            >
+              {nodeCreationMap[node.id] &&
+              nodeCreationMap[node.id].approvedIn.includes(currentDataset)
+                ? '\uf00c'
+                : '\uf128'}
+            </text>
+          </g>
+        </g>
+      ) : null}
       {nodeCreationMap[node.id] && !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? (
         <g transform={translate(-10, 10)}>
           <foreignObject height="100" width="50" x="-45" y="-30">
@@ -404,22 +402,21 @@ function BackboneNode<T, S extends string, A>({
             labelG
           )}
 
-          {annotationOpen !== -1
-          && nodeMap[node.id].depth === annotationOpen ? (
-              <g transform="translate(15, 25)">
-                <foreignObject height="80" width="175" x="0" y="0">
-                  <div>
-                    <textarea
-                      style={{ maxWidth: 130, resize: 'none' }}
-                      value={annotateText}
-                      onChange={handleInputChange}
-                    />
-                    <button onClick={handleCheck}>Annotate</button>
+          {annotationOpen !== -1 && nodeMap[node.id].depth === annotationOpen ? (
+            <g transform="translate(15, 25)">
+              <foreignObject height="80" width="175" x="0" y="0">
+                <div>
+                  <textarea
+                    style={{ maxWidth: 130, resize: 'none' }}
+                    value={annotateText}
+                    onChange={handleInputChange}
+                  />
+                  <button onClick={handleCheck}>Annotate</button>
 
-                    <button onClick={handleClose}>Close</button>
-                  </div>
+                  <button onClick={handleClose}>Close</button>
+                </div>
 
-                  {/* <Input size='massive' icon='close' onChange={handleInputChange}
+                {/* <Input size='massive' icon='close' onChange={handleInputChange}
                   defaultValue={annotateText.current} placeholder="Edit Annotation" action>
                     <input />
                     <Button color="green" type="submit" onClick={handleCheck}>
@@ -429,11 +426,11 @@ function BackboneNode<T, S extends string, A>({
                       <Icon name="close"/>
                     </Button>
                   </Input> */}
-                </foreignObject>
-              </g>
-            ) : (
-              <g />
-            )}
+              </foreignObject>
+            </g>
+          ) : (
+            <g />
+          )}
         </>
       )}
     </Animate>

@@ -1,7 +1,7 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import { default as React, default as React, useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';

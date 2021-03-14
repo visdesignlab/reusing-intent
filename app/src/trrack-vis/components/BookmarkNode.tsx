@@ -1,7 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-import {
-  StateNode,
-} from '@visdesignlab/trrack';
+import { StateNode } from '@visdesignlab/trrack';
 import React from 'react';
 import { Animate } from 'react-move';
 
@@ -15,7 +14,7 @@ type BookmarkNodeProps<T, S extends string, A> = {
   nodeMap: any;
   editAnnotations: boolean;
   eventConfig?: EventConfig<S>;
-}
+};
 
 function BookmarkNode<T, S extends string, A>({
   current,
@@ -63,9 +62,11 @@ function BookmarkNode<T, S extends string, A>({
   let label: string = '';
   let annotate: string = '';
 
-  if (node.artifacts
-    && node.artifacts.annotations.length > 0
-    && node.artifacts.annotations[0].annotation.length > 0) {
+  if (
+    node.artifacts &&
+    node.artifacts.annotations.length > 0 &&
+    node.artifacts.annotations[0].annotation.length > 0
+  ) {
     annotate = node.artifacts.annotations[0].annotation;
   }
 
@@ -84,8 +85,7 @@ function BookmarkNode<T, S extends string, A>({
     >
       {() => (
         <>
-          <g style={{ opacity: 1 }} >
-
+          <g style={{ opacity: 1 }}>
             {glyph}
 
             <text
@@ -94,7 +94,7 @@ function BookmarkNode<T, S extends string, A>({
               fontWeight="bold"
               textAnchor="start"
               x={20}
-              y ={0}
+              y={0}
             >
               {label}
             </text>

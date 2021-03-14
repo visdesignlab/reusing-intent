@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable no-param-reassign */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 export default function linkTransitions(
   xOffset: number,
@@ -11,14 +13,19 @@ export default function linkTransitions(
   xOffset = -xOffset;
   backboneOffset = -backboneOffset;
   const start = () => ({
-    x1: 0, x2: 0, y1: 0, y2: 0, opacity: 0,
+    x1: 0,
+    x2: 0,
+    y1: 0,
+    y2: 0,
+    opacity: 0,
   });
 
   const enter = (data: any) => {
     let clusteredNodesInFront = 0;
 
     // eslint-disable-next-line max-len
-    clusteredNodesInFront = clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
+    clusteredNodesInFront =
+      clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
 
     const { source, target } = data;
     const x1 = getX(source.width, xOffset, backboneOffset);
@@ -36,7 +43,12 @@ export default function linkTransitions(
     }
 
     return {
-      x1, x2, y1, y2, opacity: 1, timing: { duration },
+      x1,
+      x2,
+      y1,
+      y2,
+      opacity: 1,
+      timing: { duration },
     };
   };
 
@@ -44,7 +56,8 @@ export default function linkTransitions(
     let clusteredNodesInFront = 0;
 
     // eslint-disable-next-line max-len
-    clusteredNodesInFront = clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
+    clusteredNodesInFront =
+      clusteredNodesInFront === 0 ? clusteredNodesInFront : clusteredNodesInFront - 1;
 
     const { source, target } = data;
     const x1 = getX(source.width, xOffset, backboneOffset);
@@ -72,7 +85,10 @@ export default function linkTransitions(
   };
 
   return {
-    enter, leave: start, update, start,
+    enter,
+    leave: start,
+    update,
+    start,
   };
 }
 

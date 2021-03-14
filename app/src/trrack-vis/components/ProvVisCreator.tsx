@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
+import { NodeID, Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
+import { configure } from 'mobx';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provenance, ProvenanceGraph, NodeID } from '@visdesignlab/trrack';
-import { configure } from 'mobx';
 
-import { EventConfig } from '../Utils/EventConfig';
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
+import { EventConfig } from '../Utils/EventConfig';
 
 import ProvVis from './ProvVis';
 import UndoRedoButton from './UndoRedoButton';
@@ -30,7 +31,7 @@ export type ProvVisConfig = {
   textSize: number;
   linkWidth: number;
   duration: number;
-}
+};
 configure({ isolateGlobalState: true });
 export function ProvVisCreator<T, S extends string, A>(
   node: Element,
@@ -94,11 +95,7 @@ export function UndoRedoButtonCreator<T, S extends string, A>(
   redoCallback: () => void,
 ) {
   ReactDOM.render(
-    <UndoRedoButton
-      graph={graph}
-      redoCallback={redoCallback}
-      undoCallback={undoCallback}
-    />,
+    <UndoRedoButton graph={graph} redoCallback={redoCallback} undoCallback={undoCallback} />,
     node,
   );
 }

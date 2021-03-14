@@ -1,9 +1,7 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-plusplus */
-export default function BookmarkTransitions(
-  xOffset: number,
-  yOffset: number,
-  nodeList: any[],
-) {
+export default function BookmarkTransitions(xOffset: number, yOffset: number, nodeList: any[]) {
   xOffset = -xOffset;
 
   const start = (data: any) => {

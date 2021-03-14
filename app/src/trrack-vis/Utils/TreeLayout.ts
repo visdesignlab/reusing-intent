@@ -1,12 +1,14 @@
-import { HierarchyNode } from 'd3';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ProvenanceNode } from '@visdesignlab/trrack';
+import { HierarchyNode } from 'd3';
+
 import { StratifiedMap } from '../components/ProvVis';
 
 export type TreeNode = HierarchyNode<unknown>;
 
-export interface ExtendedHierarchyNode<T, S, A> extends HierarchyNode<ProvenanceNode<T, S, A>> {
+export type ExtendedHierarchyNode<T, S, A> = {
   column: number;
-}
+} & HierarchyNode<ProvenanceNode<T, S, A>>;
 
 export type ExtendedStratifiedMap<T, S, A> = {
   [key: string]: ExtendedHierarchyNode<T, S, A>;
@@ -52,6 +54,7 @@ function DFS<T, S, A>(
         ...temp.children.sort((a: any, b: any) => {
           const aIncludes = currentPath.includes(a.id) ? 1 : 0;
           const bIncludes = currentPath.includes(b.id) ? 1 : 0;
+
           return aIncludes - bIncludes;
         }),
       );
@@ -83,6 +86,7 @@ function search<T, S, A>(
 
   if (node === final) {
     path.push(node);
+
     return true;
   }
 
@@ -92,6 +96,7 @@ function search<T, S, A>(
   for (const child of children) {
     if (search(nodes, child.id!, final, path)) {
       path.push(child.id!);
+
       return true;
     }
   }
