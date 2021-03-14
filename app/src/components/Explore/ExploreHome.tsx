@@ -1,7 +1,7 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import React, { useContext, useEffect } from 'react';
+import { default as React, default as React, useContext, useEffect } from 'react';
 
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';
@@ -167,7 +167,7 @@ const ExploreHome = () => {
 
   const {
     exploreStore,
-    projectStore: { loadedDataset },
+    projectStore: { loadedDataset, nodeCreationMap, addToApproved },
     provenance,
     bundledNodes,
   } = useContext(Store);
@@ -218,13 +218,18 @@ const ExploreHome = () => {
         <Visualization />
         <PredictionTable />
         <ProvVis
-          bundleMap={bundle}
+          approvedFunction={(node: string) => addToApproved(node)}
+          backboneGutter={40}
+          // bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
+          currentDataset={loadedDataset?.version || ''}
           ephemeralUndo={false}
           eventConfig={eventConfig}
+          nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
           prov={provenance}
+          rejectedFunction={() => console.log('rejected')}
           root={provenance.graph.root}
           undoRedoButtons
         />

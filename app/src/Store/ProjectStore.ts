@@ -3,6 +3,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import { SERVER } from '../consts';
+import { OriginMap } from '../trrack-vis/Utils/BundleMap';
 
 import { ExploreStore } from './ExploreStore';
 import { RootStore } from './Store';
@@ -20,9 +21,11 @@ export class ProjectStore {
   currentDatasetKey: string | null = null;
 
   isReapplying = false;
+  nodeCreationMap: OriginMap;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
+    this.nodeCreationMap = {};
     makeAutoObservable(this);
     this.loadProjects();
 
@@ -71,6 +74,17 @@ export class ProjectStore {
         this.workingDataset = response.data;
       }),
     );
+  };
+
+  addToCreationMap = (node: string) => {
+    console.log('creaiton map added to');
+    this.nodeCreationMap[node] = {
+      createdIn: this.loadedDataset!.version,
+      approvedIn: [this.loadedDataset!.version],
+    };
+  };
+  addToApproved = (node: string) => {
+    this.nodeCreationMap[node].approvedIn.push(this.loadedDataset!.version);
   };
 
   // ##################################################################### //

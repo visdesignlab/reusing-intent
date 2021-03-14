@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 /* eslint-disable no-unused-vars */
-import { Provenance, ProvenanceNode, StateNode } from '@visdesignlab/trrack';
+import { Provenance, ProvenanceNode, StateNode, NodeID } from '@visdesignlab/trrack';
 import React, { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
-import { Popup } from 'semantic-ui-react';
+import { Popup, Button, Icon } from 'semantic-ui-react';
+import { toJS } from 'mobx';
 
-import { BundleMap } from '../Utils/BundleMap';
+import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
 import translate from '../Utils/translate';
 
@@ -24,6 +25,7 @@ type BackboneNodeProps<T, S extends string, A> = {
   setBookmark: any;
   bookmark: any;
   nodeMap: any;
+  currentDataset: string;
   annotationOpen: number;
   setAnnotationOpen: any;
   exemptList: string[];
@@ -34,8 +36,12 @@ type BackboneNodeProps<T, S extends string, A> = {
   eventConfig?: EventConfig<S>;
   popupContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
   annotationContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
+  approvedFunction: (id: NodeID) => void;
+  nodeCreationMap: OriginMap;
+
+  rejectedFunction: (id: NodeID) => void;
   expandedClusterList?: string[];
-}
+};
 
 function BackboneNode<T, S extends string, A>({
   prov,
@@ -58,9 +64,13 @@ function BackboneNode<T, S extends string, A>({
   popupContent,
   editAnnotations,
   annotationContent,
+  approvedFunction, 
+  rejectedFunction,
+  currentDataset, 
+  nodeCreationMap,
   expandedClusterList,
 }: BackboneNodeProps<T, S, A>) {
-  const padding = 15;
+  const padding = 25;
 
   const cursorStyle = {
     cursor: 'pointer',
@@ -142,6 +152,9 @@ function BackboneNode<T, S extends string, A>({
   // console.log(bundleMap)
   // console.log(nodeMap[node.id]);
 
+  console.log(currentDataset)
+  console.log(toJS(nodeCreationMap))
+
   if (
     bundleMap
     && Object.keys(bundleMap).includes(node.id)
@@ -178,6 +191,78 @@ function BackboneNode<T, S extends string, A>({
 
   const labelG = (
     <g style={{ opacity: 1 }} transform={translate(padding, 0)}>
+      {nodeCreationMap[node.id] ? (
+      <g>
+        <g transform={translate(-10, -10)}>
+        <circle fill="white" opacity="1" r="7" />
+
+        <text
+          alignmentBaseline="middle"
+          fill={
+            nodeCreationMap[node.id] && nodeCreationMap[node.id].createdIn === currentDataset ? "green" : "grey"
+          }
+          fontSize={10}
+          fontWeight="bold"
+          style={cursorStyle}
+          textAnchor="middle"
+          x={0}
+          y={0}
+        >
+          {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
+        </text>
+      </g>
+
+      <g transform={translate(-10, 10)}>
+        <circle fill="white" opacity="1" r="7" />
+
+        <text
+          alignmentBaseline="middle"
+          fill="black"
+          fontFamily="Icons"
+          fontSize={10}
+          style={cursorStyle}
+          textAnchor="middle"
+          x={0}
+          y={0}
+        >
+          {nodeCreationMap[node.id] && nodeCreationMap[node.id].approvedIn.includes(currentDataset)
+            ? '\uf00c'
+            : '\uf128'}
+        </text>
+      </g></g>) : null }
+      {nodeCreationMap[node.id] && !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? (
+        <g transform={translate(-10, 10)}>
+          <foreignObject height="100" width="50" x="-45" y="-30">
+            <div style={{ maxWidth: '20' }}>
+              <Button
+                style={{
+                  margin: '1px',
+                  padding: '1px',
+                  maxHeight: '15px',
+                  maxWidth: '15px',
+                }}
+                onClick={() => approvedFunction(node.id)}
+              >
+                <Icon color="green" name="check" size="small" style={{ margin: '0px' }} />
+              </Button>
+            </div>
+            <div style={{ maxWidth: '20' }}>
+              <Button
+                style={{
+                  margin: '1px',
+                  padding: '1px',
+                  maxHeight: '15px',
+                  maxWidth: '15px',
+                }}
+                onClick={() => rejectedFunction(node.id)}
+              >
+                <Icon color="red" name="close" size="small" style={{ margin: '0px' }} />
+              </Button>
+            </div>
+          </foreignObject>
+        </g>
+      ) : null}
+
       {!iconOnly ? (
         <g>
           {dropDownAdded ? (

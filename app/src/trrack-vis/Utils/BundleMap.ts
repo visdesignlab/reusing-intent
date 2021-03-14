@@ -5,3 +5,10 @@ export type Bundle = {
 };
 
 export type BundleMap = { [key: string]: Bundle };
+
+export type Source = {
+  createdIn: string;
+  approvedIn: string[];
+}
+
+export type OriginMap = { [key: string]: Source };
