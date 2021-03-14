@@ -1,7 +1,7 @@
 import { Brush } from '../../components/Brush/Types/Brush';
 
 import { Plot, PlotID } from './Plot';
-import { BasePrediction } from './Prediction';
+import { Prediction } from './Prediction';
 
 export type AddPlotInteraction = {
   type: 'AddPlot';
@@ -30,7 +30,7 @@ export type PointDeselectionInteraction = BasePointSelection & {
 type BaseBrushInteraction = {
   type: 'Brush';
   plot: PlotID;
-  brush: Brush;
+  brush: Brush | string;
 };
 
 export type AddBrushInteraction = BaseBrushInteraction & {
@@ -45,12 +45,13 @@ export type UpdateBrushInteraction = BaseBrushInteraction & {
 
 export type RemoveBrushInteraction = BaseBrushInteraction & {
   type: 'Brush';
+  brush: string;
   action: 'Remove';
 };
 
 export type SelectPredictionInteraction = {
   type: 'SelectPrediction';
-  prediction: BasePrediction;
+  prediction: Prediction;
 };
 
 type BaseFilterInteraction = {

@@ -53,9 +53,12 @@ export class ExploreStore {
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
     makeAutoObservable(this);
+
     reaction(
       () => this.state,
-      () => this.addPredictions(),
+      () => {
+        this.addPredictions();
+      },
     );
 
     reaction(
@@ -83,7 +86,7 @@ export class ExploreStore {
   }
 
   get currentDatasetKey() {
-    return this.currentDataset.key;
+    return this.rootStore.projectStore.currentDatasetKey;
   }
 
   get currentDataset() {
@@ -144,8 +147,6 @@ export class ExploreStore {
     if (!filter) return this.loadedDataset.values;
 
     const { type, points } = filter;
-
-    console.log(deepCopy(points));
 
     if (type === 'In') {
       return this.loadedDataset.values.filter((d) => points.includes(d.id));
@@ -291,7 +292,10 @@ export class ExploreStore {
     );
     this.provenance.apply(pointSelectionAction(plot, points));
 
-    state.pointSelection[plot.id] = points;
+    if (!(plot.id in state.pointSelection)) {
+      state.pointSelection[plot.id] = [];
+    }
+    state.pointSelection[plot.id].push(...points);
 
     this.stateRecord[this.currentNode] = state;
 
@@ -324,7 +328,7 @@ export class ExploreStore {
         break;
       case 'Remove':
         removeBrushAction.setLabel(`Removed brush in: ${plot.x}-${plot.y}`);
-        this.provenance.apply(removeBrushAction(plot, brushes[affectedId]));
+        this.provenance.apply(removeBrushAction(plot, affectedId));
         delete state.brushSelections[affectedId];
         delete brushes[affectedId];
         state.brushes[plot.id] = brushes;
@@ -341,6 +345,7 @@ export class ExploreStore {
   setPredictionSelection = (prediction: Prediction) => {
     const { predictionSelectionAction } = this.rootStore.actions;
     const { state } = this;
+    prediction.original_id = this.currentDatasetKey || '';
     predictionSelectionAction.setLabel(`${prediction.intent} Selection`);
     this.provenance.apply(predictionSelectionAction(prediction));
 
@@ -354,39 +359,6 @@ export class ExploreStore {
     this.addPredictions();
   };
 
-  // changeCategory = (category: string) => {
-  //   const { changeCategoryAction } = this.rootStore.actions;
-
-  //   changeCategoryAction.setLabel(`Category: ${category}`);
-  //   this.provenance.apply(changeCategoryAction(category));
-  //   this.addInteraction({ type: 'ChangeCategory', category });
-  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
-  // };
-
-  // toggleCategories = (show: boolean, categories: string[] = []) => {
-  //   const { toggleCategoryAction } = this.rootStore.actions;
-
-  //   if (!show) {
-  //     toggleCategoryAction.setLabel('Hide Categories');
-  //     this.provenance.apply(toggleCategoryAction(show, ''));
-  //     this.addInteraction({ type: 'ToggleCategory', show });
-
-  //     return;
-  //   }
-
-  //   if (categories.length === 0) throw new Error('No category columns');
-
-  //   let category = categories[0];
-
-  //   if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
-
-  //   toggleCategoryAction.setLabel('Show Categories');
-  //   this.provenance.apply(toggleCategoryAction(show, category));
-  //   this.addInteraction({ type: 'ToggleCategory', show });
-  //   this.addInteraction({ type: 'ChangeCategory', category });
-  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
-  // };
-
   // ##################################################################### //
   // ########################### Store Actions ########################### //
   // ##################################################################### //
@@ -398,18 +370,6 @@ export class ExploreStore {
   // ##################################################################### //
   // ######################### Provenance Helpers ######################## //
   // ##################################################################### //
-
-  // addInteraction = (interaction: BaseInteraction | null) => {
-  //   const id = this.provenance.current.id;
-
-  //   if (!interaction) {
-  //     this.provenance.addArtifact({ ...this.artifact, interaction });
-
-  //     return;
-  //   }
-
-  //   this.provenance.addArtifact({ ...this.artifact, interaction: { id, ...interaction } });
-  // };
 
   addPredictions = () => {
     this.hoveredPrediction = null;

@@ -1,76 +1,136 @@
-from copy import deepcopy
-from typing import Dict
+from typing import Any, Dict, List
 
 import pandas as pd
 
-from backend.inference_core.reapply.data_structures.interactions import Interactions
+from backend.inference_core.reapply.data_structures.brush_interaction import (
+    BrushInteraction,
+)
+from backend.inference_core.reapply.data_structures.filter_interaction import (
+    FilterInteraction,
+)
+from backend.inference_core.reapply.data_structures.plot_interaction import (
+    AddPlotInteraction,
+)
+from backend.inference_core.reapply.data_structures.point_selection_interaction import (
+    PointSelectionInteraction,
+)
 from backend.inference_core.reapply.data_structures.Provenance.node import Node, NodeId
+from backend.inference_core.reapply.data_structures.record import Record
+from backend.inference_core.reapply.data_structures.select_prediction_interaction import (
+    SelectPredictionInteraction,
+)
+from backend.inference_core.reapply.data_structures.types import (
+    BrushAction,
+    InteractionType,
+)
 
 
 class Graph(object):
-    def __init__(self, current, root, nodes):
-        self.order = []
+    def __init__(self, current, root, nodes, target, target_id):
+        self.target: pd.DataFrame = target
+        self.target_id = target_id
         self.current: NodeId = current
         self.root: NodeId = root
         self.rawNodes = nodes
+
         self.nodes: Dict[NodeId, Node] = {}
+        self.paths = []
+
         for k, v in nodes.items():
             n = Node(**v)
             n.setNode(v)
             self.nodes[k] = n
 
-        curr = self.nodes[self.current]
+        self.inferPaths()
 
-        while True:
-            self.order.append(curr.id)
-
-            if curr.parent is None:
-                break
-
-            curr = self.nodes[curr.parent]
-
-        self.order = self.order[::-1]
-
-    def iterate(self, func):
-        res = []
-        for k in self.order:
-            res.append(func(self.nodes[k]))
-        return res
-
-    @property
-    def interactions(self):
-        interactions = self.iterate(lambda x: x.artifact)
-        interactions = list(filter(lambda x: x, interactions))
-        return Interactions(interactions)
-
-    @property
-    def latestState(self):
-        currentState = self.nodes[self.current].state
-        currentState = deepcopy(currentState)
-        return currentState
-
-    def apply(self, base: pd.DataFrame, target: pd.DataFrame):
-        changes = self.interactions.reapply_interaction(base, target)
-
-        nodes = {}
+    def inferPaths(self):
+        leaves = []
         for k, v in self.nodes.items():
-            if k not in self.order:
+            if len(v.children) == 0:
+                leaves.append(k)
+
+        paths = []
+        for leaf in leaves:
+            path = []
+            curr = self.nodes[leaf]
+            while True:
+                path.append(curr.id)
+
+                if curr.parent is None:
+                    break
+
+                curr = self.nodes[curr.parent]
+            path = path[::-1]
+            paths.append(path)
+
+        self.paths = paths
+
+    @property
+    def mainBranch(self):
+        for path in self.paths:
+            if self.current in path:
+                return path
+        return None
+
+    def applyPath(self, path: List[str], records={}):
+
+        for node_id in path:
+            node = self.nodes[node_id]
+            interaction = node.state.interaction
+
+            if node_id in records:
                 continue
-            if "brush" in v.label.lower():
-                rec = changes[k]
 
-                v.node["state"]["plots"][rec["plot_id"]]["brushes"][rec["brush_id"]][
-                    "points"
-                ] = rec["result"]
-                # v.node['state']['plots'][]
-            elif "selection" in v.label.lower():
-                rec = changes[k]
-                v.node["state"]["selectedPrediction"]["memberIds"] = rec["result"]
-            elif "filter" in v.label.lower():
-                rec = changes[k]
-                v.node["state"]["filterList"] = rec["result"]
-            else:
-                print(v.label)
-            nodes[k] = v.serialize()
+            parentRecord = Record()
+            if node.parent in records:
+                parentRecord = records[node.parent]
 
-        return {"current": self.current, "root": self.root, "nodes": nodes}
+            rec = None
+            if interaction.type == InteractionType.ADD_PLOT:
+                interaction = AddPlotInteraction(**interaction.raw)
+                rec = parentRecord.update_plot(interaction.plot)
+            elif interaction.type == InteractionType.POINT_SELECTION:
+                interaction = PointSelectionInteraction(**interaction.raw)
+                rec = parentRecord.add_point_selection(
+                    interaction.plot, interaction.selected
+                )
+            elif interaction.type == InteractionType.BRUSH:
+                interaction = BrushInteraction(**interaction.raw)
+                if interaction.action == BrushAction.ADD:
+                    rec = parentRecord.add_brush(
+                        interaction.plot, interaction.brush, self.target
+                    )
+                elif interaction.action == BrushAction.UPDATE:
+                    rec = parentRecord.update_brush(
+                        interaction.plot, interaction.brush, self.target
+                    )
+                elif interaction.action == BrushAction.REMOVE:
+                    rec = parentRecord.remove_brush(
+                        interaction.plot, interaction.brush_id
+                    )
+            elif interaction.type == InteractionType.SELECT_PREDICTION:
+                interaction = SelectPredictionInteraction(**interaction.raw)
+                rec = parentRecord.set_prediction(
+                    interaction.prediction, self.target, self.target_id
+                )
+            elif interaction.type == InteractionType.FILTER:
+                interaction = FilterInteraction(**interaction.raw)
+                rec = parentRecord.set_filter(interaction.filterType, self.target)
+
+            if rec is not None:
+                records[node_id] = rec
+
+        return records
+
+    def apply(self):
+        stateRecord: Dict[str, Any] = {}
+
+        for path in self.paths:
+            stateRecord = self.applyPath(path, stateRecord)
+
+        rec = {}
+
+        for k, v in stateRecord.items():
+            rec[k] = v.serialize()
+
+        return rec

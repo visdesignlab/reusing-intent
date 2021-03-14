@@ -15,6 +15,7 @@ class Prediction(object):
         info,
         membership,
         hash=None,
+        original_id=None,
     ) -> None:
         self.rank: float = rank
         self.intent: str = intent
@@ -25,6 +26,7 @@ class Prediction(object):
         self.info: dict = info
         self.membership: dict = membership
         self.hash: str = self.get_hash()
+        self.original_id = original_id
         if hash:
             self.hash = hash
 

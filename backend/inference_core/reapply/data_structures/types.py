@@ -14,6 +14,7 @@ class BrushAction(Enum):
 ############################### Interactions ##############################
 ###########################################################################
 class InteractionType(Enum):
+    ROOT = "Root"
     ADD_PLOT = "AddPlot"
     BRUSH = "Brush"
     SELECT_PREDICTION = "SelectPrediction"

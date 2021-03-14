@@ -2,18 +2,17 @@ from typing import Dict, List
 
 import pandas as pd
 
-from backend.inference_core.reapply.data_structures.add_plot_interaction import (
-    AddPlotInteraction,
-)
 from backend.inference_core.reapply.data_structures.base_interaction import (
     BaseInteraction,
-    NoneInteraction,
 )
 from backend.inference_core.reapply.data_structures.brush_interaction import (
     BrushInteraction,
 )
 from backend.inference_core.reapply.data_structures.filter_interaction import (
     FilterInteraction,
+)
+from backend.inference_core.reapply.data_structures.plot_interaction import (
+    AddPlotInteraction,
 )
 from backend.inference_core.reapply.data_structures.point_selection_interaction import (
     PointSelectionInteraction,

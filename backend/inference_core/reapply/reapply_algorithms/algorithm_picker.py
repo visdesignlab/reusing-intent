@@ -23,7 +23,7 @@ def apply_prediction(base, data, prediction: Prediction):
     intent = Intents(prediction.intent)
 
     if algorithm == Algorithms.KMEANS:
-        ids, closest_center = applyKMeans(
+        ids, centers, closest_center = applyKMeans(
             data,
             prediction.dimensions,
             info["params"]["n_clusters"],

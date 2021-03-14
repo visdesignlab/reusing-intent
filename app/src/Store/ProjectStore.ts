@@ -217,10 +217,17 @@ export class ProjectStore {
       base: this.currentDatasetKey,
       target: datasetKey,
       provenance: graph,
-    }).then((res) => {
-      this.provenance.importProvenanceGraph(res.data.graph);
-      this.currentDatasetKey = datasetKey;
-      this.isReapplying = false;
-    });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    }).then(
+      action((res) => {
+        // this.provenance.importProvenanceGraph(res.data.graph);
+        this.currentDatasetKey = datasetKey;
+        this.rootStore.exploreStore.stateRecord = res.data;
+        setTimeout(
+          action(() => (this.isReapplying = false)),
+          200,
+        );
+      }),
+    );
   };
 }

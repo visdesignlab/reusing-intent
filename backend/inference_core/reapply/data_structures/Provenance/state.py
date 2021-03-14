@@ -1,18 +1,8 @@
+from backend.inference_core.reapply.data_structures.base_interaction import (
+    GenericInteraction,
+)
+
+
 class State(object):
-    def __init__(
-        self,
-        showCategories,
-        categoryColumn,
-        multiBrushBehaviour,
-        plots,
-        brushType,
-        selectedPrediction,
-        filterList,
-    ):
-        self.showCategories = showCategories
-        self.categoryColumn = categoryColumn
-        self.multiBrushBehaviour = multiBrushBehaviour
-        self.plots = plots
-        self.brushType = brushType
-        self.selectedPrediction = selectedPrediction
-        self.filterList = filterList
+    def __init__(self, interaction):
+        self.interaction = GenericInteraction(interaction)

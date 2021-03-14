@@ -43,6 +43,7 @@ export type BasePrediction = {
 };
 
 export type Prediction = BasePrediction & {
+  original_id: string;
   memberIds: string[];
   membership: {
     ipns: string[];

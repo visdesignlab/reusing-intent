@@ -77,6 +77,7 @@ const Visualization: FC = () => {
           <Chip
             key={d.key}
             color={currentDatasetKey === d.key ? 'primary' : 'default'}
+            disabled={currentDatasetKey === d.key}
             label={d.version}
             onClick={() => loadDatasetWithReapply(d.key)}
           />

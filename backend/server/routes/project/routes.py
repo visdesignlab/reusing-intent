@@ -138,18 +138,18 @@ def reapplyProvenance(project):
                 .filter(DatasetRecord.key == targetKey)
                 .one()
             )
-            baseDatasetRecord = (
-                session.query(DatasetRecord).filter(DatasetRecord.key == baseKey).one()
-            )
-
-            graph = Graph(**provenance)
+            # baseDatasetRecord = (
+            #     session.query(DatasetRecord).filter(DatasetRecord.key == baseKey).one()
+            # )
 
             allData = pd.read_sql("Dataset", con=connection)
 
             targetDataset = allData[allData["record_id"] == str(targetDatasetRecord.id)]
             targetDataset = targetDataset.drop("record_id", axis=1)
 
-            baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
-            baseDataset = baseDataset.drop("record_id", axis=1)
+            graph = Graph(target=targetDataset, target_id=targetKey, **provenance)
+            # baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
+            # baseDataset = baseDataset.drop("record_id", axis=1)
 
-            return jsonify({"graph": graph.apply(baseDataset, targetDataset)})
+            return jsonify(graph.apply())
+            # return jsonify({"graph": graph.apply(baseDataset, targetDataset)})

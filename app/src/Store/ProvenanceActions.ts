@@ -1,7 +1,5 @@
 import { createAction } from '@visdesignlab/trrack';
-
 import { Brush } from '../components/Brush/Types/Brush';
-
 import { IntentEvents } from './Types/IntentEvents';
 import { State } from './Types/Interactions';
 import { Plot } from './Types/Plot';
@@ -64,8 +62,8 @@ const updateBrushAction = createAction<State, [Plot, Brush], IntentEvents>(
   .saveStateMode('Complete')
   .setEventType('Update Brush');
 
-const removeBrushAction = createAction<State, [Plot, Brush], IntentEvents>(
-  (state: State, plot: Plot, brush: Brush) => {
+const removeBrushAction = createAction<State, [Plot, string], IntentEvents>(
+  (state: State, plot: Plot, brush: string) => {
     state.interaction = {
       type: 'Brush',
       action: 'Remove',

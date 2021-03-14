@@ -11,9 +11,9 @@ import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
 import React, { FC, useContext } from 'react';
-import { Link } from 'react-router-dom';
 
 import Store from '../Store/Store';
+import deepCopy from '../Utils/DeepCopy';
 
 import AddPlot from './AddPlotComponent/AddPlot';
 
@@ -31,7 +31,7 @@ const Navbar: FC = () => {
   const classes = useStyles();
   // const [open, setOpen] = useState(false);
   const store = useContext(Store);
-  const { search } = store;
+  const { provenance } = store;
 
   const {
     exploreStore: { brushType, switchBrush, filter },
@@ -81,10 +81,10 @@ const Navbar: FC = () => {
           <Divider />
           <Button
             color="primary"
-            component={Link}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            to={{ pathname: '/compare', search } as any}
+            // to={{ pathname: '/compare', search } as any}
             variant="outlined"
+            onClick={() => console.log(deepCopy(provenance.graph))}
           >
             Apply
           </Button>
