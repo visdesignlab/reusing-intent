@@ -1,8 +1,10 @@
 import { Divider, makeStyles, Paper, Theme, Typography } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React from 'react';
+import React, { useContext } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+
+import Store from '../../Store/Store';
 
 import Action from './Action';
 
@@ -21,10 +23,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 //   test?: string;
 // };
 
-const list = Array.from(Array(5).keys());
-
 const Workflow = () => {
   const classes = useStyles();
+  const {
+    exploreStore: { workflow },
+  } = useContext(Store);
 
   return (
     <Paper className={classes.root}>
@@ -33,8 +36,8 @@ const Workflow = () => {
       </Typography>
       <Divider />
       <DndProvider backend={HTML5Backend}>
-        {list.map((d) => {
-          return <Action key={d} label={d.toString()} />;
+        {workflow.map((d) => {
+          return <Action key={d} id={d} />;
         })}
       </DndProvider>
     </Paper>

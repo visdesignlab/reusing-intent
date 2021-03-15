@@ -1,8 +1,20 @@
-import { Card, CardContent, makeStyles, Theme } from '@material-ui/core';
-import React from 'react';
+import {
+  Card,
+  CardActions,
+  CardContent,
+  IconButton,
+  makeStyles,
+  Theme,
+  Typography,
+} from '@material-ui/core';
+import { CloseIcon } from '@material-ui/data-grid';
+import { observer } from 'mobx-react';
+import React, { useContext } from 'react';
+
+import Store from '../../Store/Store';
 
 type Props = {
-  label: string;
+  id: string;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -10,16 +22,37 @@ const useStyles = makeStyles((theme: Theme) => ({
     marginTop: theme.spacing(1),
     marginBottom: theme.spacing(1),
   },
+  close: {
+    marginLeft: 'auto',
+  },
 }));
 
-const Action = ({ label }: Props) => {
+const Action = ({ id }: Props) => {
   const classes = useStyles();
+  const {
+    provenance: {
+      graph: { nodes },
+    },
+    exploreStore: { removeFromWorkflow },
+  } = useContext(Store);
 
   return (
     <Card className={classes.card} variant="outlined">
-      <CardContent>{label}</CardContent>
+      <CardActions disableSpacing>
+        <IconButton
+          className={classes.close}
+          color="secondary"
+          size="small"
+          onClick={() => removeFromWorkflow(id)}
+        >
+          <CloseIcon />
+        </IconButton>
+      </CardActions>
+      <CardContent>
+        <Typography variant="button">{nodes[id].label}</Typography>
+      </CardContent>
     </Card>
   );
 };
 
-export default Action;
+export default observer(Action);

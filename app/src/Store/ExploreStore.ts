@@ -50,6 +50,7 @@ export class ExploreStore {
   stateRecord: { [key: string]: Record } = {};
   predictions: Predictions = [];
   currBrushed: string[] = [];
+  workflow: string[] = [];
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -224,7 +225,19 @@ export class ExploreStore {
   };
 
   addToWorkflow = (id: string) => {
-    console.log(id);
+    if (!this.workflow.includes(id)) {
+      this.workflow.push(id);
+      this.workflow = this.workflow.sort((a, b) => {
+        return (
+          (this.provenance.graph.nodes[a].metadata.createdOn || -1) -
+          (this.provenance.graph.nodes[b].metadata.createdOn || -1)
+        );
+      });
+    }
+  };
+
+  removeFromWorkflow = (id: string) => {
+    this.workflow = this.workflow.filter((d) => d !== id);
   };
 
   // ##################################################################### //
