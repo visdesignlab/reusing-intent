@@ -4,7 +4,9 @@ import { action, makeAutoObservable, reaction } from 'mobx';
 
 import { SERVER } from '../consts';
 import { OriginMap } from '../trrack-vis/Utils/BundleMap';
+import deepCopy from '../Utils/DeepCopy';
 
+import { Source } from './../trrack-vis/Utils/BundleMap';
 import { ExploreStore } from './ExploreStore';
 import { RootStore } from './Store';
 import { Dataset } from './Types/Dataset';
@@ -21,11 +23,10 @@ export class ProjectStore {
   currentDatasetKey: string | null = null;
 
   isReapplying = false;
-  nodeCreationMap: OriginMap;
+  // nodeCreationMap: OriginMap;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
-    this.nodeCreationMap = {};
     makeAutoObservable(this);
     this.loadProjects();
 
@@ -47,6 +48,38 @@ export class ProjectStore {
     return this.currentDatasetKey || '';
   }
 
+  get nodeCreationMap(): OriginMap {
+    const originMap: OriginMap = {};
+
+    Object.values(this.provenance.graph.nodes).forEach((node) => {
+      const art = this.provenance.getLatestArtifact(node.id);
+
+      if (!art) return;
+
+      const { artifact } = art;
+
+      const { original_dataset } = artifact;
+
+      const datasetKey = this.versionFromDatasetKey(original_dataset);
+
+      const source: Source = {
+        createdIn: datasetKey,
+        approvedIn: Object.entries(artifact.status_record)
+          .filter((v) => v[1] === 'Accepted')
+          .map((v) => this.versionFromDatasetKey(v[0])),
+        rejectedIn: Object.entries(artifact.status_record)
+          .filter((v) => v[1] === 'Rejected')
+          .map((v) => this.versionFromDatasetKey(v[0])),
+      };
+
+      source.approvedIn.push(source.createdIn);
+
+      originMap[node.id] = source;
+    });
+
+    return originMap;
+  }
+
   get compDatasetValues() {
     return (
       this.comparisonDataset?.values.filter(
@@ -58,6 +91,20 @@ export class ProjectStore {
   // ##################################################################### //
   // ########################### Store Helpers ########################### //
   // ##################################################################### //
+
+  versionFromDatasetKey = (key: string | null) => {
+    let datasetVersion = '';
+
+    if (this.currentProject && key) {
+      const ds = this.currentProject.datasets.find((d) => d.key === key);
+
+      if (ds) {
+        datasetVersion = ds.version;
+      }
+    }
+
+    return datasetVersion;
+  };
 
   projectByKey = (key: string) => {
     const proj = this.projects.find((p) => p.key === key);
@@ -76,15 +123,24 @@ export class ProjectStore {
     );
   };
 
-  addToCreationMap = (node: string) => {
-    console.log('creaiton map added to');
-    this.nodeCreationMap[node] = {
-      createdIn: this.loadedDataset!.version,
-      approvedIn: [this.loadedDataset!.version],
-    };
+  approveNode = (id: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(id) || {};
+
+    if (artifact) {
+      artifact = deepCopy(artifact);
+      artifact.status_record[this.currentDatasetKey || ''] = 'Accepted';
+      this.provenance.addArtifact(artifact, id);
+    }
   };
-  addToApproved = (node: string) => {
-    this.nodeCreationMap[node].approvedIn.push(this.loadedDataset!.version);
+
+  rejectNode = (id: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(id) || {};
+
+    if (artifact) {
+      artifact = deepCopy(artifact);
+      artifact.status_record[this.currentDatasetKey || ''] = 'Rejected';
+      this.provenance.addArtifact(artifact, id);
+    }
   };
 
   // ##################################################################### //

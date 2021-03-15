@@ -212,7 +212,14 @@ function BackboneNode<T, S extends string, A>({
 
             <text
               alignmentBaseline="middle"
-              fill="black"
+              fill={
+                nodeCreationMap[node.id] &&
+                nodeCreationMap[node.id].approvedIn.includes(currentDataset)
+                  ? 'green'
+                  : nodeCreationMap[node.id].rejectedIn.includes(currentDataset)
+                  ? 'red'
+                  : 'black'
+              }
               fontFamily="Icons"
               fontSize={10}
               style={cursorStyle}
@@ -223,12 +230,16 @@ function BackboneNode<T, S extends string, A>({
               {nodeCreationMap[node.id] &&
               nodeCreationMap[node.id].approvedIn.includes(currentDataset)
                 ? '\uf00c'
+                : nodeCreationMap[node.id].rejectedIn.includes(currentDataset)
+                ? '\uf00d'
                 : '\uf128'}
             </text>
           </g>
         </g>
       ) : null}
-      {nodeCreationMap[node.id] && !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? (
+      {nodeCreationMap[node.id] &&
+      !nodeCreationMap[node.id].rejectedIn.includes(currentDataset) &&
+      !nodeCreationMap[node.id].approvedIn.includes(currentDataset) ? (
         <g transform={translate(-10, 10)}>
           <foreignObject height="100" width="50" x="-45" y="-30">
             <div style={{ maxWidth: '20' }}>

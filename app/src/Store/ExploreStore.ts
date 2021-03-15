@@ -8,6 +8,7 @@ import { BrushAffectType, BrushCollection } from './../components/Brush/Types/Br
 import { SERVER } from './../consts';
 import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './IntentState';
 import { RootStore } from './Store';
+import { Status } from './Types/Artifacts';
 import { Dataset } from './Types/Dataset';
 import { Plot, Plots } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
@@ -63,11 +64,18 @@ export class ExploreStore {
 
     reaction(
       () => Object.values(this.provenance.graph.nodes).length,
-      () =>
+      () => {
+        const rec: { [key: string]: Status } = {};
+
+        this.currentProject.datasets.forEach((dataset) => {
+          rec[dataset.key] = 'Unknown';
+        });
+
         this.provenance.addArtifact({
           original_dataset: this.currentDatasetKey,
-          status_record: {},
-        }),
+          status_record: rec,
+        });
+      },
     );
   }
 
@@ -232,7 +240,6 @@ export class ExploreStore {
     this.stateRecord[this.currentNode] = state;
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
-    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   removePlot = (plot: Plot) => {
@@ -251,7 +258,6 @@ export class ExploreStore {
     this.stateRecord[this.currentNode] = state;
 
     this.rootStore.currentNodes.push(this.provenance.graph.current);
-    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   filter = (filterType: 'In' | 'Out') => {
@@ -276,40 +282,7 @@ export class ExploreStore {
 
   switchBrush = (brushType: BrushType) => {
     this.brushType = brushType;
-    // this.rootStore.currentNodes.push(this.provenance.graph.current);
-    // this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
-
-    // this.addInteraction({ type: 'Filter', filterType, points: currSelected });
   };
-
-  // switchBrush = (brushType: BrushType) => {
-  //   const { switchBrushTypeAction } = this.rootStore.actions;
-
-  //   let label = 'None';
-
-  //   switch (brushType) {
-  //     case 'Rectangular':
-  //       label = 'Rectangular Brush';
-  //       break;
-  //     case 'Freeform Large':
-  //       label = 'Large Paint Brush';
-  //       break;
-  //     case 'Freeform Medium':
-  //       label = 'Medium Paint Brush';
-  //       break;
-  //     case 'Freeform Small':
-  //       label = 'Small Paint Brush';
-  //       break;
-  //     default:
-  //       label = 'Disable Brush';
-  //       break;
-  //   }
-
-  //   this.provenance.apply(switchBrushTypeAction.setLabel(label)(brushType));
-  //   this.addPredictions();
-  //   this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
-
-  // };
 
   setFreeformSelection = (plot: Plot, points: string[]) => {
     this.addPointSelection(plot, points, true);
@@ -337,7 +310,6 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
 
     this.addPredictions();
-    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
 
   setBrushSelection = (
@@ -375,7 +347,6 @@ export class ExploreStore {
 
     this.stateRecord[this.currentNode] = state;
     this.addPredictions();
-    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
     //
   };
 
@@ -392,32 +363,7 @@ export class ExploreStore {
 
     this.stateRecord[this.currentNode] = state;
     this.addPredictions();
-    this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
   };
-
-  // changeCategory = (category: string) => {
-  //   const { changeCategoryAction } = this.rootStore.actions;
-
-  //   changeCategoryAction.setLabel(`Category: ${category}`);
-  //   this.provenance.apply(changeCategoryAction(category));
-  //   this.addInteraction({ type: 'ChangeCategory', category });
-  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
-  //   this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
-  // };
-
-  // toggleCategories = (show: boolean, categories: string[] = []) => {
-  //   const { toggleCategoryAction } = this.rootStore.actions;
-
-  //   this.addPredictions();
-  //   if (this.state.categoryColumn !== '') category = this.state.categoryColumn;
-
-  //   toggleCategoryAction.setLabel('Show Categories');
-  //   this.provenance.apply(toggleCategoryAction(show, category));
-  //   this.addInteraction({ type: 'ToggleCategory', show });
-  //   this.addInteraction({ type: 'ChangeCategory', category });
-  //   this.rootStore.currentNodes.push(this.provenance.graph.current);
-  //   this.rootStore.projectStore.addToCreationMap(this.provenance.graph.current);
-  // };
 
   // ##################################################################### //
   // ########################### Store Actions ########################### //

@@ -10,6 +10,7 @@ import { RANK_BAR_FOREGROUND } from '../ColorSpecs';
 type Props = {
   height?: number;
   rank: number;
+  label?: string;
 };
 
 const useStyles = makeStyles(() =>
@@ -29,7 +30,7 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-const Bar: FC<Props> = ({ rank, height = 45 }: Props) => {
+const Bar: FC<Props> = ({ rank, height = 45, label = rank.toFixed(2) }: Props) => {
   const classes = useStyles();
   const ref = useRef<SVGSVGElement>(null);
 
@@ -63,7 +64,7 @@ const Bar: FC<Props> = ({ rank, height = 45 }: Props) => {
         transform={translate(width * 0.05, height / 2)}
         variant="button"
       >
-        {rank.toFixed(2)}
+        {label}
       </Typography>
     </svg>
   );

@@ -75,8 +75,8 @@ const PredictionTable = () => {
         <Table className={classes.table}>
           <TableHead>
             <TableRow>
-              <TableCell width="20%">Intent</TableCell>
-              <TableCell width="70%">Rank</TableCell>
+              {/* <TableCell width="20%">Intent</TableCell> */}
+              <TableCell width="90%">Intent</TableCell>
               <TableCell width="10%" />
             </TableRow>
           </TableHead>
@@ -93,13 +93,13 @@ const PredictionTable = () => {
                   }}
                 >
                   <Tooltip title={pred.description}>
-                    <TableCell width="30%">
+                    {/* <TableCell width="30%">
                       <Typography variant="button">{pred.intent}</Typography>
+                    </TableCell> */}
+                    <TableCell width="90%">
+                      <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
                     </TableCell>
                   </Tooltip>
-                  <TableCell width="60%">
-                    <Bar rank={pred.rank} />
-                  </TableCell>
                   <TableCell width="10%">
                     <IconButton onClick={() => setPredictionSelection(pred)}>
                       <TouchAppIcon />

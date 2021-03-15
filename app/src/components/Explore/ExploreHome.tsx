@@ -30,6 +30,7 @@ import {
 import Navbar from '../Navbar';
 import PredictionTable from '../Predictions/PredictionTable';
 import Visualization from '../Visualization';
+import Workflow from '../Workflow/Workflow';
 
 export type Bundle = {
   metadata: unknown;
@@ -58,7 +59,7 @@ const useStyles = makeStyles(() => ({
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 2fr 1.3fr',
+    gridTemplateColumns: '5fr 1.5fr 1.3fr 1fr',
     overflow: 'hidden',
   },
 }));
@@ -167,7 +168,7 @@ const ExploreHome = () => {
 
   const {
     exploreStore,
-    projectStore: { loadedDataset, nodeCreationMap, addToApproved },
+    projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
     provenance,
     bundledNodes,
   } = useContext(Store);
@@ -218,9 +219,9 @@ const ExploreHome = () => {
         <Visualization />
         <PredictionTable />
         <ProvVis
-          approvedFunction={(node: string) => addToApproved(node)}
+          key={provenance.graph.root}
+          approvedFunction={(node: string) => approveNode(node)}
           backboneGutter={40}
-          // bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
           currentDataset={loadedDataset?.version || ''}
@@ -229,10 +230,11 @@ const ExploreHome = () => {
           nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
           prov={provenance}
-          rejectedFunction={() => console.log('rejected')}
+          rejectedFunction={(node) => rejectNode(node)}
           root={provenance.graph.root}
           undoRedoButtons
         />
+        <Workflow />
       </div>
     </div>
   );
