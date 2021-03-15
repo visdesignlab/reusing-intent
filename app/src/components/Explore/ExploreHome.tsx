@@ -173,6 +173,8 @@ const ExploreHome = () => {
     bundledNodes,
   } = useContext(Store);
 
+  const { addToWorkflow } = exploreStore;
+
   useEffect(() => {
     const current = provenance.current;
 
@@ -220,6 +222,7 @@ const ExploreHome = () => {
         <PredictionTable />
         <ProvVis
           key={provenance.graph.root}
+          addToWorkflow={addToWorkflow}
           approvedFunction={(node: string) => approveNode(node)}
           backboneGutter={40}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
@@ -229,7 +232,8 @@ const ExploreHome = () => {
           eventConfig={eventConfig}
           nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
-          prov={provenance}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          prov={provenance as any}
           rejectedFunction={(node) => rejectNode(node)}
           root={provenance.graph.root}
           undoRedoButtons

@@ -51,6 +51,8 @@ export function ProvVisCreator<T, S extends string, A>(
     ReactDOM.render(
       <ProvVis
         {...config}
+        // eslint-disable-next-line no-console
+        addToWorkflow={(id: string) => console.log(id)}
         approvedFunction={approvedFunction}
         brushCallback={brushCallback}
         changeCurrent={callback}
@@ -71,6 +73,8 @@ export function ProvVisCreator<T, S extends string, A>(
   ReactDOM.render(
     <ProvVis
       {...config}
+      // eslint-disable-next-line no-console
+      addToWorkflow={(id: string) => console.log(id)}
       approvedFunction={approvedFunction}
       brushCallback={brushCallback}
       changeCurrent={callback}

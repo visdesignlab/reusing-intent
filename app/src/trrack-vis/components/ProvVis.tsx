@@ -16,6 +16,7 @@ import {
   StateNode,
 } from '@visdesignlab/trrack';
 import * as d3 from 'd3';
+import { observer } from 'mobx-react';
 import React, { ReactChild, useEffect, useState } from 'react';
 import { NodeGroup } from 'react-move';
 import { Popup, Tab } from 'semantic-ui-react';
@@ -50,6 +51,7 @@ type ProvVisProps<T, S extends string, A> = {
   nodeMap: Nodes<T, S, A>;
   approvedFunction: (id: NodeID) => void;
   rejectedFunction: (id: NodeID) => void;
+  addToWorkflow: (id: NodeID) => void;
   nodeCreationMap: OriginMap;
   currentDataset: string;
   backboneGutter?: number;
@@ -119,6 +121,7 @@ function ProvVis<T, S extends string, A>({
   annotationContent,
   approvedFunction,
   rejectedFunction,
+  addToWorkflow,
   currentDataset,
   nodeCreationMap,
   editAnnotations = false,
@@ -544,6 +547,7 @@ function ProvVis<T, S extends string, A>({
                           />
                           ,
                           <BackboneNode
+                            addToWorkflow={addToWorkflow}
                             annotationContent={annotationContent}
                             annotationOpen={annotationOpen}
                             approvedFunction={approvedFunction}
@@ -714,4 +718,4 @@ function ProvVis<T, S extends string, A>({
   );
 }
 
-export default ProvVis;
+export default observer(ProvVis);

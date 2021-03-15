@@ -38,7 +38,7 @@ type BackboneNodeProps<T, S extends string, A> = {
   annotationContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
   approvedFunction: (id: NodeID) => void;
   nodeCreationMap: OriginMap;
-
+  addToWorkflow: (id: string) => void;
   rejectedFunction: (id: NodeID) => void;
   expandedClusterList?: string[];
 };
@@ -52,6 +52,7 @@ function BackboneNode<T, S extends string, A>({
   duration,
   radius,
   strokeWidth,
+  addToWorkflow,
   textSize,
   nodeMap,
   annotationOpen,
@@ -250,7 +251,10 @@ function BackboneNode<T, S extends string, A>({
                   maxHeight: '15px',
                   maxWidth: '15px',
                 }}
-                onClick={() => approvedFunction(node.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  approvedFunction(node.id);
+                }}
               >
                 <Icon color="green" name="check" size="small" style={{ margin: '0px' }} />
               </Button>
@@ -263,14 +267,41 @@ function BackboneNode<T, S extends string, A>({
                   maxHeight: '15px',
                   maxWidth: '15px',
                 }}
-                onClick={() => rejectedFunction(node.id)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  rejectedFunction(node.id);
+                }}
               >
                 <Icon color="red" name="close" size="small" style={{ margin: '0px' }} />
               </Button>
             </div>
           </foreignObject>
         </g>
-      ) : null}
+      ) : (
+        node.label !== 'Root' &&
+        !nodeCreationMap[node.id].rejectedIn.includes(currentDataset) && (
+          <g transform={translate(-10, 10)}>
+            <foreignObject height="100" width="50" x="-45" y="-20">
+              <div style={{ maxWidth: '20' }}>
+                <Button
+                  style={{
+                    margin: '1px',
+                    padding: '1px',
+                    maxHeight: '20px',
+                    maxWidth: '20px',
+                  }}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    addToWorkflow(node.id);
+                  }}
+                >
+                  <Icon color="green" name="add" size="small" style={{ margin: '0px' }} />
+                </Button>
+              </div>
+            </foreignObject>
+          </g>
+        )
+      )}
 
       {!iconOnly ? (
         <g>
