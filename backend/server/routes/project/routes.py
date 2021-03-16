@@ -54,6 +54,7 @@ def getAllProjects():
         finally:
             session.close()
 
+    print(projects)
     return jsonify(projects)
 
 
@@ -125,7 +126,6 @@ def processProvenance(project):
 @projectRoute.route("/project/<project>/reapply", methods=["POST"])
 def reapplyProvenance(project):
     targetKey = request.json["target"]
-    baseKey = request.json["base"]
 
     provenance = request.json["provenance"]
 
@@ -138,9 +138,6 @@ def reapplyProvenance(project):
                 .filter(DatasetRecord.key == targetKey)
                 .one()
             )
-            # baseDatasetRecord = (
-            #     session.query(DatasetRecord).filter(DatasetRecord.key == baseKey).one()
-            # )
 
             allData = pd.read_sql("Dataset", con=connection)
 
@@ -148,8 +145,5 @@ def reapplyProvenance(project):
             targetDataset = targetDataset.drop("record_id", axis=1)
 
             graph = Graph(target=targetDataset, target_id=targetKey, **provenance)
-            # baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
-            # baseDataset = baseDataset.drop("record_id", axis=1)
 
             return jsonify(graph.apply())
-            # return jsonify({"graph": graph.apply(baseDataset, targetDataset)})

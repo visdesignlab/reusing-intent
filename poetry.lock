@@ -18,6 +18,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "asciitree"
+version = "0.3.3"
+description = "Draws ASCII trees."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "billiard"
 version = "3.6.3.0"
 description = "Python multiprocessing fork with improvements and bugfixes"
@@ -679,7 +687,7 @@ watchdog = ["watchdog"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "18cf44adf4adc6cb6c4e93ef15baf714f5763683217e5bc9ae10743069faa0fc"
+content-hash = "b7a26b7a0d3e58bceb76cf7370dda43c266a6e2b47e1037e08c58e0b903d0556"
 
 [metadata.files]
 amqp = [
@@ -689,6 +697,9 @@ amqp = [
 appdirs = [
     {file = "appdirs-1.4.4-py2.py3-none-any.whl", hash = "sha256:a841dacd6b99318a741b166adb07e19ee71a274450e68237b4650ca1055ab128"},
     {file = "appdirs-1.4.4.tar.gz", hash = "sha256:7d5d0167b2b1ba821647616af46a749d1c653740dd0d2415100fe26e27afdf41"},
+]
+asciitree = [
+    {file = "asciitree-0.3.3.tar.gz", hash = "sha256:4aa4b9b649f85e3fcb343363d97564aa1fb62e249677f2e18a96765145cc0f6e"},
 ]
 billiard = [
     {file = "billiard-3.6.3.0-py3-none-any.whl", hash = "sha256:bff575450859a6e0fbc2f9877d9b715b0bbc07c3565bb7ed2280526a0cdf5ede"},

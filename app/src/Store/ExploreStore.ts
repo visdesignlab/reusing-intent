@@ -55,7 +55,7 @@ export class ExploreStore {
   hoveredPrediction: Prediction | null = null;
   multiBrushBehaviour: MultiBrushBehaviour = 'Union';
   showCategories = false;
-  brushType: BrushType = 'Rectangular';
+  brushType: BrushType = 'Freeform Medium';
   // key here is DatasetID
   stateRecord: { [key: string]: Record } = {};
   predictions: Predictions = [];

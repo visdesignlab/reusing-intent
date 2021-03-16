@@ -9,7 +9,6 @@ class BaseInteraction(object):
 class GenericInteraction(BaseInteraction):
     def __init__(self, interaction):
         super().__init__(interaction["type"])
-        self.raw = interaction
 
 
 class RootInteraction(BaseInteraction):
