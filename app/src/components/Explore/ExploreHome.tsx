@@ -30,7 +30,7 @@ import {
 import Navbar from '../Navbar';
 import PredictionTable from '../Predictions/PredictionTable';
 import Visualization from '../Visualization';
-import Workflow from '../Workflow/Workflow';
+import Workflows from '../Workflow/Workflows';
 
 export type Bundle = {
   metadata: unknown;
@@ -59,7 +59,7 @@ const useStyles = makeStyles(() => ({
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 1.5fr 1.3fr 1fr',
+    gridTemplateColumns: '5fr 1.5fr 1.3fr 1.5fr',
     overflow: 'hidden',
   },
 }));
@@ -238,7 +238,7 @@ const ExploreHome = () => {
           root={provenance.graph.root}
           undoRedoButtons
         />
-        <Workflow />
+        <Workflows />
       </div>
     </div>
   );

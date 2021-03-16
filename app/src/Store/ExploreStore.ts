@@ -3,6 +3,7 @@ import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
 import deepCopy from '../Utils/DeepCopy';
+import { getWorkflowID } from '../Utils/IDGens';
 
 import { BrushAffectType, BrushCollection } from './../components/Brush/Types/Brush';
 import { SERVER } from './../consts';
@@ -10,6 +11,7 @@ import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './Inten
 import { RootStore } from './Store';
 import { Status } from './Types/Artifacts';
 import { Dataset } from './Types/Dataset';
+import { Interaction } from './Types/Interactions';
 import { Plot, Plots } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
@@ -38,6 +40,14 @@ type Record = {
   filter: Filter | null;
 };
 
+export type WorkflowType = {
+  id: string;
+  name: string;
+  interactions: (Interaction & { id: string })[];
+};
+
+type Workflows = { [key: string]: WorkflowType };
+
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
@@ -50,7 +60,8 @@ export class ExploreStore {
   stateRecord: { [key: string]: Record } = {};
   predictions: Predictions = [];
   currBrushed: string[] = [];
-  workflow: string[] = [];
+  workflows: Workflows = {};
+  currentWorkflow: string | null = null;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -224,20 +235,75 @@ export class ExploreStore {
     this.currBrushed = newSelected;
   };
 
+  addWorkflow = () => {
+    const counterInit = Object.values(this.workflows).filter((d) =>
+      d.name.startsWith('Workflow #'),
+    );
+
+    let counter = 1;
+
+    if (counterInit.length > 0) {
+      const c = counterInit[counterInit.length - 1].name.split('#');
+      counter = parseInt(c[c.length - 1]) + 1;
+    }
+
+    const workflow: WorkflowType = {
+      id: getWorkflowID(),
+      name: `Workflow #${counter}`,
+      interactions: [],
+    };
+
+    this.workflows[workflow.id] = workflow;
+    this.currentWorkflow = workflow.id;
+  };
+
+  renameWorkflow = (id: string, name: string) => {
+    this.workflows[id].name = name;
+  };
+
+  removeWorkflow = (id: string) => {
+    delete this.workflows[id];
+
+    if (this.currentWorkflow === id && Object.values(this.workflows).length > 0) {
+      const ws = Object.values(this.workflows);
+      this.currentWorkflow = ws[ws.length - 1].id;
+    } else if (!this.workflows[id]) {
+      this.currentWorkflow = null;
+    }
+  };
+
+  setCurrentWorkflow = (id: string) => {
+    this.currentWorkflow = id;
+  };
+
   addToWorkflow = (id: string) => {
-    if (!this.workflow.includes(id)) {
-      this.workflow.push(id);
-      this.workflow = this.workflow.sort((a, b) => {
-        return (
-          (this.provenance.graph.nodes[a].metadata.createdOn || -1) -
-          (this.provenance.graph.nodes[b].metadata.createdOn || -1)
-        );
-      });
+    if (!this.currentWorkflow) return;
+
+    if (!this.workflows[this.currentWorkflow]) return;
+
+    if (!this.workflows[this.currentWorkflow].interactions.map((d) => d.id).includes(id)) {
+      const node = this.provenance.graph.nodes[id];
+
+      if (node) {
+        const interaction = this.provenance.getState(node).interaction;
+        const { interactions } = this.workflows[this.currentWorkflow];
+        interactions.push({ ...interaction, id });
+        interactions.sort((a, b) => {
+          return (
+            (this.provenance.graph.nodes[a.id].metadata.createdOn || -1) -
+            (this.provenance.graph.nodes[b.id].metadata.createdOn || -1)
+          );
+        });
+        this.workflows[this.currentWorkflow].interactions = [...interactions];
+      }
     }
   };
 
   removeFromWorkflow = (id: string) => {
-    this.workflow = this.workflow.filter((d) => d !== id);
+    if (!this.currentWorkflow) return;
+    this.workflows[this.currentWorkflow].interactions = this.workflows[
+      this.currentWorkflow
+    ].interactions.filter((d) => d.id !== id);
   };
 
   // ##################################################################### //

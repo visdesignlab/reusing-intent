@@ -38,18 +38,18 @@ const Action = ({ id }: Props) => {
 
   return (
     <Card className={classes.card} variant="outlined">
-      <CardActions disableSpacing>
-        <IconButton
-          className={classes.close}
-          color="secondary"
-          size="small"
-          onClick={() => removeFromWorkflow(id)}
-        >
-          <CloseIcon />
-        </IconButton>
-      </CardActions>
       <CardContent>
-        <Typography variant="button">{nodes[id].label}</Typography>
+        <CardActions disableSpacing>
+          <Typography variant="button">{nodes[id].label}</Typography>
+          <IconButton
+            className={classes.close}
+            color="secondary"
+            size="small"
+            onClick={() => removeFromWorkflow(id)}
+          >
+            <CloseIcon />
+          </IconButton>
+        </CardActions>
       </CardContent>
     </Card>
   );
