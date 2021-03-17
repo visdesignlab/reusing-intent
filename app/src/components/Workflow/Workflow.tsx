@@ -17,6 +17,7 @@ import Store from '../../Store/Store';
 import Editable from '../Editable';
 
 import Action from './Action';
+import { storeToFirebase, initializeFirebase } from './Firebase';
 
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
@@ -35,10 +36,12 @@ type Props = {
 const Workflow = ({ workflow }: Props) => {
   const classes = useStyles();
   const {
-    exploreStore: { renameWorkflow, currentWorkflow, setCurrentWorkflow, removeWorkflow },
+    exploreStore: { workflows, renameWorkflow, currentWorkflow, setCurrentWorkflow, removeWorkflow },
   } = useContext(Store);
 
   const { id } = workflow;
+
+  const { db } = initializeFirebase();
 
   const isCurrent = id === currentWorkflow;
 
@@ -53,7 +56,7 @@ const Workflow = ({ workflow }: Props) => {
             handleType={handleType}
             text={workflow.name}
           />
-          <IconButton className={classes.close} size="small">
+          <IconButton className={classes.close} size="small" onClick={() => storeToFirebase(id, workflows[id], db)}>
             <ShareIcon />
           </IconButton>
           <IconButton size="small" onClick={() => removeWorkflow(id)}>
