@@ -15,6 +15,9 @@ from backend.inference_core.reapply.reapply_algorithms.dbscan import (
     applyDBScanOutlier,
 )
 from backend.inference_core.reapply.reapply_algorithms.kmeans import applyKMeans
+from backend.inference_core.reapply.reapply_algorithms.linear_regression import (
+    apply_linear_regression,
+)
 from backend.inference_core.reapply.reapply_algorithms.range import apply_range
 from backend.inference_core.reapply.reapply_algorithms.skyline import applySkyline
 
@@ -39,16 +42,13 @@ class Record:
         deepcopy(self)
 
     def update_plot(self, plot: Plot):
-        rec = self.copy()
-        rec.plots[plot.id] = plot
-        return rec
+        self.plots[plot.id] = plot
 
     def add_point_selection(self, id: str, points: List[str]):
-        rec = self.copy()
-        if id not in rec.pointSelection:
-            rec.pointSelection[id] = []
-        rec.pointSelection[id].extend(points)
-        return rec
+        if id not in self.pointSelection:
+            self.pointSelection[id] = []
+        self.pointSelection[id].extend(points)
+        self.pointSelection[id] = list(set(self.pointSelection[id]))
 
     def updateBrushSelection(self, plot_id: str, brush: Brush, data: pd.DataFrame):
         plot = self.plots[plot_id]
@@ -58,24 +58,18 @@ class Record:
         self.brushSelections[brush.id] = selected_ids
 
     def add_brush(self, plot_id: str, brush: Brush, data: pd.DataFrame):
-        rec = self.copy()
-        if plot_id not in rec.brushes:
-            rec.brushes[plot_id] = BrushCollection()
-        rec.brushes[plot_id].add_brush(brush)
-        rec.updateBrushSelection(plot_id, brush, data)
-        return rec
+        if plot_id not in self.brushes:
+            self.brushes[plot_id] = BrushCollection()
+        self.brushes[plot_id].add_brush(brush)
+        self.updateBrushSelection(plot_id, brush, data)
 
     def update_brush(self, plot_id: str, brush, data: pd.DataFrame):
-        rec = self.copy()
-        rec.brushes[plot_id].add_brush(brush)
-        rec.updateBrushSelection(plot_id, brush, data)
-        return rec
+        self.brushes[plot_id].add_brush(brush)
+        self.updateBrushSelection(plot_id, brush, data)
 
     def remove_brush(self, plot_id: str, brush):
-        rec = self.copy()
-        rec.brushes[plot_id].remove_brush(brush)
-        del rec.brushSelections[brush.id]
-        return rec
+        self.brushes[plot_id].remove_brush(brush)
+        del self.brushSelections[brush]
 
     def empty(self):
         self.brushes = {}
@@ -86,32 +80,17 @@ class Record:
     def set_prediction(
         self, prediction: Prediction, data: pd.DataFrame, target_id: str
     ):
-        rec = self.copy()
-        rec.empty()
-        rec.prediction = applyPrediction(prediction, self.selections(), data, target_id)
-        return rec
+        sels = deepcopy(self.selections())
+        self.empty()
+        self.prediction = applyPrediction(prediction, sels, data, target_id)
 
-    def set_filter(self, filterType, data):
-        rec = self.copy()
-        rec.empty()
-        rec.filter = {"type": filterType, "points": self.selections()}
-        return rec
+    def set_filter(self, filterType):
+        sels = deepcopy(self.selections())
+        self.empty()
+        self.filter = {"type": filterType, "points": sels}
 
     def copy(self):
         return deepcopy(self)
-
-    # def brushSelections(self, data):
-    #     brushSelections = {}
-
-    #     if not self.brushes.isEmpty:
-    #         for brush in self.brushes.to_list():
-    #             plot_id = self.brushDict[brush.id]
-    #             plot = self.plots[plot_id]
-    #             subset = data[plot.dimensions]
-    #             mask = brush.get_brush_mask(subset.values)
-    #             selected_ids = data[mask].id.tolist()
-    #             brushSelections[brush.id] = selected_ids
-    #     return brushSelections
 
     def selections(self):
         points: List[str] = []
@@ -165,6 +144,7 @@ def applyPrediction(
     ids = np.array([])
     new_info = deepcopy(info)
 
+    sels = target.id.isin(selections)
     if algorithm == Algorithms.KMEANS:
         ids, centers, hull, closest_center = applyKMeans(
             target,
@@ -177,9 +157,6 @@ def applyPrediction(
         new_info["hull"] = hull
         new_info["selected_center"] = closest_center
 
-        # print(info["selected_center"], closest_center)
-        # print(len(prediction.memberIds), len(ids.tolist()))
-        # print(centers, np.array(info["centers"]))
     elif algorithm == Algorithms.DBSCAN:
         eps = info["params"]["eps"]
         min_samples = info["params"]["min_samples"]
@@ -200,11 +177,20 @@ def applyPrediction(
         ids = apply_range(target, info["rules"])
     elif algorithm == Algorithms.BNL:
         ids, new_info = applySkyline(target, prediction.dimensions, info["sense"])
+        ids = ids.astype(bool)
+        new_info["frontier"] = target[ids][prediction.dimensions].values.tolist()
+        ids = target[ids].id
+    elif algorithm == Algorithms.LR:
+        return apply_linear_regression(target, prediction, sels)
+
+    intents = target.id.isin(ids)
+
+    print(info, new_info)
 
     return Prediction(
-        rank=rank_jaccard(ids, np.array(selections)),
+        rank=rank_jaccard(intents, sels),
         intent=intent.value,
-        memberIds=ids.tolist(),
+        memberIds=ids.tolist() if type(ids) is not list else ids,
         dimensions=prediction.dimensions,
         info=new_info,
         algorithm=algorithm.value,

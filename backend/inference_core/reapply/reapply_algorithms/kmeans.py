@@ -21,8 +21,9 @@ def applyKMeans(
     closest_center = list(centers[closest_center_idx, :])
 
     mask = np.array(labels)
-    mask[mask != closest_center_idx] = 0
+    mask[mask != closest_center_idx] = -1
     mask[mask == closest_center_idx] = 1
+    mask[mask == -1] = 0
 
     ids = data[mask.astype(bool)].id
 
