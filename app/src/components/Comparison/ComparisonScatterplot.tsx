@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Button,
   CircularProgress,
   createStyles,
   Grid,
@@ -10,7 +9,7 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
-import { CloseIcon } from '@material-ui/x-grid';
+import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useState } from 'react';
 
@@ -35,16 +34,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All' 
-| "AddedOnly" | "RemovedOnly" | "ChangedOnly";
+export type DataDisplay =
+  | 'Original'
+  | 'Diff'
+  | 'Comparison'
+  | 'All'
+  | 'AddedOnly'
+  | 'RemovedOnly'
+  | 'ChangedOnly';
 
 const CompVis: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
- const {
-   currentProject,
- } = useContext(Store).projectStore;
-
-
+  const { currentProject } = useContext(Store).projectStore;
 
   const opts =
     currentProject?.datasets.map((dataset) => ({
@@ -53,7 +54,6 @@ const CompVis: FC = () => {
     })) || [];
 
   const { selectedPoints } = useContext(Store).exploreStore;
-
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
@@ -65,7 +65,7 @@ const CompVis: FC = () => {
 
   const loader = <CircularProgress />;
 
-  console.log(dataDisplay)
+  console.log(dataDisplay);
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>

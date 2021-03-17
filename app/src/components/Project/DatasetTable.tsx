@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { makeStyles, Typography } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
-import { CellClassParams, ColDef, ValueFormatterParams } from '@material-ui/x-grid';
+import { ValueFormatterParams } from '@material-ui/x-grid';
 import { observer } from 'mobx-react';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
@@ -28,12 +29,13 @@ function useDataGridFormat(
     // console.log(toJS(data));
     const { columnInfo, columns, values } = data;
 
-    const cols: ColDef[] = columns.map((col) => ({
+    const cols: any[] = columns.map((col) => ({
       field: col,
       headerName: columnInfo[col].fullname,
       description: columnInfo[col].unit || '',
       flex: 1,
-      renderHeader: (params) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      renderHeader: (params: any) => {
         const { width } = params.colDef;
 
         if (headerHeight) return <div>{params.field}</div>;
@@ -69,7 +71,7 @@ function useDataGridFormat(
 
         return <div style={st(color)}>{params.value}</div>;
       },
-      cellClassName: (params: CellClassParams) => {
+      cellClassName: (params: any) => {
         if (comparisonDataset === null) return 'none';
         const label = params.row.Label;
 

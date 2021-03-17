@@ -5,13 +5,14 @@ import {
   IconButton,
   makeStyles,
   Theme,
-  Typography,
+  Typography
 } from '@material-ui/core';
-import { CloseIcon } from '@material-ui/data-grid';
+import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { useContext } from 'react';
 
 import Store from '../../Store/Store';
+
 
 type Props = {
   id: string;
