@@ -171,4 +171,9 @@ def predict(project: str, key: str):
                     record_id, dataset, selections, dimensions, session
                 )
 
-            return jsonify([e.serialize() for e in predictions])
+            preds = list(filter(lambda x: x.rank >= 0.5, predictions))
+
+            if len(preds) < 20:
+                preds = predictions[:20]
+
+            return jsonify([e.serialize() for e in preds])
