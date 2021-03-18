@@ -3,9 +3,6 @@ import firebase from 'firebase';
 import 'firebase/database';
 import { WorkflowType } from '../../Store/ExploreStore';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fs = require('browserify-fs');
-
 const config = {
   apiKey: 'AIzaSyB8jzc6Gck2Rt-rrw-ZbACudr5VqESRNRY',
   authDomain: 'reusing-intent.firebaseapp.com',
@@ -33,15 +30,11 @@ export function storeToFirebase(
   id: string,
   workflow: WorkflowType,
   db: firebase.database.Database,
+  sync: (key: string, val: string) => void,
 ) {
-  //this doesnt work
-  fs.writeFile(`${id}.json`, JSON.stringify(workflow), (d: any) => {
-    console.log('saved locally', d);
-  });
-
   db.ref(`${id}`)
     .set(workflow)
     .then(() => {
-      console.log('done!');
+      sync(id, JSON.stringify(workflow));
     });
 }

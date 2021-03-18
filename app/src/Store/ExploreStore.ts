@@ -62,6 +62,7 @@ export class ExploreStore {
   currBrushed: string[] = [];
   workflows: Workflows = {};
   currentWorkflow: string | null = null;
+  workflowSyncStatus: { [key: string]: string } = {};
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -304,6 +305,10 @@ export class ExploreStore {
     this.workflows[this.currentWorkflow].interactions = this.workflows[
       this.currentWorkflow
     ].interactions.filter((d) => d.id !== id);
+  };
+
+  setSyncStatus = (key: string, val: string) => {
+    this.workflowSyncStatus[key] = val;
   };
 
   // ##################################################################### //
