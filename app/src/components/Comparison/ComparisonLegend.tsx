@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { observer } from 'mobx-react';
 import React, { FC } from 'react';
 
@@ -9,15 +8,14 @@ import { createComet } from './ComparisonMarks';
 
 type Props = {
   offset?: number;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setDataDisplay: any;
   dataDisplay: string;
   selectedPoints: boolean;
 };
 
-const Legend: FC<Props> = ({ offset = 0, setDataDisplay, dataDisplay, selectedPoints = false }: Props) => {
+const Legend: FC<Props> = ({ setDataDisplay, dataDisplay, selectedPoints = false }: Props) => {
   const classes = useScatterplotStyle();
-
-  console.log(selectedPoints)
 
   return (
     <svg height={30} width={700}>

@@ -65,8 +65,6 @@ const CompVis: FC = () => {
 
   const loader = <CircularProgress />;
 
-  console.log(dataDisplay);
-
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
       <ComparisonLegend

@@ -143,6 +143,11 @@ const Scatterplot: FC<Props> = ({
 
   return (
     <svg className={root} id={plot.id}>
+      <defs>
+        <clipPath id="clip" width={sp_dimension}>
+          <rect fill="none" height={sp_dimension} width={sp_dimension} />
+        </clipPath>
+      </defs>
       <g transform={translate(margin)}>
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
