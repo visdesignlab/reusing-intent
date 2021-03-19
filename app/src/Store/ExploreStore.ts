@@ -11,7 +11,6 @@ import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './Inten
 import { RootStore } from './Store';
 import { Status } from './Types/Artifacts';
 import { Dataset } from './Types/Dataset';
-import { Interaction } from './Types/Interactions';
 import { Plot, Plots } from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
@@ -43,7 +42,7 @@ type Record = {
 export type WorkflowType = {
   id: string;
   name: string;
-  interactions: (Interaction & { id: string })[];
+  graph: NodeID[];
 };
 
 type Workflows = { [key: string]: WorkflowType };
@@ -81,7 +80,7 @@ export class ExploreStore {
         const rec: { [key: string]: Status } = {};
 
         this.currentProject.datasets.forEach((dataset) => {
-          rec[dataset.key] = 'Unknown';
+          rec[dataset.key] = this.currentDatasetKey === dataset.key ? 'Accepted' : 'Unknown';
         });
 
         this.provenance.addArtifact({
@@ -251,7 +250,7 @@ export class ExploreStore {
     const workflow: WorkflowType = {
       id: getWorkflowID(),
       name: `Workflow #${counter}`,
-      interactions: [],
+      graph: [],
     };
 
     this.workflows[workflow.id] = workflow;
@@ -282,29 +281,25 @@ export class ExploreStore {
 
     if (!this.workflows[this.currentWorkflow]) return;
 
-    if (!this.workflows[this.currentWorkflow].interactions.map((d) => d.id).includes(id)) {
-      const node = this.provenance.graph.nodes[id];
+    const { graph } = this.workflows[this.currentWorkflow];
 
-      if (node) {
-        const interaction = this.provenance.getState(node).interaction;
-        const { interactions } = this.workflows[this.currentWorkflow];
-        interactions.push({ ...interaction, id });
-        interactions.sort((a, b) => {
-          return (
-            (this.provenance.graph.nodes[a.id].metadata.createdOn || -1) -
-            (this.provenance.graph.nodes[b.id].metadata.createdOn || -1)
-          );
-        });
-        this.workflows[this.currentWorkflow].interactions = [...interactions];
-      }
-    }
+    if (graph.includes(id)) return;
+
+    graph.push(id);
+    graph.sort(
+      (a, b) =>
+        (this.provenance.graph.nodes[a].metadata.createdOn || -1) -
+        (this.provenance.graph.nodes[b].metadata.createdOn || -1),
+    );
+
+    this.workflows[this.currentWorkflow].graph = [...graph];
   };
 
   removeFromWorkflow = (id: string) => {
     if (!this.currentWorkflow) return;
-    this.workflows[this.currentWorkflow].interactions = this.workflows[
-      this.currentWorkflow
-    ].interactions.filter((d) => d.id !== id);
+    this.workflows[this.currentWorkflow].graph = this.workflows[this.currentWorkflow].graph.filter(
+      (d) => d !== id,
+    );
   };
 
   setSyncStatus = (key: string, val: string) => {

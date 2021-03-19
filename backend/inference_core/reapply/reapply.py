@@ -1,46 +1,129 @@
-from typing import Any, List
+from copy import deepcopy
+from typing import Any, Dict
 
+import firebase_admin
 import pandas as pd
+from firebase_admin import credentials, db
 
-from backend.inference_core.reapply.data_structures.interactions import Interactions
+from backend.inference_core.reapply.data_structures.base_interaction import (
+    GenericInteraction,
+)
+from backend.inference_core.reapply.data_structures.brush_interaction import (
+    BrushInteraction,
+)
+from backend.inference_core.reapply.data_structures.filter_interaction import (
+    FilterInteraction,
+)
+from backend.inference_core.reapply.data_structures.plot_interaction import (
+    AddPlotInteraction,
+)
+from backend.inference_core.reapply.data_structures.point_selection_interaction import (
+    PointSelectionInteraction,
+)
+from backend.inference_core.reapply.data_structures.record import Record
+from backend.inference_core.reapply.data_structures.select_prediction_interaction import (
+    SelectPredictionInteraction,
+)
+from backend.inference_core.reapply.data_structures.types import (
+    BrushAction,
+    InteractionType,
+)
+from backend.utils.hash import getUIDForString
+
+app = None
 
 
-def reapply(base: pd.DataFrame, updated: pd.DataFrame, interactions: List[Any]):
-    inters = Interactions(interactions)
+def init_firebase():
+    global app
+    if app:
+        return app
+    else:
+        cred = credentials.Certificate("backend/inference_core/reapply/cred.json")
+        app = firebase_admin.initialize_app(
+            cred, {"databaseURL": "https://reusing-intent-default-rtdb.firebaseio.com"}
+        )
 
-    reapply_record = inters.reapply_interaction(base, updated)
+    return app
 
-    # for interaction in interactions:
-    #     actionType = interaction["type"]
-    #     id = interaction["id"]
-    #     changes = None
 
-    #     if actionType == InteractionType.ADD_PLOT.value:
-    #         changes = get_changes_df(base, updated)
-    #     if actionType == InteractionType.POINT_SELECTION.value:
-    #         selections = interaction["selected"]
-    #         changes = get_changes_point_selection(base, updated, selections)
-    #     if actionType == InteractionType.BRUSH.value:
-    #         brushId = interaction["brush"]
-    #         changes = get_changes_brush(base, updated, interaction["plot"], brushId)
-    #     if actionType == InteractionType.SELECT_PREDICTION.value:
-    #         prediction = interaction["prediction"]
-    #         changes = apply_prediction(base, updated, prediction)
-    #     if actionType == InteractionType.FILTER.value:
-    #         changes = {"added": [], "changed": [], "removed": []}
-    #     application[id] = changes
+class Workflow:
+    def __init__(self, id, interactions, name, **kwargs):
+        self.id = id
+        self._name = name
 
-    return reapply_record
+        def f(x) -> Any:
+            del x["id"]
+            return x
+
+        self.raw = interactions
+
+        self.interactions = list(map(lambda x: GenericInteraction(f(x)), interactions))
+
+    @property
+    def name(self):
+        return self._name
+
+    def apply(self, target: pd.DataFrame, label: str):
+        target = target.set_index(
+            target.apply(lambda row: getUIDForString(str(row[label])), axis=1)
+        )
+        target.reset_index(level=0, inplace=True)
+        target.rename(columns={"index": "id"}, inplace=True)
+
+        records = []
+
+        for idx, interaction in enumerate(self.interactions):
+            parent_record = Record()
+            if idx > 0:
+                parent_record = deepcopy(records[idx - 1])
+
+            int_type = interaction.type
+
+            if int_type == InteractionType.ADD_PLOT:
+                inter = AddPlotInteraction(**self.raw[idx])
+                parent_record.update_plot(inter.plot)
+            elif int_type == InteractionType.POINT_SELECTION:
+                inter = PointSelectionInteraction(**self.raw[idx])
+                parent_record.add_point_selection(inter.plot, inter.selected)
+            elif int_type == InteractionType.BRUSH:
+                interaction = BrushInteraction(**self.raw[idx])
+                action = interaction.action
+                if action == BrushAction.ADD:
+                    parent_record.add_brush(interaction.plot, interaction.brush, target)
+                elif action == BrushAction.UPDATE:
+                    parent_record.update_brush(
+                        interaction.plot, interaction.brush, target
+                    )
+                elif action == BrushAction.REMOVE:
+                    parent_record.remove_brush(interaction.plot, interaction.brush_id)
+            elif int_type == InteractionType.SELECT_PREDICTION:
+                interaction = SelectPredictionInteraction(**self.raw[idx])
+                parent_record.set_prediction(interaction.prediction, target, "")
+            elif int_type == InteractionType.FILTER:
+                interaction = FilterInteraction(**self.raw[idx])
+                parent_record.set_filter(interaction.filterType)
+
+            records.append(parent_record)
+
+        datasets = []
+        for rec in records:
+            data = rec.apply(target)
+            datasets.append(data)
+
+        return datasets[-1]
 
 
 class Reapply:
-    def __init__(self, interaction_history, base_dataset):
-        self.history = Interactions(interaction_history)
-        self.base = base_dataset
+    def __init__(self):
+        init_firebase()
+        self._workflows: Dict[str, Workflow] = {}
+
+    def add_workflow(self, id: str):
+        ref = db.reference(id)
+        workflow: Any = ref.get()
+        self._workflows[id] = Workflow(**workflow)
+        return self._workflows[id]
 
     @property
-    def interactions(self) -> List[str]:
-        return self.interactions
-
-    def apply(self, interaction: str, updated: pd.DataFrame):
-        return self.history.reapply_interaction(self.base, updated, interaction)
+    def workflows(self):
+        return list(self._workflows.values())

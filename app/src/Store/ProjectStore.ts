@@ -134,12 +134,15 @@ export class ProjectStore {
   };
 
   rejectNode = (id: string) => {
+    if (!this.currentDatasetKey) return;
+
     let { artifact = null } = this.provenance.getLatestArtifact(id) || {};
 
     if (artifact) {
       artifact = deepCopy(artifact);
       artifact.status_record[this.currentDatasetKey || ''] = 'Rejected';
       this.provenance.addArtifact(artifact, id);
+      this.loadDatasetWithReapply(this.currentDatasetKey);
     }
   };
 

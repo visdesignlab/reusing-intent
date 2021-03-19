@@ -71,6 +71,10 @@ class Node(object):
 
         record = self.parent.record
 
+        if not self.should_apply:
+            self.processed_record = record
+            return
+
         if int_type == InteractionType.ADD_PLOT:
             interaction = self.state.add_plot_interaction
             record.update_plot(interaction.plot)
@@ -112,14 +116,15 @@ class Node(object):
         if len(arts) == 0:
             return None
 
-        art = arts[0]["artifact"]
+        art = arts[-1]["artifact"]
 
-        if "interaction" not in art:
-            return None
+        return art
 
-        interaction = art["interaction"]
-
-        return interaction
+    @property
+    def should_apply(self):
+        if self.target_id == self.artifact["original_dataset"]:
+            return True
+        return self.artifact["status_record"][self.target_id] != "Rejected"
 
     def serialize(self):
         ser = self.node

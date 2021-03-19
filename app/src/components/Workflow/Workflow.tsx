@@ -1,3 +1,4 @@
+/* eslint-disable no-constant-condition */
 import {
   Badge,
   Card,
@@ -56,6 +57,7 @@ const Workflow = ({ workflow }: Props) => {
       workflowSyncStatus,
       setSyncStatus,
     },
+    provenance,
   } = useContext(Store);
 
   const [openCopyMessage, setOpenCopyMessage] = useState(true);
@@ -101,19 +103,21 @@ const Workflow = ({ workflow }: Props) => {
                 text={workflow.name}
               />
             </Badge>
-            {!isSync ? (
+            {isSync || true ? (
               <IconButton
                 className={classes.close}
-                disabled={workflow.interactions.length === 0}
+                disabled={workflow.graph.length === 0}
                 size="small"
-                onClick={() => storeToFirebase(id, workflows[id], db, setSyncStatus)}
+                onClick={() =>
+                  storeToFirebase(id, provenance.graph, workflows[id], db, setSyncStatus)
+                }
               >
                 <ShareIcon />
               </IconButton>
             ) : (
               <IconButton
                 className={classes.close}
-                disabled={workflow.interactions.length === 0}
+                disabled={workflow.graph.length === 0}
                 size="small"
                 onClick={copyId}
               >
@@ -125,8 +129,8 @@ const Workflow = ({ workflow }: Props) => {
             </IconButton>
           </CardActions>
           <Divider />
-          {Object.values(workflow.interactions).map((d) => (
-            <Action key={d.id} id={d.id} />
+          {Object.values(workflow.graph).map((id) => (
+            <Action key={id} id={id} />
           ))}
         </CardContent>
       </Card>

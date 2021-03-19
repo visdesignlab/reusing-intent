@@ -19,6 +19,7 @@ paretoset = "^1.2.0"
 tqdm = "^4.56.2"
 requests = "^2.25.1"
 asciitree = "^0.3.3"
+firebase-admin = "^4.5.2"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"

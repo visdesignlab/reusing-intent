@@ -127,13 +127,25 @@ class Record:
             "filter": self.filter if self.filter else None,
         }
 
+    def apply(self, data):
+        target = data.copy()
+        if self.filter:
+            points = self.filter["points"]
+            target = target[~target.id.isin(points)]
+
+        if self.selections():
+            target["isSelected"] = False
+            target[target.id.isin(self.selections())] = True
+
+        return target
+
 
 def applyPrediction(
     prediction: Prediction, selections: List[str], target: pd.DataFrame, target_id: str
 ) -> Prediction:
-    print(prediction.original_id == target_id)
-    print(prediction.original_id)
-    print(target_id)
+    # print(prediction.original_id == target_id)
+    # print(prediction.original_id)
+    # print(target_id)
     if prediction.original_id is not None and prediction.original_id == target_id:
         return prediction
     algorithm = Algorithms(prediction.algorithm)
@@ -184,8 +196,6 @@ def applyPrediction(
         return apply_linear_regression(target, prediction, sels)
 
     intents = target.id.isin(ids)
-
-    print(info, new_info)
 
     return Prediction(
         rank=rank_jaccard(intents, sels),
