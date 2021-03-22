@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { initProvenance, isChildNode } from '@visdesignlab/trrack';
+import { initProvenance } from '@visdesignlab/trrack';
+import firebase from 'firebase';
+import 'firebase/database';
 import { makeAutoObservable } from 'mobx';
 import { createContext } from 'react';
-import firebase from 'firebase';
 
-import { loadFromFirebase, initializeFirebase } from '../components/Workflow/Firebase';
-
-import 'firebase/database';
-
+import { initializeFirebase } from '../components/Workflow/Firebase';
 
 import { CompareStore } from './CompareStore';
 import { ExploreStore } from './ExploreStore';
@@ -27,7 +24,7 @@ export class RootStore {
   defaultDatasetKey: string | null = null;
   redirectPath: string | null = null;
   loadedWorkflowId: string | null = null;
-  db: firebase.database.Database
+  db: firebase.database.Database;
 
   //
   projectStore: ProjectStore;
@@ -72,49 +69,45 @@ export class RootStore {
     const data = searchParams.get('data');
     const redirectPath = searchParams.get('redirect');
     const workflowId = searchParams.get('workflow');
-    this.debug = debug || workflowId ? true : false;
+
+    this.debug = debug ? true : workflowId ? true : false;
     this.defaultProject = defaultProject ? defaultProject : 'cluster';
     this.loadDefaultDataset = data ? true : false;
     this.defaultDatasetKey = data !== 'true' ? data : null;
-    this.redirectPath = redirectPath;
     this.loadedWorkflowId = workflowId;
-
-    if(this.loadedWorkflowId)
-    {
-
-      loadFromFirebase(this.db, this.loadedWorkflowId).then((dataSnapshot: firebase.database.DataSnapshot) => {
-        const graph = dataSnapshot.val().graph;
-
-        for(const n in graph.nodes)
-        {
-          if(!graph.nodes[n].children)
-          {
-            graph.nodes[n].children = []
-          }
-        }
-
-        this.provenance.importProvenanceGraph(graph);
-
-        this.exploreStore.addWorkflow(dataSnapshot.val().name);
-
-        for (const n in graph.nodes) {
-          if(isChildNode(graph.nodes[n]))
-          {
-            this.exploreStore.addToWorkflow(n);
-          }
-        }
-
-        if(this.defaultDatasetKey)
-        {
-          this.projectStore.loadDatasetWithReapply(this.defaultDatasetKey);
-
-        }
-
-
-        console.log(this.defaultDatasetKey)
-      });
-    }
+    this.redirectPath = workflowId ? 'explore' : redirectPath;
   };
+
+  //   if (this.loadedWorkflowId && this.defaultDatasetKey) {
+  //     loadFromFirebase(this.db, this.loadedWorkflowId).then(
+  //       (dataSnapshot: firebase.database.DataSnapshot) => {
+  //         const graph = dataSnapshot.val().graph;
+
+  //         for (const n in graph.nodes) {
+  //           if (!graph.nodes[n].children) {
+  //             graph.nodes[n].children = [];
+  //           }
+  //         }
+
+  //         this.provenance.importProvenanceGraph(graph);
+
+  //         this.exploreStore.addWorkflow(dataSnapshot.val().name);
+
+  //         for (const n in graph.nodes) {
+  //           if (isChildNode(graph.nodes[n])) {
+  //             this.exploreStore.addToWorkflow(n);
+  //           }
+  //         }
+
+  //         if (this.defaultDatasetKey) {
+  //           this.projectStore.loadDatasetWithReapply(this.defaultDatasetKey);
+  //         }
+
+  //         console.log(this.defaultDatasetKey);
+  //       },
+  //     );
+  //   }
+  // };
 }
 
 const Store = createContext(new RootStore());

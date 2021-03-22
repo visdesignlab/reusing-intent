@@ -25,7 +25,7 @@ const ProjectHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
     debug,
     redirectPath,
     search,
-    loadedWorkflowId
+    loadedWorkflowId,
   } = useContext(Store);
 
   useEffect(() => {
@@ -36,7 +36,6 @@ const ProjectHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps)
 
   if (debug && redirectPath === 'explore' && loadedDataset)
     return <Redirect to={{ pathname: '/explore', search }} />;
-
 
   return (
     <div className={classes.root}>

@@ -1,8 +1,7 @@
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
+import firebase from 'firebase';
+
 import 'firebase/database';
-
-import  firebase  from 'firebase';
-
 import { WorkflowType } from '../../Store/ExploreStore';
 
 import { IntentGraph, IntentNode } from './../../Store/Types/ProvenanceType';
@@ -40,6 +39,7 @@ export function storeToFirebase(
   const wf = {
     id: workflow.id,
     name: workflow.name,
+    project: workflow.project,
     graph: getGraph(graph, workflow.graph),
   };
 
@@ -50,10 +50,8 @@ export function storeToFirebase(
     });
 }
 
-export function loadFromFirebase(db: firebase.database.Database, workflowId: string){
-  return db
-    .ref(workflowId)
-    .once('value')
+export function loadFromFirebase(db: firebase.database.Database, workflowId: string) {
+  return db.ref(workflowId).once('value');
 }
 
 function getGraph(graph: IntentGraph, ids: NodeID[]) {

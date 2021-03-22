@@ -51,8 +51,6 @@ const Action = ({ id }: Props) => {
     }
   }
 
-  console.log(isRejected);
-
   return (
     <Card className={classes.card} variant="outlined">
       <CardContent>

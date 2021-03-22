@@ -41,6 +41,7 @@ type Record = {
 
 export type WorkflowType = {
   id: string;
+  project: string;
   name: string;
   graph: NodeID[];
 };
@@ -55,7 +56,6 @@ export class ExploreStore {
   multiBrushBehaviour: MultiBrushBehaviour = 'Union';
   showCategories = false;
   brushType: BrushType = 'Freeform Medium';
-  // key here is DatasetID
   stateRecord: { [key: string]: Record } = {};
   predictions: Predictions = [];
   currBrushed: string[] = [];
@@ -249,6 +249,7 @@ export class ExploreStore {
 
     const workflow: WorkflowType = {
       id: getWorkflowID(),
+      project: this.currentProject.name,
       name: workflowName ? workflowName : `Workflow #${counter}`,
       graph: [],
     };

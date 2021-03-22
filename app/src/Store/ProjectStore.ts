@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
+import { loadFromFirebase } from '../components/Workflow/Firebase';
 import { SERVER } from '../consts';
 import { OriginMap } from '../trrack-vis/Utils/BundleMap';
 import deepCopy from '../Utils/DeepCopy';
@@ -23,7 +25,6 @@ export class ProjectStore {
   currentDatasetKey: string | null = null;
 
   isReapplying = false;
-  // nodeCreationMap: OriginMap;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -34,6 +35,51 @@ export class ProjectStore {
       () => this.currentDatasetKey,
       () => this.fetchCurrentDataset(),
     );
+  }
+
+  loadFromWorkflow() {
+    const workflowId = this.rootStore.loadedWorkflowId;
+    const defaultDatasetVersion = this.rootStore.defaultDatasetKey;
+
+    if (!workflowId) return;
+
+    loadFromFirebase(this.rootStore.db, workflowId).then((snap) => {
+      const workflow = snap.val();
+      const { project } = workflow;
+      const loadingProject = this.loadProjectByKey(project);
+
+      if (loadingProject) {
+        loadingProject.then(() => {
+          if (this.currentProject) {
+            const key = this.currentProject.datasets.find(
+              (d) => d.version === defaultDatasetVersion,
+            )?.key;
+
+            if (key) {
+              this.loadDataset(key);
+              const graph = workflow.graph;
+
+              const wf = { ...workflow, graph: [] };
+              this.rootStore.exploreStore.workflows[wf.id] = wf;
+              this.rootStore.exploreStore.setCurrentWorkflow(wf.id);
+
+              for (const n in graph.nodes) {
+                if (!graph.nodes[n].children) graph.nodes[n].children = [];
+              }
+              this.provenance.importProvenanceGraph(graph);
+
+              this.loadDatasetWithReapply(key);
+
+              for (const n in graph.nodes) {
+                if (isChildNode(graph.nodes[n])) {
+                  this.rootStore.exploreStore.addToWorkflow(n);
+                }
+              }
+            }
+          }
+        });
+      }
+    });
   }
 
   // ##################################################################### //
@@ -142,7 +188,7 @@ export class ProjectStore {
       artifact = deepCopy(artifact);
       artifact.status_record[this.currentDatasetKey || ''] = 'Rejected';
       this.provenance.addArtifact(artifact, id);
-      this.Reapply(this.currentDatasetKey);loadDatasetWith
+      this.loadDatasetWithReapply(this.currentDatasetKey);
     }
   };
 
@@ -155,7 +201,9 @@ export class ProjectStore {
       action((response: AxiosResponse<ProjectList>) => {
         this.projects = response.data;
 
-        if (!newProjectId && this.rootStore.debug) {
+        if (this.rootStore.loadedWorkflowId) {
+          this.loadFromWorkflow();
+        } else if (!newProjectId && this.rootStore.debug) {
           this.loadProjectByKey(this.rootStore.defaultProject);
         } else if (newProjectId) {
           const proj = this.projects.find((p) => p.key === newProjectId);
@@ -176,12 +224,11 @@ export class ProjectStore {
     this.loadedDataset = null;
     this.rootStore.exploreStore = new ExploreStore(this.rootStore);
 
-    Axios.get(`${SERVER}/${projectId}/dataset`).then(
+    return Axios.get(`${SERVER}/${projectId}/dataset`).then(
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
 
-
-        if ((this.rootStore.debug) && this.rootStore.loadDefaultDataset) {
+        if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
           const datasetKey = this.rootStore.defaultDatasetKey;
 
           if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
