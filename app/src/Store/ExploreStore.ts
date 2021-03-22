@@ -235,7 +235,7 @@ export class ExploreStore {
     this.currBrushed = newSelected;
   };
 
-  addWorkflow = () => {
+  addWorkflow = (workflowName?: string) => {
     const counterInit = Object.values(this.workflows).filter((d) =>
       d.name.startsWith('Workflow #'),
     );
@@ -249,7 +249,7 @@ export class ExploreStore {
 
     const workflow: WorkflowType = {
       id: getWorkflowID(),
-      name: `Workflow #${counter}`,
+      name: workflowName ? workflowName : `Workflow #${counter}`,
       graph: [],
     };
 

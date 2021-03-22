@@ -142,7 +142,7 @@ export class ProjectStore {
       artifact = deepCopy(artifact);
       artifact.status_record[this.currentDatasetKey || ''] = 'Rejected';
       this.provenance.addArtifact(artifact, id);
-      this.loadDatasetWithReapply(this.currentDatasetKey);
+      this.Reapply(this.currentDatasetKey);loadDatasetWith
     }
   };
 
@@ -180,7 +180,8 @@ export class ProjectStore {
       action((response: AxiosResponse<UploadedDatasetList>) => {
         this.currentProject = { ...proj, datasets: response.data };
 
-        if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
+
+        if ((this.rootStore.debug) && this.rootStore.loadDefaultDataset) {
           const datasetKey = this.rootStore.defaultDatasetKey;
 
           if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))

@@ -43,6 +43,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
     projectStore: { loadedDataset, comparisonDataset },
     provenance,
     setQueryParams,
+    loadedWorkflowId
   } = useContext(Store);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
       if (current.children.length > 0) return;
     }
 
-    if (n_plots > 0 || !loadedDataset) return;
+    if (n_plots > 0 || !loadedDataset || loadedWorkflowId) return;
     const { numericColumns } = loadedDataset;
     const plot: Plot = {
       id: getPlotId(),
