@@ -4,6 +4,8 @@
   "private": true,
   "homepage": "https://vdl.sci.utah.edu/reusing-intent/",
   "dependencies": {
+    "@firebase/app": "^0.6.17",
+    "@firebase/database": "^0.9.6",
     "@material-ui/core": "^4.11.2",
     "@material-ui/data-grid": "^4.0.0-alpha.15",
     "@material-ui/icons": "^4.11.2",

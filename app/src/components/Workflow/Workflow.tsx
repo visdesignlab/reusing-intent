@@ -23,7 +23,7 @@ import Store from '../../Store/Store';
 import Editable from '../Editable';
 
 import Action from './Action';
-import { initializeFirebase, storeToFirebase } from './Firebase';
+import { storeToFirebase } from './Firebase';
 
 const useStyles = makeStyles((theme: Theme) => ({
   card: {
@@ -58,6 +58,7 @@ const Workflow = ({ workflow }: Props) => {
       setSyncStatus,
     },
     provenance,
+    db
   } = useContext(Store);
 
   const [openCopyMessage, setOpenCopyMessage] = useState(true);
@@ -67,8 +68,6 @@ const Workflow = ({ workflow }: Props) => {
   const isSync = workflowSyncStatus[id]
     ? workflowSyncStatus[id] === JSON.stringify(workflow)
     : false;
-
-  const { db } = initializeFirebase();
 
   const isCurrent = id === currentWorkflow;
 

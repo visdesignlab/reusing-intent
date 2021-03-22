@@ -12,6 +12,8 @@ const addPlotAction = createAction<State, [Plot], IntentEvents>((state: State, p
     type: 'AddPlot',
     plot,
   };
+
+  console.log("called add plot")
 })
   .saveStateMode('Complete')
   .setEventType('Add Plot');

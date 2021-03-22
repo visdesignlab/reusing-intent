@@ -47,7 +47,7 @@ const Workflows = () => {
       <Divider />
       <Card variant="outlined">
         <CardActions>
-          <Button color="primary" onClick={addWorkflow}>
+          <Button color="primary" onClick={() => addWorkflow()}>
             Add Workflow
           </Button>
         </CardActions>

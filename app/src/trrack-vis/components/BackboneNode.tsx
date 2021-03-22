@@ -78,6 +78,7 @@ function BackboneNode<T, S extends string, A>({
   } as React.CSSProperties;
 
   const [annotateText, setAnnotateText] = useState(
+    node.artifacts && node.artifacts.annotations && 
     prov.getLatestAnnotation(node.id)?.annotation
       ? prov.getLatestAnnotation(node.id)?.annotation!
       : '',
@@ -169,6 +170,7 @@ function BackboneNode<T, S extends string, A>({
 
   if (
     node.artifacts &&
+    node.artifacts.annotations && 
     node.artifacts.annotations.length > 0 &&
     annotationOpen !== nodeMap[node.id].depth
   ) {
