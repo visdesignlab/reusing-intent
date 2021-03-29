@@ -3,7 +3,7 @@ import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import { loadFromFirebase } from '../components/Workflow/Firebase';
+import { loadDemo, loadFromFirebase } from '../components/Workflow/Firebase';
 import { SERVER } from '../consts';
 import { OriginMap } from '../trrack-vis/Utils/BundleMap';
 import deepCopy from '../Utils/DeepCopy';
@@ -192,7 +192,11 @@ export class ProjectStore {
       action((response: AxiosResponse<ProjectList>) => {
         this.projects = response.data;
 
-        if (!newProjectId && this.rootStore.debug) {
+        if (this.rootStore.loadSavedProject) {
+          this.loadProjectByKey(this.rootStore.defaultProject);
+        } else if (this.rootStore.loadedWorkflowId) {
+          this.loadFromWorkflow();
+        } else if (!newProjectId && this.rootStore.debug) {
           this.loadProjectByKey(this.rootStore.defaultProject);
         } else if (newProjectId) {
           const proj = this.projects.find((p) => p.key === newProjectId);
@@ -213,23 +217,36 @@ export class ProjectStore {
     this.loadedDataset = null;
     this.rootStore.exploreStore = new ExploreStore(this.rootStore);
 
-    return Axios.get(`${SERVER}/${projectId}/dataset`)
-      .then(
-        action((response: AxiosResponse<UploadedDatasetList>) => {
-          this.currentProject = { ...proj, datasets: response.data };
+    return Axios.get(`${SERVER}/${projectId}/dataset`).then(
+      action((response: AxiosResponse<UploadedDatasetList>) => {
+        this.currentProject = { ...proj, datasets: response.data };
 
-          if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
-            const datasetKey = this.rootStore.defaultDatasetKey;
+        if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
+          const datasetKey = this.rootStore.defaultDatasetKey;
 
-            if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
-              this.loadDataset(datasetKey);
-            else this.loadDataset(this.currentProject.datasets[0].key);
-          }
-        }),
-      )
-      .then(() => {
-        this.loadFromWorkflow();
-      });
+          if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
+            this.loadDataset(datasetKey);
+          else this.loadDataset(this.currentProject.datasets[0].key);
+        }
+
+        if (this.rootStore.debug && this.rootStore.loadSavedProject) {
+          this.loadDataset(this.currentProject.datasets[0].key);
+
+          loadDemo(this.rootStore.provDb, projectId).then((s: any) => {
+            const curr = s.val();
+
+            const graph = curr.graph;
+
+            for (const n in graph.nodes) {
+              if (!graph.nodes[n].children) graph.nodes[n].children = [];
+            }
+
+            this.provenance.importProvenanceGraph(graph);
+            this.rootStore.exploreStore.workflows = curr.wf;
+          });
+        }
+      }),
+    );
   };
 
   loadComparisonDataset = (datasetKey: string) => {

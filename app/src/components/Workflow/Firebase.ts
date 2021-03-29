@@ -21,11 +21,13 @@ export function initializeFirebase() {
     firebase.apps.length === 0 ? firebase.initializeApp(config) : firebase.app();
 
   const db = firebase.database(app);
+  const provDb = app.database('https://reusing-demos.firebaseio.com/');
 
   return {
     config,
     app,
     db,
+    provDb
   };
 }
 
@@ -50,8 +52,26 @@ export function storeToFirebase(
     });
 }
 
+export function storeProvenance(
+  graph: IntentGraph,
+  workflows: { [key: string]: WorkflowType },
+  db: firebase.database.Database,
+  projName: string
+) {
+  const s = {
+    wf: workflows,
+    graph,
+  };
+
+  return db.ref(projName).set(s);
+}
+
 export function loadFromFirebase(db: firebase.database.Database, workflowId: string) {
   return db.ref(workflowId).once('value');
+}
+
+export function loadDemo(db: firebase.database.Database, projectName: string) {
+  return db.ref(projectName).once('value');
 }
 
 function getGraph(graph: IntentGraph, ids: NodeID[]) {

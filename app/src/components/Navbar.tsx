@@ -16,6 +16,7 @@ import Store from '../Store/Store';
 import deepCopy from '../Utils/DeepCopy';
 
 import AddPlot from './AddPlotComponent/AddPlot';
+import { storeProvenance } from './Workflow/Firebase';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -31,7 +32,11 @@ const Navbar: FC = () => {
   const classes = useStyles();
   // const [open, setOpen] = useState(false);
   const store = useContext(Store);
-  const { provenance } = store;
+  const { provenance, provDb } = store;
+  const { workflows } = store.exploreStore;
+  const { currentProject } = store.projectStore;
+
+
 
   const {
     exploreStore: { brushType, switchBrush, filter },
@@ -91,6 +96,18 @@ const Navbar: FC = () => {
             }}
           >
             Filter In
+          </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              storeProvenance(provenance.graph, workflows, provDb, currentProject?.name || "Empty")
+            }}
+          >
+            Store prov
           </Button>
 
           {/* <Button

@@ -21,10 +21,12 @@ export class RootStore {
   search = '';
   defaultProject = 'cluster';
   loadDefaultDataset = false;
+  loadSavedProject: string | null = null;
   defaultDatasetKey: string | null = null;
   redirectPath: string | null = null;
   loadedWorkflowId: string | null = null;
   db: firebase.database.Database;
+  provDb: firebase.database.Database;
 
   //
   projectStore: ProjectStore;
@@ -52,7 +54,10 @@ export class RootStore {
     this.currentNodes = [];
     this.bundledNodes = [];
 
-    this.db = initializeFirebase().db;
+    const{ db, provDb } = initializeFirebase();
+
+    this.db = db
+    this.provDb = provDb
 
     makeAutoObservable(this, {
       actions: false,
@@ -67,15 +72,20 @@ export class RootStore {
     const debug = searchParams.get('debug');
     const defaultProject = searchParams.get('project');
     const data = searchParams.get('data');
+    const demo = searchParams.get('demo');
     const redirectPath = searchParams.get('redirect');
     const workflowId = searchParams.get('workflow');
 
-    this.debug = debug ? true : workflowId ? true : false;
-    this.defaultProject = defaultProject ? defaultProject : 'cluster';
+    this.debug = debug ? true : workflowId ? true : demo ? true : false;
+    this.defaultProject = defaultProject ? defaultProject : demo ? demo : 'cluster';
     this.loadDefaultDataset = data ? true : false;
     this.defaultDatasetKey = data !== 'true' ? data : null;
+    this.loadSavedProject = demo ? demo : null;
     this.loadedWorkflowId = workflowId;
-    this.redirectPath = workflowId ? 'explore' : redirectPath;
+    this.redirectPath = (workflowId || demo) ? 'explore' : redirectPath;
+
+
+    console.log(this.debug, this.redirectPath)
   };
 }
 
