@@ -39,7 +39,6 @@ class Record:
         self.prediction: Optional[Prediction] = None
         self.filter: Any = None
         self.brushSelections: Dict[str, List[str]] = {}
-        deepcopy(self)
 
     def update_plot(self, plot: Plot):
         self.plots[plot.id] = plot
@@ -74,15 +73,23 @@ class Record:
     def empty(self):
         self.brushes = {}
         self.pointSelection = {}
-        self.brushSelection = {}
+        self.brushSelections = {}
         self.prediction = None
 
     def set_prediction(
-        self, prediction: Prediction, data: pd.DataFrame, target_id: str
+        self,
+        prediction: Prediction,
+        data: pd.DataFrame,
+        target_id: str,
     ):
         sels = deepcopy(self.selections())
         self.empty()
-        self.prediction = applyPrediction(prediction, sels, data, target_id)
+        self.prediction = applyPrediction(
+            prediction,
+            sels,
+            data,
+            target_id,
+        )
 
     def set_filter(self, filterType):
         sels = deepcopy(self.selections())
@@ -137,26 +144,28 @@ class Record:
             target["isSelected"] = False
             target[target.id.isin(self.selections())] = True
 
+        target.drop(["id", "iid"], axis=1, inplace=True)
         return target
 
 
 def applyPrediction(
-    prediction: Prediction, selections: List[str], target: pd.DataFrame, target_id: str
+    prediction: Prediction,
+    selections: List[str],
+    target: pd.DataFrame,
+    target_id: str,
 ) -> Prediction:
-    # print(prediction.original_id == target_id)
-    # print(prediction.original_id)
-    # print(target_id)
     if prediction.original_id is not None and prediction.original_id == target_id:
         return prediction
+
     algorithm = Algorithms(prediction.algorithm)
     intent = Intents(prediction.intent)
     dimensions = prediction.dimensions
     info = prediction.info
+    sels = target.id.isin(selections)
 
     ids = np.array([])
     new_info = deepcopy(info)
 
-    sels = target.id.isin(selections)
     if algorithm == Algorithms.KMEANS:
         ids, centers, hull, closest_center = applyKMeans(
             target,

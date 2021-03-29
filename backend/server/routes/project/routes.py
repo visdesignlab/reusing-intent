@@ -85,43 +85,6 @@ def createProject(key: str):
         session.close()
 
 
-# @projectRoute.route("/project/<project>/apply", methods=["POST"])
-# def processProvenance(project):
-#     baseDatasetKey = request.json["baseDataset"]
-#     updatedDatasetKey = request.json["updatedDataset"]
-
-#     interactions = request.json["interactions"]
-
-#     engine = getEngine(project)
-
-#     with engine.begin() as connection:
-#         with getSessionScopeFromEngine(connection) as session:
-#             baseDatasetRecord = (
-#                 session.query(DatasetRecord)
-#                 .filter(DatasetRecord.key == baseDatasetKey)
-#                 .one()
-#             )
-
-#             updatedDatasetRecord = (
-#                 session.query(DatasetRecord)
-#                 .filter(DatasetRecord.key == updatedDatasetKey)
-#                 .one()
-#             )
-
-#             allData = pd.read_sql("Dataset", con=connection)
-#             baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
-#             updatedDataset = allData[
-#                 allData["record_id"] == str(updatedDatasetRecord.id)
-#             ]
-
-#             results = reapply(baseDataset, updatedDataset, interactions)
-
-#             data = updatedDataset.drop(columns=["record_id"])
-
-#             results["new_data"] = list(data.T.to_dict().values())
-#             return jsonify(results)
-
-
 @projectRoute.route("/project/<project>/reapply", methods=["POST"])
 def reapplyProvenance(project):
     targetKey = request.json["target"]

@@ -171,7 +171,7 @@ const ExploreHome = () => {
     projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
     provenance,
     bundledNodes,
-    loadedWorkflowId
+    loadedWorkflowId,
   } = useContext(Store);
 
   const { addToWorkflow } = exploreStore;
@@ -182,6 +182,15 @@ const ExploreHome = () => {
     if (isChildNode(current)) {
       if (current.children.length > 0) return;
     }
+
+    // console.log(
+    //   deepCopy({
+    //     loadedDataset,
+    //     n_plots: exploreStore.n_plots,
+    //     loadedWorkflowId,
+    //     shouldReturn: !loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId,
+    //   }),
+    // );
 
     if (!loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId) return;
 

@@ -50,3 +50,49 @@ class Graph(object):
             res[k] = v.record.serialize()
 
         return res
+
+    @property
+    def isApprovedForAll(self):
+        isApproved = True
+
+        for v in self.nodes.values():
+            if v.label == "Root":
+                continue
+            isApproved = isApproved and v.is_approved
+
+        return isApproved
+
+    @property
+    def results(self):
+        res = []
+        order = []
+
+        current = self.nodes[self.current]
+        while current.label != "Root":
+            order.append(current.id)
+            current = self.nodes[current.parent_id]
+
+        order = order[::-1]
+
+        for k in order:
+            v = self.nodes[k]
+            result = {
+                "data": v.record.apply(self.target),
+                "interaction": v.label,
+                "isApproved": v.is_approved,
+            }
+            res.append(result)
+
+        return res
+
+    def pretty_print(self):
+        for v in self.results:
+            print(
+                v["interaction"],
+                v["data"].shape,
+                "---",
+                "Approved" if v["isApproved"] else "Not Approved",
+            )
+            print(v["data"].head())
+            print("------------------------------------")
+            print()

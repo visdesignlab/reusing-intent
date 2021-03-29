@@ -1,34 +1,12 @@
-from copy import deepcopy
 from typing import Any, Dict
 
 import firebase_admin
 import pandas as pd
 from firebase_admin import credentials, db
 
-from backend.inference_core.reapply.data_structures.base_interaction import (
-    GenericInteraction,
-)
-from backend.inference_core.reapply.data_structures.brush_interaction import (
-    BrushInteraction,
-)
-from backend.inference_core.reapply.data_structures.filter_interaction import (
-    FilterInteraction,
-)
-from backend.inference_core.reapply.data_structures.plot_interaction import (
-    AddPlotInteraction,
-)
-from backend.inference_core.reapply.data_structures.point_selection_interaction import (
-    PointSelectionInteraction,
-)
-from backend.inference_core.reapply.data_structures.record import Record
-from backend.inference_core.reapply.data_structures.select_prediction_interaction import (
-    SelectPredictionInteraction,
-)
-from backend.inference_core.reapply.data_structures.types import (
-    BrushAction,
-    InteractionType,
-)
-from backend.utils.hash import getUIDForString
+from backend.inference_core.dataset_formatter import format_dataset
+from backend.inference_core.reapply.data_structures.Provenance.graph import Graph
+from backend.utils.hash import get_hash_for_dataset
 
 app = None
 
@@ -46,71 +24,53 @@ def init_firebase():
     return app
 
 
+class Result:
+    def __init__(self, workflow, graph):
+        self.graph = graph
+        self.workflow = workflow
+        self.isApproved = graph.isApprovedForAll
+
+    @property
+    def results(self):
+        if not self.isApproved:
+            print(
+                f"This workflow is not approved for all interactions. Please go to following url: http://localhost:3000/#/project?workflow={self.workflow.id}&project={self.workflow.project}&data={self.graph.target_id}"
+            )
+        return self.graph.results
+
+    @property
+    def description(self):
+        return self.workflow.describe
+
+    def pretty_print(self):
+        self.graph.pretty_print()
+
+
 class Workflow:
-    def __init__(self, id, interactions, name, **kwargs):
+    def __init__(self, id, graph, name, project, **kwargs):
         self.id = id
         self._name = name
-
-        def f(x) -> Any:
-            del x["id"]
-            return x
-
-        self.raw = interactions
-
-        self.interactions = list(map(lambda x: GenericInteraction(f(x)), interactions))
+        self.project = project
+        self.g = graph
 
     @property
     def name(self):
         return self._name
 
+    @property
+    def describe(self):
+        return self._name
+
     def apply(self, target: pd.DataFrame, label: str):
-        target = target.set_index(
-            target.apply(lambda row: getUIDForString(str(row[label])), axis=1)
-        )
-        target.reset_index(level=0, inplace=True)
-        target.rename(columns={"index": "id"}, inplace=True)
+        columns = target.columns
+        columns = sorted(columns)
+        target = target[columns]
+        target = format_dataset(target, label)
+        target_id = get_hash_for_dataset(target)
 
-        records = []
+        graph = Graph(target=target, target_id=target_id, **self.g)
 
-        for idx, interaction in enumerate(self.interactions):
-            parent_record = Record()
-            if idx > 0:
-                parent_record = deepcopy(records[idx - 1])
-
-            int_type = interaction.type
-
-            if int_type == InteractionType.ADD_PLOT:
-                inter = AddPlotInteraction(**self.raw[idx])
-                parent_record.update_plot(inter.plot)
-            elif int_type == InteractionType.POINT_SELECTION:
-                inter = PointSelectionInteraction(**self.raw[idx])
-                parent_record.add_point_selection(inter.plot, inter.selected)
-            elif int_type == InteractionType.BRUSH:
-                interaction = BrushInteraction(**self.raw[idx])
-                action = interaction.action
-                if action == BrushAction.ADD:
-                    parent_record.add_brush(interaction.plot, interaction.brush, target)
-                elif action == BrushAction.UPDATE:
-                    parent_record.update_brush(
-                        interaction.plot, interaction.brush, target
-                    )
-                elif action == BrushAction.REMOVE:
-                    parent_record.remove_brush(interaction.plot, interaction.brush_id)
-            elif int_type == InteractionType.SELECT_PREDICTION:
-                interaction = SelectPredictionInteraction(**self.raw[idx])
-                parent_record.set_prediction(interaction.prediction, target, "")
-            elif int_type == InteractionType.FILTER:
-                interaction = FilterInteraction(**self.raw[idx])
-                parent_record.set_filter(interaction.filterType)
-
-            records.append(parent_record)
-
-        datasets = []
-        for rec in records:
-            data = rec.apply(target)
-            datasets.append(data)
-
-        return datasets[-1]
+        return Result(self, graph)
 
 
 class Reapply:

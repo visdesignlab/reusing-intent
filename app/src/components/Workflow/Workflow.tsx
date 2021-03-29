@@ -58,7 +58,7 @@ const Workflow = ({ workflow }: Props) => {
       setSyncStatus,
     },
     provenance,
-    db
+    db,
   } = useContext(Store);
 
   const [openCopyMessage, setOpenCopyMessage] = useState(true);
@@ -102,7 +102,7 @@ const Workflow = ({ workflow }: Props) => {
                 text={workflow.name}
               />
             </Badge>
-            {isSync || true ? (
+            {!isSync ? (
               <IconButton
                 className={classes.close}
                 disabled={workflow.graph.length === 0}

@@ -1,4 +1,4 @@
-import { NodeID } from '@visdesignlab/trrack';
+import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
@@ -55,13 +55,14 @@ export class ExploreStore {
   hoveredPrediction: Prediction | null = null;
   multiBrushBehaviour: MultiBrushBehaviour = 'Union';
   showCategories = false;
-  brushType: BrushType = 'Freeform Medium';
+  brushType: BrushType = 'Rectangular';
   stateRecord: { [key: string]: Record } = {};
   predictions: Predictions = [];
   currBrushed: string[] = [];
   workflows: Workflows = {};
   currentWorkflow: string | null = null;
   workflowSyncStatus: { [key: string]: string } = {};
+  isImporting = false;
 
   constructor(rootStore: RootStore) {
     this.rootStore = rootStore;
@@ -76,7 +77,11 @@ export class ExploreStore {
 
     reaction(
       () => Object.values(this.provenance.graph.nodes).length,
-      () => {
+      (curr, prev) => {
+        if (this.isImporting) return;
+
+        if (prev === 1 && curr !== 2) return;
+
         const rec: { [key: string]: Status } = {};
 
         this.currentProject.datasets.forEach((dataset) => {
@@ -97,6 +102,8 @@ export class ExploreStore {
 
   get state() {
     if (!this.currentNode || !(this.currentNode in this.stateRecord)) return getDefaultRecord();
+
+    console.log(deepCopy(this.stateRecord[this.currentNode]));
 
     return deepCopy(this.stateRecord[this.currentNode]);
   }
@@ -249,7 +256,7 @@ export class ExploreStore {
 
     const workflow: WorkflowType = {
       id: getWorkflowID(),
-      project: this.currentProject.name,
+      project: this.currentProject.key,
       name: workflowName ? workflowName : `Workflow #${counter}`,
       graph: [],
     };
@@ -286,7 +293,16 @@ export class ExploreStore {
 
     if (graph.includes(id)) return;
 
-    graph.push(id);
+    let current = this.provenance.graph.nodes[id];
+
+    while (current.label !== 'Root') {
+      if (!isChildNode(current)) break;
+
+      if (!graph.includes(current.id)) graph.push(current.id);
+
+      current = this.provenance.graph.nodes[current.parent];
+    }
+
     graph.sort(
       (a, b) =>
         (this.provenance.graph.nodes[a].metadata.createdOn || -1) -

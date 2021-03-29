@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import yaml
 
+from backend.inference_core.dataset_formatter import format_dataset
 from backend.server.celery.tasks import (
     precomputeClusters,
     precomputeLR,
@@ -14,14 +15,12 @@ from backend.server.celery.tasks import (
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.session import getEngine, getSessionScopeFromEngine
-from backend.utils.hash import getUIDForString
+from backend.utils.hash import get_hash_for_dataset
 
 chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 
-def process_dataset(
-    project, dataset, dataset_hash, version, description, sourceMetadata
-):
+def process_dataset(project, dataset, version, description, sourceMetadata):
     dataset_df: pd.DataFrame = pd.read_csv(dataset)  # type: ignore
     dataset_df.dropna(inplace=True)
 
@@ -32,27 +31,11 @@ def process_dataset(
     labelColumn = sourceMetadata["label_column"]
 
     dataset_df = dataset_df[sorted_cols]  # type: ignore
-    dataset_df.set_index(
-        dataset_df.apply(lambda row: getUIDForString(str(row[labelColumn])), axis=1),
-        inplace=True,
-        verify_integrity=True,
-    )
-    dataset_df.reset_index(level=0, inplace=True)
-    dataset_df.rename(columns={"index": "id"}, inplace=True)
-    dataset_df["id"] = dataset_df["id"].astype(str)  # type: ignore
-
-    dataset_df.set_index(
-        dataset_df.apply(
-            lambda row: getUIDForString("_".join(row.values.astype(str))), axis=1
-        ),
-        inplace=True,
-        verify_integrity=True,
-    )
-    dataset_df.reset_index(level=0, inplace=True)
-    dataset_df.rename(columns={"index": "iid"}, inplace=True)
-    dataset_df["iid"] = dataset_df["iid"].astype(str)  # type: ignore
+    dataset_df = format_dataset(dataset_df, labelColumn)
 
     metadata, dataset_df = getMetadata(dataset_df, sourceMetadata)
+
+    dataset_hash = get_hash_for_dataset(dataset_df)
 
     engine = getEngine(project)
 
@@ -93,7 +76,7 @@ def process_dataset(
     combinations = getCombinations(dimensions)[0:10]
 
     task_trackers = precompute(dataset_df, combinations, project, dataset_record_id)
-    return task_trackers
+    return dataset_hash, task_trackers
 
 
 def precompute(data, combinations, project, record_id):

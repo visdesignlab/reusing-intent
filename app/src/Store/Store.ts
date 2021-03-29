@@ -77,37 +77,6 @@ export class RootStore {
     this.loadedWorkflowId = workflowId;
     this.redirectPath = workflowId ? 'explore' : redirectPath;
   };
-
-  //   if (this.loadedWorkflowId && this.defaultDatasetKey) {
-  //     loadFromFirebase(this.db, this.loadedWorkflowId).then(
-  //       (dataSnapshot: firebase.database.DataSnapshot) => {
-  //         const graph = dataSnapshot.val().graph;
-
-  //         for (const n in graph.nodes) {
-  //           if (!graph.nodes[n].children) {
-  //             graph.nodes[n].children = [];
-  //           }
-  //         }
-
-  //         this.provenance.importProvenanceGraph(graph);
-
-  //         this.exploreStore.addWorkflow(dataSnapshot.val().name);
-
-  //         for (const n in graph.nodes) {
-  //           if (isChildNode(graph.nodes[n])) {
-  //             this.exploreStore.addToWorkflow(n);
-  //           }
-  //         }
-
-  //         if (this.defaultDatasetKey) {
-  //           this.projectStore.loadDatasetWithReapply(this.defaultDatasetKey);
-  //         }
-
-  //         console.log(this.defaultDatasetKey);
-  //       },
-  //     );
-  //   }
-  // };
 }
 
 const Store = createContext(new RootStore());

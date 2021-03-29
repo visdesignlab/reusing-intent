@@ -3,9 +3,6 @@ from typing import Dict, Optional
 
 import pandas as pd
 
-from backend.inference_core.reapply.data_structures.plot_interaction import (
-    AddPlotInteraction,
-)
 from backend.inference_core.reapply.data_structures.Provenance.state import State
 from backend.inference_core.reapply.data_structures.record import Record
 from backend.inference_core.reapply.data_structures.types import (
@@ -125,6 +122,12 @@ class Node(object):
         if self.target_id == self.artifact["original_dataset"]:
             return True
         return self.artifact["status_record"][self.target_id] != "Rejected"
+
+    @property
+    def is_approved(self):
+        if self.target_id == self.artifact["original_dataset"]:
+            return True
+        return self.artifact["status_record"][self.target_id] == "Accepted"
 
     def serialize(self):
         ser = self.node

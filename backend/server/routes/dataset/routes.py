@@ -18,7 +18,6 @@ from backend.server.routes.dataset.predict_helpers import (
     process_regular,
 )
 from backend.server.routes.utils import handle_exception
-from backend.utils.hash import getUIDForFile
 
 datasetRoute = Blueprint("dataset", __name__)
 
@@ -49,10 +48,9 @@ def uploadDataset(project: str):
     if "metadata" in request.files:
         sourceMetadata = request.files["metadata"]
 
-    dataset_hash = getUIDForFile(dataset)
     try:
-        trackers = process_dataset(
-            project, dataset, dataset_hash, version, description, sourceMetadata
+        dataset_hash, trackers = process_dataset(
+            project, dataset, version, description, sourceMetadata
         )
     except Exception as ex:
         return handle_exception(ex)
