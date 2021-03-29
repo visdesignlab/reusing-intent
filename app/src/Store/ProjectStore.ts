@@ -3,7 +3,7 @@ import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
 import { action, makeAutoObservable, reaction } from 'mobx';
 
-import { loadFromFirebase } from '../components/Workflow/Firebase';
+import { loadFromFirebase, loadDemo } from '../components/Workflow/Firebase';
 import { SERVER } from '../consts';
 import { OriginMap } from '../trrack-vis/Utils/BundleMap';
 import deepCopy from '../Utils/DeepCopy';
@@ -201,7 +201,11 @@ export class ProjectStore {
       action((response: AxiosResponse<ProjectList>) => {
         this.projects = response.data;
 
-        if (this.rootStore.loadedWorkflowId) {
+        if(this.rootStore.loadSavedProject)
+        {
+          this.loadProjectByKey(this.rootStore.defaultProject);
+        }
+        else if (this.rootStore.loadedWorkflowId) {
           this.loadFromWorkflow();
         } else if (!newProjectId && this.rootStore.debug) {
           this.loadProjectByKey(this.rootStore.defaultProject);
@@ -234,6 +238,23 @@ export class ProjectStore {
           if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
             this.loadDataset(datasetKey);
           else this.loadDataset(this.currentProject.datasets[0].key);
+        }
+
+        if (this.rootStore.debug && this.rootStore.loadSavedProject) {
+          this.loadDataset(this.currentProject.datasets[0].key);
+
+          loadDemo(this.rootStore.provDb, projectId).then((s: any) => {
+            const curr = s.val();
+
+            const graph = curr.graph
+
+            for (const n in graph.nodes) {
+              if (!graph.nodes[n].children) graph.nodes[n].children = [];
+            }
+
+            this.provenance.importProvenanceGraph(graph)
+            this.rootStore.exploreStore.workflows = curr.wf
+          })
         }
       }),
     );

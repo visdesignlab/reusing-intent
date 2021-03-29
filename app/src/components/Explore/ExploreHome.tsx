@@ -171,7 +171,8 @@ const ExploreHome = () => {
     projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
     provenance,
     bundledNodes,
-    loadedWorkflowId
+    loadedWorkflowId,
+    loadSavedProject
   } = useContext(Store);
 
   const { addToWorkflow } = exploreStore;
@@ -183,7 +184,7 @@ const ExploreHome = () => {
       if (current.children.length > 0) return;
     }
 
-    if (!loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId) return;
+    if (!loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId || loadSavedProject) return;
 
     const { numericColumns } = loadedDataset;
 
