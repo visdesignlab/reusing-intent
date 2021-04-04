@@ -29,70 +29,72 @@ function useDataGridFormat(
     // console.log(toJS(data));
     const { columnInfo, columns, values } = data;
 
-    const cols: any[] = columns.map((col) => ({
-      field: col,
-      headerName: columnInfo[col].fullname,
-      description: columnInfo[col].unit || '',
-      flex: 1,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      renderHeader: (params: any) => {
-        const { width } = params.colDef;
+    const cols: any[] = columns
+      .filter((col) => col !== 'id' && col !== 'iid')
+      .map((col) => ({
+        field: col,
+        headerName: columnInfo[col].fullname,
+        description: columnInfo[col].unit || '',
+        flex: 1,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        renderHeader: (params: any) => {
+          const { width } = params.colDef;
 
-        if (headerHeight) return <div>{params.field}</div>;
+          if (headerHeight) return <div>{params.field}</div>;
 
-        return (
-          <div>
-            <HeaderDistribution column={columnInfo[col]} height={headerHeight} width={width} />
-          </div>
-        );
-      },
+          return (
+            <div>
+              <HeaderDistribution column={columnInfo[col]} height={headerHeight} width={width} />
+            </div>
+          );
+        },
 
-      renderCell: (params: ValueFormatterParams) => {
-        if (comparisonDataset === null) {
-          return <div>{params.value}</div>;
-        }
+        renderCell: (params: ValueFormatterParams) => {
+          if (comparisonDataset === null) {
+            return <div>{params.value}</div>;
+          }
 
-        const label = params.row.Label;
+          const label = params.row.Label;
 
-        const row = comparisonDataset.values.filter((d) => d.Label === label);
+          const row = comparisonDataset.values.filter((d) => d.Label === label);
 
-        let color = 'none';
+          let color = 'none';
 
-        if (row.length === 0) {
-          color = firstTable ? '#ff8080' : '#90EE90';
-        } else if (!firstTable) {
-          const valueChange = params.getValue(params.field) !== row[0][params.field];
+          if (row.length === 0) {
+            color = firstTable ? '#ff8080' : '#90EE90';
+          } else if (!firstTable) {
+            const valueChange = params.getValue(params.field) !== row[0][params.field];
 
-          // console.log(params.getValue(params.field));
-          // console.log(row[0][params.field]);
+            // console.log(params.getValue(params.field));
+            // console.log(row[0][params.field]);
 
-          if (valueChange) color = '#ffff8b';
-        }
+            if (valueChange) color = '#ffff8b';
+          }
 
-        return <div style={st(color)}>{params.value}</div>;
-      },
-      cellClassName: (params: any) => {
-        if (comparisonDataset === null) return 'none';
-        const label = params.row.Label;
+          return <div style={st(color)}>{params.value}</div>;
+        },
+        cellClassName: (params: any) => {
+          if (comparisonDataset === null) return 'none';
+          const label = params.row.Label;
 
-        const row = comparisonDataset.values.filter((d) => d.Label === label);
+          const row = comparisonDataset.values.filter((d) => d.Label === label);
 
-        let color = 'none';
+          let color = 'none';
 
-        if (row.length === 0) {
-          color = firstTable ? 'red' : 'green';
-        } else if (!firstTable) {
-          const valueChange = params.getValue(params.field) !== row[0][params.field];
+          if (row.length === 0) {
+            color = firstTable ? 'red' : 'green';
+          } else if (!firstTable) {
+            const valueChange = params.getValue(params.field) !== row[0][params.field];
 
-          // console.log(params.getValue(params.field));
-          // console.log(row[0][params.field]);
+            // console.log(params.getValue(params.field));
+            // console.log(row[0][params.field]);
 
-          if (valueChange) color = 'yellow';
-        }
+            if (valueChange) color = 'yellow';
+          }
 
-        return color;
-      },
-    }));
+          return color;
+        },
+      }));
 
     return { rows: values, columns: cols };
   }, [data, comparisonDataset, headerHeight, firstTable, st]);
