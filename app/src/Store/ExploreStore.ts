@@ -103,8 +103,6 @@ export class ExploreStore {
   get state() {
     if (!this.currentNode || !(this.currentNode in this.stateRecord)) return getDefaultRecord();
 
-    console.log(deepCopy(this.stateRecord[this.currentNode]));
-
     return deepCopy(this.stateRecord[this.currentNode]);
   }
 

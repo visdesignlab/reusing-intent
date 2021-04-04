@@ -6,6 +6,8 @@ from backend.utils.hash import getUIDForString
 def format_dataset(df: pd.DataFrame, label: str):
     df = df.copy()
 
+    df = df.round(5)
+
     df.set_index(
         df.apply(lambda row: getUIDForString(str(row[label])), axis=1),
         inplace=True,

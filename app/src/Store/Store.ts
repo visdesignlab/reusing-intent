@@ -54,10 +54,10 @@ export class RootStore {
     this.currentNodes = [];
     this.bundledNodes = [];
 
-    const{ db, provDb } = initializeFirebase();
+    const { db, provDb } = initializeFirebase();
 
-    this.db = db
-    this.provDb = provDb
+    this.db = db;
+    this.provDb = provDb;
 
     makeAutoObservable(this, {
       actions: false,
@@ -78,14 +78,11 @@ export class RootStore {
 
     this.debug = debug ? true : workflowId ? true : demo ? true : false;
     this.defaultProject = defaultProject ? defaultProject : demo ? demo : 'cluster';
-    this.loadDefaultDataset = data ? true : false;
+    this.loadDefaultDataset = data || demo ? true : false;
     this.defaultDatasetKey = data !== 'true' ? data : null;
     this.loadSavedProject = demo ? demo : null;
     this.loadedWorkflowId = workflowId;
-    this.redirectPath = (workflowId || demo) ? 'explore' : redirectPath;
-
-
-    console.log(this.debug, this.redirectPath)
+    this.redirectPath = workflowId || demo ? 'explore' : redirectPath;
   };
 }
 

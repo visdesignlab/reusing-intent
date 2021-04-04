@@ -1,5 +1,5 @@
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
-import firebase from 'firebase';
+import firebase from 'firebase/app';
 
 import 'firebase/database';
 import { WorkflowType } from '../../Store/ExploreStore';
@@ -27,7 +27,7 @@ export function initializeFirebase() {
     config,
     app,
     db,
-    provDb
+    provDb,
   };
 }
 
@@ -56,7 +56,7 @@ export function storeProvenance(
   graph: IntentGraph,
   workflows: { [key: string]: WorkflowType },
   db: firebase.database.Database,
-  projName: string
+  projName: string,
 ) {
   const s = {
     wf: workflows,

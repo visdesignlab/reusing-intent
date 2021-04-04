@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import {
   AppBar,
   Button,
@@ -35,8 +36,6 @@ const Navbar: FC = () => {
   const { provenance, provDb } = store;
   const { workflows } = store.exploreStore;
   const { currentProject } = store.projectStore;
-
-
 
   const {
     exploreStore: { brushType, switchBrush, filter },
@@ -104,7 +103,7 @@ const Navbar: FC = () => {
             variant="outlined"
             onClick={() => {
               // loadComparisonFilter("demo")
-              storeProvenance(provenance.graph, workflows, provDb, currentProject?.name || "Empty")
+              storeProvenance(provenance.graph, workflows, provDb, currentProject?.key || 'Empty');
             }}
           >
             Store prov

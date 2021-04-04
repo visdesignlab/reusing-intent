@@ -73,6 +73,35 @@ export class ProjectStore {
     );
   }
 
+  loadSavedProject() {
+    const projectName = this.rootStore.loadSavedProject;
+
+    const datasetKey = this.currentDatasetKey;
+
+    if (!projectName) return;
+
+    if (!datasetKey) return;
+
+    loadDemo(this.rootStore.provDb, projectName).then(
+      action((snap) => {
+        const { graph, wf } = snap.val();
+
+        for (const n in graph.nodes) {
+          if (!graph.nodes[n].children) graph.nodes[n].children = [];
+        }
+
+        this.provenance.importProvenanceGraph(graph);
+        this.loadDatasetWithReapply(datasetKey);
+        this.rootStore.exploreStore.workflows = wf;
+
+        if (Object.values(wf).length > 0) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          this.rootStore.exploreStore.currentWorkflow = (Object.values(wf)[0] as any).id;
+        }
+      }),
+    );
+  }
+
   // ##################################################################### //
   // ############################## Getters ############################## //
   // ##################################################################### //
@@ -192,11 +221,7 @@ export class ProjectStore {
       action((response: AxiosResponse<ProjectList>) => {
         this.projects = response.data;
 
-        if (this.rootStore.loadSavedProject) {
-          this.loadProjectByKey(this.rootStore.defaultProject);
-        } else if (this.rootStore.loadedWorkflowId) {
-          this.loadFromWorkflow();
-        } else if (!newProjectId && this.rootStore.debug) {
+        if (!newProjectId && this.rootStore.debug) {
           this.loadProjectByKey(this.rootStore.defaultProject);
         } else if (newProjectId) {
           const proj = this.projects.find((p) => p.key === newProjectId);
@@ -217,36 +242,26 @@ export class ProjectStore {
     this.loadedDataset = null;
     this.rootStore.exploreStore = new ExploreStore(this.rootStore);
 
-    return Axios.get(`${SERVER}/${projectId}/dataset`).then(
-      action((response: AxiosResponse<UploadedDatasetList>) => {
-        this.currentProject = { ...proj, datasets: response.data };
+    Axios.get(`${SERVER}/${projectId}/dataset`)
+      .then(
+        action((response: AxiosResponse<UploadedDatasetList>) => {
+          this.currentProject = { ...proj, datasets: response.data };
 
-        if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
-          const datasetKey = this.rootStore.defaultDatasetKey;
+          if (this.rootStore.debug && this.rootStore.loadDefaultDataset) {
+            const datasetKey = this.rootStore.defaultDatasetKey;
 
-          if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
-            this.loadDataset(datasetKey);
-          else this.loadDataset(this.currentProject.datasets[0].key);
+            if (datasetKey && this.currentProject.datasets.map((d) => d.key).includes(datasetKey))
+              this.loadDataset(datasetKey);
+            else this.loadDataset(this.currentProject.datasets[0].key);
+          }
+        }),
+      )
+      .then(() => {
+        if (this.rootStore.loadedWorkflowId) this.loadFromWorkflow();
+        else if (this.rootStore.loadSavedProject) {
+          this.loadSavedProject();
         }
-
-        if (this.rootStore.debug && this.rootStore.loadSavedProject) {
-          this.loadDataset(this.currentProject.datasets[0].key);
-
-          loadDemo(this.rootStore.provDb, projectId).then((s: any) => {
-            const curr = s.val();
-
-            const graph = curr.graph;
-
-            for (const n in graph.nodes) {
-              if (!graph.nodes[n].children) graph.nodes[n].children = [];
-            }
-
-            this.provenance.importProvenanceGraph(graph);
-            this.rootStore.exploreStore.workflows = curr.wf;
-          });
-        }
-      }),
-    );
+      });
   };
 
   loadComparisonDataset = (datasetKey: string) => {
