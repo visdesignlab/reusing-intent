@@ -1,9 +1,9 @@
+/* eslint-disable no-console */
 import {
   AppBar,
   Button,
   Divider,
   FormControl,
-  FormGroup,
   makeStyles,
   Theme,
   Toolbar,
@@ -11,13 +11,13 @@ import {
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import React, { FC, useContext } from 'react';
 
 import Store from '../Store/Store';
+import deepCopy from '../Utils/DeepCopy';
 
 import AddPlot from './AddPlotComponent/AddPlot';
-import useDropdown from './Dropdown';
+import { storeProvenance } from './Workflow/Firebase';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -31,78 +31,116 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Navbar: FC = () => {
   const classes = useStyles();
+  // const [open, setOpen] = useState(false);
   const store = useContext(Store);
-  const { search } = store;
+  const { provenance, provDb } = store;
+  const { workflows } = store.exploreStore;
+  const { currentProject } = store.projectStore;
 
   const {
-    projectStore: { currentProject, comparisonDatasetKey, loadComparisonApply, loadComparisonFilter },
-    exploreStore: {
-      state: { brushType },
-      switchBrush,
-    },
+    exploreStore: { brushType, switchBrush, filter },
   } = useContext(Store);
-
-  const datasetOptions = useMemo(() => {
-    const opts =
-      currentProject?.datasets.map((dataset) => ({
-        key: dataset.key,
-        desc: dataset.version,
-      })) || [];
-
-    return opts;
-  }, [currentProject]);
-
-  const { Dropdown: ComparisonDropdown } = useDropdown(
-    'dataset-dropdown',
-    'Comparison Dataset',
-    '',
-    datasetOptions,
-    comparisonDatasetKey || '',
-    loadComparisonApply,
-  );
 
   return (
     <div>
       <AppBar color="transparent" position="static">
         <Toolbar>
-          <FormGroup row>
-            <AddPlot />
-            <Divider orientation="vertical" flexItem />
-            <FormControl className={classes.formControl}>
-              <ToggleButtonGroup
-                value={brushType}
-                exclusive
-                onChange={(_, bt) => {
-                  switchBrush(bt);
-                }}
-              >
-                <ToggleButton value="Rectangular">
-                  <CheckBoxOutlineBlankIcon />
-                </ToggleButton>
-                <ToggleButton value="Freeform Small">20</ToggleButton>
-                <ToggleButton value="Freeform Medium">35</ToggleButton>
-                <ToggleButton value="Freeform Large">50</ToggleButton>
-              </ToggleButtonGroup>
-            </FormControl>
-          </FormGroup>
+          <AddPlot />
+          <Divider orientation="vertical" flexItem />
+          <FormControl className={classes.formControl}>
+            <ToggleButtonGroup
+              value={brushType}
+              exclusive
+              onChange={(_, bt) => {
+                switchBrush(bt);
+              }}
+            >
+              <ToggleButton value="Rectangular">
+                <CheckBoxOutlineBlankIcon />
+              </ToggleButton>
+              <ToggleButton value="Freeform Small">20</ToggleButton>
+              <ToggleButton value="Freeform Medium">35</ToggleButton>
+              <ToggleButton value="Freeform Large">50</ToggleButton>
+            </ToggleButtonGroup>
+          </FormControl>
+          <Divider />
           <Button
             color="primary"
-            component={Link}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            to={{ pathname: '/compare', search } as any}
+            // to={{ pathname: '/compare', search } as any}
             variant="outlined"
+            onClick={() => console.log(deepCopy(provenance.graph))}
           >
             Apply
           </Button>
+          {/* <ComparisonDropdown /> */}
           <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
-            onClick={() => loadComparisonFilter("demo")}
+            onClick={() => {
+              filter('Out');
+            }}
           >
-            Filter
+            Filter Out
           </Button>
-          <ComparisonDropdown />
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              filter('In');
+            }}
+          >
+            Filter In
+          </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              storeProvenance(provenance.graph, workflows, provDb, currentProject?.key || 'Empty');
+            }}
+          >
+            Store prov
+          </Button>
+
+          {/* <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Bundle
+          </Button> */}
+
+          {/* <Dialog aria-labelledby="form-dialog-title" open={open} onClose={handleClose}>
+            <DialogContent>
+              <TextField
+                id="name"
+                label="Bundle Name"
+                margin="dense"
+                type="email"
+                autoFocus
+                fullWidth
+                onChange={(e) => console.log(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button color="primary" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button color="primary" onClick={handleClose}>
+                Create Bundle
+              </Button>
+            </DialogActions>
+          </Dialog> */}
         </Toolbar>
       </AppBar>
     </div>

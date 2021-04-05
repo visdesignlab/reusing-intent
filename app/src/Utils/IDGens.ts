@@ -5,3 +5,7 @@ export function getPlotId(): string {
 export function getBrushId(): string {
   return `brush${new Date().getTime().toString()}`;
 }
+
+export function getWorkflowID(): string {
+  return `workflow${new Date().getTime().toString()}`;
+}

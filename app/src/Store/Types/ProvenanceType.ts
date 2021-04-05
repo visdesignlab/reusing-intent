@@ -1,11 +1,13 @@
-import { Nodes, Provenance, ProvenanceNode } from '@visdesignlab/trrack';
+import { Nodes, Provenance, ProvenanceGraph, ProvenanceNode } from '@visdesignlab/trrack';
 
-import { IntentState } from './../IntentState';
+import { StatusRecord } from './Artifacts';
 import { IntentEvents } from './IntentEvents';
-import { InteractionArtifact } from './InteractionArtifact';
+import { State } from './Interactions';
 
-export type IntentProvenance = Provenance<IntentState, IntentEvents, InteractionArtifact>;
+export type IntentProvenance = Provenance<State, IntentEvents, StatusRecord>;
 
-export type IntentNode = Nodes<IntentState, IntentEvents, InteractionArtifact>;
+export type IntentGraph = ProvenanceGraph<State, IntentEvents, StatusRecord>;
 
-export type IntentProvenanceNode = ProvenanceNode<IntentState, IntentEvents, InteractionArtifact>;
+export type IntentNode = Nodes<State, IntentEvents, StatusRecord>;
+
+export type IntentProvenanceNode = ProvenanceNode<State, IntentEvents, StatusRecord>;

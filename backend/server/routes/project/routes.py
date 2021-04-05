@@ -4,7 +4,7 @@ import shutil
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from backend.inference_core.reapply.reapply import reapply
+from backend.inference_core.reapply.data_structures.Provenance.graph import Graph
 from backend.server.database.schemas.datasetRecord import DatasetRecord
 from backend.server.database.schemas.project import Project
 from backend.server.database.session import (
@@ -53,6 +53,7 @@ def getAllProjects():
         finally:
             session.close()
 
+    print(projects)
     return jsonify(projects)
 
 
@@ -84,38 +85,27 @@ def createProject(key: str):
         session.close()
 
 
-@projectRoute.route("/project/<project>/apply", methods=["POST"])
-def processProvenance(project):
-    baseDatasetKey = request.json["baseDataset"]
-    updatedDatasetKey = request.json["updatedDataset"]
-    print(request.json)
-    interactions = request.json["interactions"]
+@projectRoute.route("/project/<project>/reapply", methods=["POST"])
+def reapplyProvenance(project):
+    targetKey = request.json["target"]
+
+    provenance = request.json["provenance"]
 
     engine = getEngine(project)
 
     with engine.begin() as connection:
         with getSessionScopeFromEngine(connection) as session:
-            baseDatasetRecord = (
+            targetDatasetRecord = (
                 session.query(DatasetRecord)
-                .filter(DatasetRecord.key == baseDatasetKey)
-                .one()
-            )
-
-            updatedDatasetRecord = (
-                session.query(DatasetRecord)
-                .filter(DatasetRecord.key == updatedDatasetKey)
+                .filter(DatasetRecord.key == targetKey)
                 .one()
             )
 
             allData = pd.read_sql("Dataset", con=connection)
-            baseDataset = allData[allData["record_id"] == str(baseDatasetRecord.id)]
-            updatedDataset = allData[
-                allData["record_id"] == str(updatedDatasetRecord.id)
-            ]
 
-            results = reapply(baseDataset, updatedDataset, interactions)
+            targetDataset = allData[allData["record_id"] == str(targetDatasetRecord.id)]
+            targetDataset = targetDataset.drop("record_id", axis=1)
 
-            data = updatedDataset.drop(columns=["record_id"])
-            results["new_data"] = list(data.T.to_dict().values())
+            graph = Graph(target=targetDataset, target_id=targetKey, **provenance)
 
-            return jsonify(results)
+            return jsonify(graph.apply())

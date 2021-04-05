@@ -16,8 +16,12 @@ def get_kmeans_count():
     return len(n_clusters)
 
 
-def kmeans(data, n_clusters):
-    clf = KMeans(n_clusters=n_clusters)
+def kmeans(data, n_clusters, init_centers=None):
+    clf = KMeans(
+        n_clusters=n_clusters,
+        init="k-means++" if init_centers is None else init_centers,
+        random_state=0,
+    )
     clf.fit(data)
     labels = clf.labels_
     centers = clf.cluster_centers_

@@ -3,8 +3,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { HashRouter, Redirect, Route, Switch } from 'react-router-dom';
 
-import App from './App';
 import ComparisonHome from './components/Comparison/ComparisonHome';
+import Explore from './components/Explore/Explore';
 import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
 
@@ -19,7 +19,7 @@ const app = (
   <HashRouter>
     <Switch>
       <Redirect from="/" to={{ pathname: '/project', search }} exact />
-      <Route component={App} path="/explore" exact />
+      <Route component={Explore} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
       <Route component={ComparisonHome} path="/compare" exact />
     </Switch>

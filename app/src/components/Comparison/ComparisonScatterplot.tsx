@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Button,
   CircularProgress,
   createStyles,
   Grid,
@@ -9,12 +9,14 @@ import {
   Theme,
   useTheme,
 } from '@material-ui/core';
-import { CloseIcon } from '@material-ui/x-grid';
+import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useState } from 'react';
 
 import Store from '../../Store/Store';
 import Scatterplot from '../Scatterplot/Scatterplot';
+
+import ComparisonLegend from './ComparisonLegend';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,15 +34,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export type DataDisplay = 'Original' | 'Diff' | 'Comparison' | 'All';
+export type DataDisplay =
+  | 'Original'
+  | 'Diff'
+  | 'Comparison'
+  | 'All'
+  | 'AddedOnly'
+  | 'RemovedOnly'
+  | 'ChangedOnly';
 
 const CompVis: FC = () => {
   const { plots, removePlot, isLoadingData, n_plots } = useContext(Store).exploreStore;
- const {
-   currentProject,
- } = useContext(Store).projectStore;
-
-
+  const { currentProject } = useContext(Store).projectStore;
 
   const opts =
     currentProject?.datasets.map((dataset) => ({
@@ -48,6 +53,7 @@ const CompVis: FC = () => {
       desc: dataset.version,
     })) || [];
 
+  const { selectedPoints } = useContext(Store).exploreStore;
 
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
@@ -61,6 +67,13 @@ const CompVis: FC = () => {
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
+      <ComparisonLegend
+        dataDisplay={dataDisplay}
+        offset={spContainerDimension - 2 * theme.spacing(1) - 110}
+        selectedPoints={selectedPoints.length > 0}
+        setDataDisplay={setDataDisplay}
+      />
+
       <Paper elevation={3}>
         {n_plots > 1 && (
           <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
@@ -68,7 +81,7 @@ const CompVis: FC = () => {
           </IconButton>
         )}
         <div>
-          <Button
+          {/* <Button
             color="primary"
             variant="outlined"
             onMouseOut={() => {
@@ -101,9 +114,9 @@ const CompVis: FC = () => {
             onMouseOver={() => {
               setDataDisplay('Diff');
             }}
-           >
-             Changed Data
-             </Button>
+          >
+            Changed Data
+          </Button> */}
         </div>
         <Scatterplot
           dataDisplay={dataDisplay}

@@ -1,67 +1,89 @@
-import { NodeID } from '@visdesignlab/trrack';
+import { Brush } from '../../components/Brush/Types/Brush';
 
-import { Plot } from './Plot';
+import { Plot, PlotID } from './Plot';
 import { Prediction } from './Prediction';
 
-type AddPlotInteraction = {
+export type AddPlotInteraction = {
   type: 'AddPlot';
   plot: Plot;
 };
 
-type PointSelectionInteraction = {
+export type RemovePlotInteraction = {
+  type: 'RemovePlot';
+  plot: PlotID;
+};
+
+type BasePointSelection = {
   type: 'PointSelection';
-  plot: Plot;
+  plot: PlotID;
   selected: string[];
+};
+
+export type PointSelectionInteraction = BasePointSelection & {
+  action: 'Add';
+};
+
+export type PointDeselectionInteraction = BasePointSelection & {
+  action: 'Remove';
 };
 
 type BaseBrushInteraction = {
   type: 'Brush';
-  plot: Plot;
-  brush: string;
+  plot: PlotID;
+  brush: Brush | string;
 };
 
-type AddBrushInteraction = BaseBrushInteraction & {
+export type AddBrushInteraction = BaseBrushInteraction & {
   type: 'Brush';
   action: 'Add';
 };
 
-type UpdateBrushInteraction = BaseBrushInteraction & {
+export type UpdateBrushInteraction = BaseBrushInteraction & {
   type: 'Brush';
   action: 'Update';
 };
 
-type RemoveBrushInteraction = BaseBrushInteraction & {
+export type RemoveBrushInteraction = BaseBrushInteraction & {
   type: 'Brush';
+  brush: string;
   action: 'Remove';
 };
 
-type BrushInteraction = AddBrushInteraction | UpdateBrushInteraction | RemoveBrushInteraction;
-
-type ToggleCategoryInteraction = {
-  type: 'ToggleCategory';
-  show: boolean;
-};
-
-type ChangeCategoryInteraction = {
-  type: 'ChangeCategory';
-  category: string;
-};
-
-type SelectPredictionInteraction = {
+export type SelectPredictionInteraction = {
   type: 'SelectPrediction';
   prediction: Prediction;
 };
 
-export type BaseInteraction =
-  | AddPlotInteraction
-  | PointSelectionInteraction
-  | ToggleCategoryInteraction
-  | ChangeCategoryInteraction
-  | BrushInteraction
-  | SelectPredictionInteraction;
-
-export type Interaction = BaseInteraction & {
-  id: NodeID;
+type BaseFilterInteraction = {
+  type: 'Filter';
 };
 
-export type Interactions = Interaction[];
+export type FilterInInteraction = BaseFilterInteraction & {
+  filterType: 'In';
+};
+
+export type FilterOutInteraction = BaseFilterInteraction & {
+  filterType: 'Out';
+};
+
+type RootInteraction = {
+  type: 'Root';
+};
+
+export type Interaction =
+  | AddPlotInteraction
+  | RemovePlotInteraction
+  | PointSelectionInteraction
+  | PointDeselectionInteraction
+  | AddBrushInteraction
+  | RemoveBrushInteraction
+  | UpdateBrushInteraction
+  | PointSelectionInteraction
+  | SelectPredictionInteraction
+  | FilterInInteraction
+  | FilterOutInteraction
+  | RootInteraction;
+
+export type State = {
+  interaction: Interaction;
+};

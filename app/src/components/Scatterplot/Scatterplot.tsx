@@ -23,6 +23,7 @@ import Axis from './Axis';
 import Legend from './Legend';
 import Marks from './Marks';
 import Overlay from './Overlay/Overlay';
+import SkylineLegend from './Overlay/SkylineLegend';
 import useScatterplotStyle from './styles';
 
 const useStyles = makeStyles(() =>
@@ -39,6 +40,8 @@ type Props = {
   size: number;
   originalMarks?: boolean;
   dataDisplay?: DataDisplay;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setDataDisplay?: any;
 };
 
 const Scatterplot: FC<Props> = ({
@@ -51,14 +54,16 @@ const Scatterplot: FC<Props> = ({
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     loadedDataset: { labelColumn },
     setFreeformSelection,
     selectedPoints,
-
     showMatchesLegend,
     setBrushSelection,
-    state: { brushType },
+    brushType,
     hoveredPrediction,
+    showSkylineLegend,
+    state,
   } = useContext(Store).exploreStore;
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
@@ -138,15 +143,22 @@ const Scatterplot: FC<Props> = ({
 
   return (
     <svg className={root} id={plot.id}>
+      <defs>
+        <clipPath id="clip" width={sp_dimension}>
+          <rect fill="none" height={sp_dimension} width={sp_dimension} />
+        </clipPath>
+      </defs>
       <g transform={translate(margin)}>
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
+        {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
         <BrushComponent
           bottom={sp_dimension}
-          brushes={plot.brushes}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          brushes={state.brushes[plot.id] || {}}
           data={points}
-          disableBrush={brushType !== 'Rectangular'}
+          disableBrush={brushType !== 'Rectangular' || !originalMarks}
           left={0}
           right={sp_dimension}
           top={0}
@@ -154,7 +166,7 @@ const Scatterplot: FC<Props> = ({
           yScale={yScale}
           onBrushHandler={rectBrushHandler}
         />
-        {brushSize && (
+        {brushSize && originalMarks && (
           <FreeFormBrush
             bottom={sp_dimension}
             brushSize={brushSize}
@@ -167,6 +179,7 @@ const Scatterplot: FC<Props> = ({
             onBrush={freeFormBrushHandler}
           />
         )}
+
         {originalMarks ? (
           <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
         ) : (
@@ -181,6 +194,9 @@ const Scatterplot: FC<Props> = ({
         )}
         {hoveredPrediction && (
           <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
+        )}
+        {state.prediction && (
+          <Overlay prediction={state.prediction} xScale={xScale} yScale={yScale} />
         )}
       </g>
     </svg>

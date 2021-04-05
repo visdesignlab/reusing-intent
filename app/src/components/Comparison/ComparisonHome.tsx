@@ -1,16 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
-import { ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useEffect } from 'react';
-import { RouteComponentProps } from 'react-router-dom';
+import { Redirect, RouteComponentProps } from 'react-router-dom';
 
-import { eventConfig } from '../../App';
+import { ProvVis } from '../../trrack-vis/index';
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
-import Navbar from '../Navbar';
+import { eventConfig } from '../Explore/ExploreHome';
 
 import ComparisonScatterplot from './ComparisonScatterplot';
 
@@ -41,9 +40,11 @@ const useStyles = makeStyles(() => ({
 const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const {
     exploreStore: { n_plots, addPlot },
-    projectStore: { loadedDataset },
+    projectStore: { loadedDataset, comparisonDataset },
     provenance,
     setQueryParams,
+    loadedWorkflowId,
+    loadSavedProject
   } = useContext(Store);
 
   useEffect(() => {
@@ -57,36 +58,42 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
       if (current.children.length > 0) return;
     }
 
-    if (n_plots > 0 || !loadedDataset) return;
+    if (n_plots > 0 || !loadedDataset || loadedWorkflowId || loadSavedProject) return;
     const { numericColumns } = loadedDataset;
     const plot: Plot = {
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
-      brushes: {},
-      selectedPoints: [],
     };
     addPlot(plot);
   });
 
   const classes = useStyles();
 
+  if (!comparisonDataset)
+    return <Redirect to={{ pathname: '/project', search: location.search }} />;
+
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <Navbar />
       <div className={classes.layout}>
         <ComparisonScatterplot />
-        <ProvVis
+        {/* <ProvVis
+          approvedFunction={() => console.log('approved')}
+          brushCallback={brushedNodes}
+          bundleMap={bundle}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
+          currentDataset={loadedDataset.key}
           ephemeralUndo={false}
           eventConfig={eventConfig}
+          nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
           prov={provenance}
+          rejectedFunction={() => console.log('rejected')}
           root={provenance.graph.root}
           undoRedoButtons
-        />
+        /> */}
       </div>
     </div>
   );

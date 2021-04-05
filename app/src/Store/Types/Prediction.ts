@@ -32,15 +32,19 @@ export type Algorithms = 'KMeans' | 'DBScan' | 'LR' | 'BNL';
 
 export type Intents = 'Cluster' | 'Outlier' | 'NonOutlier' | 'LR:within' | 'LR:outside' | 'Skyline';
 
-export type Prediction = {
+export type BasePrediction = {
   rank: number;
   intent: Intents;
   algorithm: Algorithms;
   description: string;
-  memberIds: string[];
   dimensions: string[];
   info: AlgorithmInfo;
   hash: string;
+};
+
+export type Prediction = BasePrediction & {
+  original_id: string;
+  memberIds: string[];
   membership: {
     ipns: string[];
     isnp: string[];
@@ -49,3 +53,9 @@ export type Prediction = {
 };
 
 export type Predictions = Prediction[];
+
+export function getBasePrediction(prediction: Prediction) {
+  const pred: Partial<Prediction> = { ...prediction };
+
+  return pred;
+}

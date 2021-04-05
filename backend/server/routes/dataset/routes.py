@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 import pandas as pd
 from flask import Blueprint, jsonify, request
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.server.celery.init import celery
 from backend.server.database.process_dataset import process_dataset
 from backend.server.database.schemas.datasetMetadata import DatasetMetadata
@@ -18,7 +18,6 @@ from backend.server.routes.dataset.predict_helpers import (
     process_regular,
 )
 from backend.server.routes.utils import handle_exception
-from backend.utils.hash import getUIDForFile
 
 datasetRoute = Blueprint("dataset", __name__)
 
@@ -49,10 +48,9 @@ def uploadDataset(project: str):
     if "metadata" in request.files:
         sourceMetadata = request.files["metadata"]
 
-    dataset_hash = getUIDForFile(dataset)
     try:
-        trackers = process_dataset(
-            project, dataset, dataset_hash, version, description, sourceMetadata
+        dataset_hash, trackers = process_dataset(
+            project, dataset, version, description, sourceMetadata
         )
     except Exception as ex:
         return handle_exception(ex)
@@ -124,6 +122,8 @@ def getDatasetByKey(project: str, key: str):
                 "numericColumns": numericColumns,
                 "columns": columns,
                 "values": data,
+                "version": record.version,
+                "key": record.key,
             }
 
             return jsonify(dataset)
@@ -169,4 +169,9 @@ def predict(project: str, key: str):
                     record_id, dataset, selections, dimensions, session
                 )
 
-            return jsonify([e.serialize() for e in predictions])
+            preds = list(filter(lambda x: x.rank >= 0.5, predictions))
+
+            if len(preds) < 20:
+                preds = predictions[:20]
+
+            return jsonify([e.serialize() for e in preds])

@@ -4,16 +4,6 @@ from backend.utils.hash import getUIDForString
 
 
 class Prediction(object):
-    rank: float
-    intent: str
-    algorithm: str
-    description: str
-    memberIds: List[str]
-    dimensions: List[str]
-    info: dict
-    membership: dict
-    hash: str
-
     def __init__(
         self,
         rank,
@@ -24,16 +14,21 @@ class Prediction(object):
         dimensions,
         info,
         membership,
+        hash=None,
+        original_id=None,
     ) -> None:
-        self.rank = rank
-        self.intent = intent
-        self.algorithm = algorithm
-        self.description = description
-        self.memberIds = memberIds
-        self.dimensions = dimensions
-        self.info = info
-        self.membership = membership
-        self.hash = self.get_hash()
+        self.rank: float = rank
+        self.intent: str = intent
+        self.algorithm: str = algorithm
+        self.description: str = description
+        self.memberIds: List[str] = memberIds
+        self.dimensions: List[str] = dimensions
+        self.info: dict = info
+        self.membership: dict = membership
+        self.hash: str = self.get_hash()
+        self.original_id = original_id
+        if hash:
+            self.hash = hash
 
     def serialize(self):
         return self.__dict__

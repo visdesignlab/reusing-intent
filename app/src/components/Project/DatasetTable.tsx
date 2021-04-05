@@ -1,4 +1,8 @@
-import { CellClassParams, ColDef, ValueFormatterParams, XGrid } from '@material-ui/x-grid';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { makeStyles, Typography } from '@material-ui/core';
+import { DataGrid } from '@material-ui/data-grid';
+import { ValueFormatterParams } from '@material-ui/x-grid';
+import { observer } from 'mobx-react';
 import React, { useCallback, useContext, useMemo, useRef } from 'react';
 
 import Store from '../../Store/Store';
@@ -25,69 +29,72 @@ function useDataGridFormat(
     // console.log(toJS(data));
     const { columnInfo, columns, values } = data;
 
-    const cols: ColDef[] = columns.map((col) => ({
-      field: col,
-      headerName: columnInfo[col].fullname,
-      description: columnInfo[col].unit || '',
-      flex: 1,
-      renderHeader: (params) => {
-        const { width } = params.colDef;
+    const cols: any[] = columns
+      .filter((col) => col !== 'id' && col !== 'iid')
+      .map((col) => ({
+        field: col,
+        headerName: columnInfo[col].fullname,
+        description: columnInfo[col].unit || '',
+        flex: 1,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        renderHeader: (params: any) => {
+          const { width } = params.colDef;
 
-        if (headerHeight) return <div>{params.field}</div>;
+          if (headerHeight) return <div>{params.field}</div>;
 
-        return (
-          <div>
-            <HeaderDistribution column={columnInfo[col]} height={headerHeight} width={width} />
-          </div>
-        );
-      },
+          return (
+            <div>
+              <HeaderDistribution column={columnInfo[col]} height={headerHeight} width={width} />
+            </div>
+          );
+        },
 
-      renderCell: (params: ValueFormatterParams) => {
-        if (comparisonDataset === null) {
-          return <div>{params.value}</div>;
-        }
+        renderCell: (params: ValueFormatterParams) => {
+          if (comparisonDataset === null) {
+            return <div>{params.value}</div>;
+          }
 
-        const label = params.row.Label;
+          const label = params.row.Label;
 
-        const row = comparisonDataset.values.filter((d) => d.Label === label);
+          const row = comparisonDataset.values.filter((d) => d.Label === label);
 
-        let color = 'none';
+          let color = 'none';
 
-        if (row.length === 0) {
-          color = firstTable ? '#ff8080' : '#90EE90';
-        } else if (!firstTable) {
-          const valueChange = params.getValue(params.field) !== row[0][params.field];
+          if (row.length === 0) {
+            color = firstTable ? '#ff8080' : '#90EE90';
+          } else if (!firstTable) {
+            const valueChange = params.getValue(params.field) !== row[0][params.field];
 
-          // console.log(params.getValue(params.field));
-          // console.log(row[0][params.field]);
+            // console.log(params.getValue(params.field));
+            // console.log(row[0][params.field]);
 
-          if (valueChange) color = '#ffff8b';
-        }
+            if (valueChange) color = '#ffff8b';
+          }
 
-        return <div style={st(color)}>{params.value}</div>;
-      },
-      cellClassName: (params: CellClassParams) => {
-        if (comparisonDataset === null) return 'none';
-        const label = params.row.Label;
+          return <div style={st(color)}>{params.value}</div>;
+        },
+        cellClassName: (params: any) => {
+          if (comparisonDataset === null) return 'none';
+          const label = params.row.Label;
 
-        const row = comparisonDataset.values.filter((d) => d.Label === label);
+          const row = comparisonDataset.values.filter((d) => d.Label === label);
 
-        let color = 'none';
+          let color = 'none';
 
-        if (row.length === 0) {
-          color = firstTable ? 'red' : 'green';
-        } else if (!firstTable) {
-          const valueChange = params.getValue(params.field) !== row[0][params.field];
+          if (row.length === 0) {
+            color = firstTable ? 'red' : 'green';
+          } else if (!firstTable) {
+            const valueChange = params.getValue(params.field) !== row[0][params.field];
 
-          // console.log(params.getValue(params.field));
-          // console.log(row[0][params.field]);
+            // console.log(params.getValue(params.field));
+            // console.log(row[0][params.field]);
 
-          if (valueChange) color = 'yellow';
-        }
+            if (valueChange) color = 'yellow';
+          }
 
-        return color;
-      },
-    }));
+          return color;
+        },
+      }));
 
     return { rows: values, columns: cols };
   }, [data, comparisonDataset, headerHeight, firstTable, st]);
@@ -99,27 +106,43 @@ type paramType = {
   columnNum: number;
 };
 
-export const DatasetTable = (p: paramType) => {
+const useStyles = makeStyles(() => ({
+  centerText: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+}));
+
+export const DatasetTable = observer((p: paramType) => {
   const ref = useRef<HTMLDivElement>(null);
+  const classes = useStyles();
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
   const { rows, columns } = useDataGridFormat(loadedDataset, comparisonDataset, headerHeight, true);
 
   return (
-    <div style={{ gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum }}>
-      <XGrid
-        ref={ref}
-        columns={columns}
-        headerHeight={headerHeight}
-        rows={rows}
-        autoPageSize
-        pagination
-      />
+    <div
+      className={classes.centerText}
+      style={{ gridColumnStart: 1, gridColumnEnd: 1 + p.columnNum }}
+    >
+      {rows.length > 0 ? (
+        <DataGrid
+          ref={ref}
+          columns={columns}
+          headerHeight={headerHeight}
+          rows={rows}
+          autoPageSize
+          pagination
+        />
+      ) : (
+        <Typography variant="button">Please select a dataset</Typography>
+      )}
     </div>
   );
-};
+});
 
-export const ComparisonTable = () => {
+export const ComparisonTable = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
   const headerHeight = 56;
   const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
@@ -132,7 +155,7 @@ export const ComparisonTable = () => {
 
   return (
     <div style={{ gridColumnStart: 2, gridColumnEnd: 3 }}>
-      <XGrid
+      <DataGrid
         ref={ref}
         columns={columns}
         headerHeight={headerHeight}
@@ -142,4 +165,4 @@ export const ComparisonTable = () => {
       />
     </div>
   );
-};
+});

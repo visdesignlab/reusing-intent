@@ -1,22 +1,29 @@
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.inference_core.reapply.compare import get_changes_df
-from backend.inference_core.reapply.interactions import Algorithms, Intents
+from backend.inference_core.reapply.data_structures.apply_results import Changes
+from backend.inference_core.reapply.data_structures.types import Algorithms, Intents
 from backend.inference_core.reapply.reapply_algorithms.dbscan import (
     applyDBScanCluster,
     applyDBScanOutlier,
 )
 from backend.inference_core.reapply.reapply_algorithms.kmeans import applyKMeans
+from backend.inference_core.reapply.reapply_algorithms.range import apply_range
 from backend.inference_core.reapply.reapply_algorithms.skyline import applySkyline
 
 
-def apply_prediction(base, data, prediction):
-    prediction = Prediction(**prediction)
+def apply_prediction(base, data, prediction: Prediction):
     info = prediction.info
     changes = {}
+    new_info = {}
     ids = None
 
-    if prediction.algorithm == Algorithms.KMEANS:
-        ids, closest_center = applyKMeans(
+    print(prediction.algorithm, prediction.intent)
+
+    algorithm = Algorithms(prediction.algorithm)
+    intent = Intents(prediction.intent)
+
+    if algorithm == Algorithms.KMEANS:
+        ids, centers, closest_center = applyKMeans(
             data,
             prediction.dimensions,
             info["params"]["n_clusters"],
@@ -26,26 +33,39 @@ def apply_prediction(base, data, prediction):
         changes = get_changes_df(
             base[base.id.isin(prediction.memberIds)], data[data.id.isin(ids)]
         )
-        changes["center"] = closest_center
+        changes.set_result(ids.values.tolist())
+        changes = Changes(**changes.serialize(), **{"center": closest_center})
         return changes
-    if prediction.algorithm == Algorithms.DBSCAN:
-        if prediction.intent == Intents.CLUSTER:
+    if algorithm == Algorithms.DBSCAN:
+        eps = info["params"]["eps"]
+        min_samples = info["params"]["min_samples"]
+        if intent == Intents.CLUSTER:
             ids = applyDBScanCluster(
                 data,
                 prediction.dimensions,
-                info["eps"],
-                info["min_samples"],
+                eps,
+                min_samples,
                 prediction.memberIds,
             )
-        if prediction.intent == Intents.OUTLIER:
+        if intent == Intents.OUTLIER or intent == Intents.NONOUTLIER:
             ids = applyDBScanOutlier(
-                data, prediction.dimensions, info["eps"], info["min_samples"]
+                data,
+                prediction.dimensions,
+                eps,
+                min_samples,
+                intent != Intents.NONOUTLIER,
             )
+    if algorithm == Algorithms.DECISIONTREE:
+        ids = apply_range(data, info["rules"])
 
-    if prediction.algorithm == Algorithms.BNL:
-        ids = applySkyline(data, prediction.dimensions, info["sense"])
+    if algorithm == Algorithms.BNL:
+        ids, new_info = applySkyline(data, prediction.dimensions, info["sense"])
 
     changes = get_changes_df(
         base[base.id.isin(prediction.memberIds)], data[data.id.isin(ids)]
     )
+    changes.set_result(ids)
+
+    changes.info = new_info
+
     return changes

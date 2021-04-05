@@ -1,0 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-unused-vars */
+import { ReactChild } from 'react';
+
+export type Config = {
+  regularGlyph: ReactChild;
+  currentGlyph: ReactChild;
+  backboneGlyph: ReactChild;
+  bundleGlyph: ReactChild;
+};
+
+export type EventConfig<E extends string> = {
+  [key: string]: Partial<Config>;
+};

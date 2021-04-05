@@ -1,9 +1,11 @@
 import {
   Button,
+  ButtonGroup,
   createStyles,
-  FormControl,
   IconButton,
   makeStyles,
+  Menu,
+  MenuItem,
   Theme,
 } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
@@ -19,15 +21,19 @@ import useDropdown from '../Dropdown';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    formControl: {
+    divSpacing: {
       margin: theme.spacing(1),
+    },
+    center: {
+      justifyContent: 'center',
     },
   }),
 );
 
 const AddPlot: FC = () => {
   const classes = useStyles();
-  const [isAdding, setIsAdding] = useState(false);
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+
   const { loadedDataset: dataset, addPlot } = useContext(Store).exploreStore;
 
   const columns =
@@ -49,57 +55,65 @@ const AddPlot: FC = () => {
     columns,
   );
 
+  const handleClose = useCallback(() => {
+    setAnchor(null);
+  }, []);
+
   const handleSubmit = useCallback(() => {
     const plot: Plot = {
       id: getPlotId(),
       x: xCol,
       y: yCol,
-      brushes: {},
-      selectedPoints: [],
     };
 
     addPlot(plot);
     setX('');
     setY('');
-    setIsAdding(false);
-  }, [setX, setY, xCol, yCol, addPlot]);
+    handleClose();
+  }, [setX, setY, xCol, yCol, addPlot, handleClose]);
 
-  const addButton = (
-    <FormControl className={classes.formControl}>
-      <Button
-        color="primary"
-        startIcon={<AddIcon />}
-        variant="contained"
-        onClick={() => {
-          setIsAdding(true);
-        }}
-      >
-        Add Plot
-      </Button>
-    </FormControl>
-  );
-
-  const plotMenu = (
+  return (
     <>
-      <XDropdown />
-      <YDropdown />
-      <IconButton color="primary" disabled={!(xCol && yCol)} onClick={handleSubmit}>
-        <DoneIcon />
-      </IconButton>
-      <IconButton
-        color="secondary"
-        onClick={() => {
-          setX('');
-          setY('');
-          setIsAdding(false);
-        }}
-      >
-        <CloseIcon />
-      </IconButton>
+      <div className={classes.divSpacing}>
+        <Button
+          color="primary"
+          startIcon={<AddIcon />}
+          variant="contained"
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+            setAnchor(event.currentTarget);
+          }}
+        >
+          Add Plot
+        </Button>
+      </div>
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={handleClose}>
+        <MenuItem button={false}>
+          <XDropdown />
+        </MenuItem>
+        <MenuItem button={false}>
+          <YDropdown />
+        </MenuItem>
+        <MenuItem button={false} selected={false} divider />
+        <MenuItem alignItems="center" button={false}>
+          <ButtonGroup className={classes.center} fullWidth>
+            <IconButton color="primary" disabled={!(xCol && yCol)} onClick={handleSubmit}>
+              <DoneIcon />
+            </IconButton>
+            <IconButton
+              color="secondary"
+              onClick={() => {
+                setX('');
+                setY('');
+                setAnchor(null);
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </ButtonGroup>
+        </MenuItem>
+      </Menu>
     </>
   );
-
-  return !isAdding ? addButton : plotMenu;
 };
 
 export default observer(AddPlot);

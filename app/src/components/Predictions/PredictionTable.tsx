@@ -16,9 +16,11 @@ import {
 import TouchAppIcon from '@material-ui/icons/TouchApp';
 import debounce from 'debounce';
 import { observer } from 'mobx-react';
-import { useContext, useMemo } from 'react';
+import React, { useContext, useMemo } from 'react';
 
 import Store from '../../Store/Store';
+
+import Bar from './Bar';
 
 export const useStyles = makeStyles(() =>
   createStyles({
@@ -29,6 +31,9 @@ export const useStyles = makeStyles(() =>
       justifyContent: 'center',
       alignItems: 'center',
       flexDirection: 'column',
+    },
+    table: {
+      tableLayout: 'auto',
     },
   }),
 );
@@ -67,36 +72,42 @@ const PredictionTable = () => {
   return (
     <div style={{ overflow: 'scroll', padding: '1em' }}>
       <TableContainer component={Paper}>
-        <Table style={{ tableLayout: 'auto' }}>
+        <Table className={classes.table}>
           <TableHead>
             <TableRow>
-              <TableCell width="30%">Intent</TableCell>
-              <TableCell width="60%">Rank</TableCell>
+              {/* <TableCell width="20%">Intent</TableCell> */}
+              <TableCell width="90%">Intent</TableCell>
               <TableCell width="10%" />
             </TableRow>
           </TableHead>
           <TableBody>
-            {predictions.map((pred) => (
-              <TableRow
-                key={pred.hash}
-                onMouseOut={() => {
-                  debouncedSetHoveredPrediction(null);
-                }}
-                onMouseOver={() => {
-                  debouncedSetHoveredPrediction(pred);
-                }}
-              >
-                <Tooltip title={pred.description}>
-                  <TableCell width="30%">{pred.intent}</TableCell>
-                </Tooltip>
-                <TableCell width="60%">{pred.rank}</TableCell>
-                <TableCell width="10%">
-                  <IconButton onClick={() => setPredictionSelection(pred)}>
-                    <TouchAppIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+            {predictions.map((pred) => {
+              return (
+                <TableRow
+                  key={pred.hash}
+                  onMouseOut={() => {
+                    debouncedSetHoveredPrediction(null);
+                  }}
+                  onMouseOver={() => {
+                    debouncedSetHoveredPrediction(pred);
+                  }}
+                >
+                  <Tooltip title={pred.description}>
+                    {/* <TableCell width="30%">
+                      <Typography variant="button">{pred.intent}</Typography>
+                    </TableCell> */}
+                    <TableCell width="90%">
+                      <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
+                    </TableCell>
+                  </Tooltip>
+                  <TableCell width="10%">
+                    <IconButton onClick={() => setPredictionSelection(pred)}>
+                      <TouchAppIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </TableContainer>

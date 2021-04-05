@@ -47,7 +47,7 @@ const ProjectView = () => {
     projectStore: {
       currentProject,
       comparisonDatasetKey,
-      state: { datasetKey },
+      loadedDatasetKey: datasetKey,
       loadDataset,
       loadComparisonDataset,
     },

@@ -2,15 +2,25 @@ from enum import Enum
 
 
 ###########################################################################
+############################### Brush Action ##############################
+###########################################################################
+class BrushAction(Enum):
+    ADD = "Add"
+    UPDATE = "Update"
+    REMOVE = "Remove"
+
+
+###########################################################################
 ############################### Interactions ##############################
 ###########################################################################
-class Interactions(Enum):
+class InteractionType(Enum):
+    ROOT = "Root"
     ADD_PLOT = "AddPlot"
     BRUSH = "Brush"
-    TOGGLE_CATEGORY = "ToggleCategory"
-    CHANGE_CATEGORY = "Change_Category"
     SELECT_PREDICTION = "SelectPrediction"
     POINT_SELECTION = "PointSelection"
+    FILTER = "Filter"
+    NONE = "None"
 
 
 ###########################################################################
@@ -23,6 +33,8 @@ class Algorithms(Enum):
     DT = "DT"
     LR = "LR"
     QR = "QR"
+    QRWITHIN = "QR:within"
+    DECISIONTREE = "DecisionTree"
 
 
 ###########################################################################
@@ -34,4 +46,7 @@ class Intents(Enum):
     SKYLINE = "Skyline"
     RANGE = "Range"
     LINEARREGRESSION = "LINEARREGRESSION"
+    LRWITHIN = "LR:within"
     QUADRATICREGRESSION = "QUADRATICREGRESSION"
+    NONOUTLIER = "NonOutlier"
+    SIMPLIFIEDRANGE = "SimplifiedRange"

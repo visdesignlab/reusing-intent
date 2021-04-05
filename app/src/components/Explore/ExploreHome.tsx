@@ -1,11 +1,14 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
-import { EventConfig, ProvVis } from '@visdesignlab/trrack-vis';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import React, { useContext, useEffect } from 'react';
 
+import Store from '../../Store/Store';
+import { IntentEvents } from '../../Store/Types/IntentEvents';
+import { Plot } from '../../Store/Types/Plot';
+import { ProvVis } from '../../trrack-vis/index';
+import { EventConfig } from '../../trrack-vis/Utils/EventConfig';
+import { getPlotId } from '../../Utils/IDGens';
 import {
   AddBrush,
   AddPlot,
@@ -23,14 +26,11 @@ import {
   RemoveBrush,
   SwitchCategoryVisibility,
   TurnPrediction,
-} from './components/Icons';
-import Navbar from './components/Navbar';
-import PredictionTable from './components/Predictions/PredictionTable';
-import Visualization from './components/Visualization';
-import Store from './Store/Store';
-import { IntentEvents } from './Store/Types/IntentEvents';
-import { Plot } from './Store/Types/Plot';
-import { getPlotId } from './Utils/IDGens';
+} from '../Icons';
+import Navbar from '../Navbar';
+import PredictionTable from '../Predictions/PredictionTable';
+import Visualization from '../Visualization';
+import Workflows from '../Workflow/Workflows';
 
 export type Bundle = {
   metadata: unknown;
@@ -59,7 +59,7 @@ const useStyles = makeStyles(() => ({
   },
   layout: {
     display: 'grid',
-    gridTemplateColumns: '5fr 2fr 1.3fr',
+    gridTemplateColumns: '5fr 1.5fr 1.3fr 1.5fr',
     overflow: 'hidden',
   },
 }));
@@ -119,7 +119,7 @@ export const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <LockPrediction size={16} />,
     bundleGlyph: <LockPrediction fill="rgb(248, 191, 132)" size={22} />,
   },
-  'Turn Prediction': {
+  'Prediction Selection': {
     backboneGlyph: <TurnPrediction size={22} />,
     currentGlyph: <TurnPrediction fill="#2185d0" size={22} />,
     regularGlyph: <TurnPrediction size={16} />,
@@ -143,7 +143,7 @@ export const eventConfig: EventConfig<IntentEvents> = {
     regularGlyph: <RemoveBrush size={16} />,
     bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
   },
-  'Clear All': {
+  Filter: {
     backboneGlyph: <ClearAll size={22} />,
     currentGlyph: <ClearAll fill="#2185d0" size={22} />,
     regularGlyph: <ClearAll size={16} />,
@@ -163,19 +163,19 @@ export const eventConfig: EventConfig<IntentEvents> = {
   },
 };
 
-const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
+const ExploreHome = () => {
   const classes = useStyles();
 
   const {
-    exploreStore: { predictions, n_plots, addPlot, setPredictionSelection, setHoveredPrediction },
-    projectStore: { loadedDataset },
+    exploreStore,
+    projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
     provenance,
-    setQueryParams,
+    bundledNodes,
+    loadedWorkflowId,
+    loadSavedProject,
   } = useContext(Store);
 
-  useEffect(() => {
-    setQueryParams(location.search);
-  }, [location.search, setQueryParams]);
+  const { addToWorkflow } = exploreStore;
 
   useEffect(() => {
     const current = provenance.current;
@@ -184,21 +184,17 @@ const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
       if (current.children.length > 0) return;
     }
 
-    if (n_plots > 0 || !loadedDataset) return;
+    if (!loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId || loadSavedProject) return;
+
     const { numericColumns } = loadedDataset;
+
     const plot: Plot = {
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
-      brushes: {},
-      selectedPoints: [],
     };
-    addPlot(plot);
+    exploreStore.addPlot(plot);
   });
-
-  const { bundledNodes } = useContext(Store);
-
-  if (!loadedDataset) return <Redirect to={{ pathname: '/project', search: location.search }} />;
 
   const bundle: BundleMap = {};
 
@@ -213,6 +209,12 @@ const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
     };
   }
 
+  // function brushedNodes(selected: string[])
+  // {
+  //   //TODO:: do this in smarter, value based way
+  //   // updateBrushed(selected)
+  // }
+
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -221,19 +223,27 @@ const App: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
         <Visualization />
         <PredictionTable />
         <ProvVis
-          bundleMap={bundle}
+          key={provenance.graph.root}
+          addToWorkflow={addToWorkflow}
+          approvedFunction={(node: string) => approveNode(node)}
+          backboneGutter={40}
           changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
           current={provenance.graph.current}
+          currentDataset={loadedDataset?.version || ''}
           ephemeralUndo={false}
           eventConfig={eventConfig}
+          nodeCreationMap={nodeCreationMap}
           nodeMap={provenance.graph.nodes}
-          prov={provenance}
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          prov={provenance as any}
+          rejectedFunction={(node) => rejectNode(node)}
           root={provenance.graph.root}
           undoRedoButtons
         />
+        <Workflows />
       </div>
     </div>
   );
 };
 
-export default observer(App);
+export default observer(ExploreHome);

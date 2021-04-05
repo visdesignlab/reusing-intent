@@ -13,5 +13,8 @@
     "start:server": "poetry run python run.py",
     "start:app": "cd app && yarn start",
     "start:worker": "poetry run celery -A backend.server.celery.init.celery worker  "
+  },
+  "dependencies": {
+    "firebase-admin": "^9.5.0"
   }
 }

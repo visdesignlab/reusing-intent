@@ -43,10 +43,12 @@ def main(projects=[]):
         threads = []
 
         for file in csv_files:
+            version_name = file
+            version_name = os.path.splitext(version_name)[0]
             file = os.path.join(dataset_dir, file)
             print(name)
             th = threading.Thread(
-                target=upload_dataset, args=[file, meta_path, id, str(version)]
+                target=upload_dataset, args=[file, meta_path, id, version_name]
             )
             th.start()
             threads.append(th)
@@ -57,7 +59,7 @@ def main(projects=[]):
 
 
 def upload_dataset(file_path: str, meta_path: str, project: str, version: str):
-    values = {"version": f"v{version}", "description": ""}
+    values = {"version": version, "description": ""}
     files = {
         "dataset": open(file_path, "rb"),
         "metadata": open(meta_path, "rb"),
@@ -95,7 +97,7 @@ def upload_dataset(file_path: str, meta_path: str, project: str, version: str):
             for v in bars.values():
                 v.update(v.total - v.n)
             isOn = False
-        time.sleep(0.1)
+        time.sleep(0.5)
 
 
 def create_project(name, id):

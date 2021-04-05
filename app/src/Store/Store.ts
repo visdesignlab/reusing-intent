@@ -1,15 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { initProvenance } from '@visdesignlab/trrack';
+import firebase from 'firebase';
+import 'firebase/database';
 import { makeAutoObservable } from 'mobx';
 import { createContext } from 'react';
 
+import { initializeFirebase } from '../components/Workflow/Firebase';
+
 import { CompareStore } from './CompareStore';
 import { ExploreStore } from './ExploreStore';
-import { defaultState, IntentState } from './IntentState';
 import { ProjectStore } from './ProjectStore';
 import { provenanceActions } from './ProvenanceActions';
+import { StatusRecord } from './Types/Artifacts';
 import { IntentEvents } from './Types/IntentEvents';
-import { InteractionArtifact } from './Types/InteractionArtifact';
+import { State } from './Types/Interactions';
 import { IntentProvenance } from './Types/ProvenanceType';
 
 export class RootStore {
@@ -18,8 +21,12 @@ export class RootStore {
   search = '';
   defaultProject = 'cluster';
   loadDefaultDataset = false;
+  loadSavedProject: string | null = null;
   defaultDatasetKey: string | null = null;
   redirectPath: string | null = null;
+  loadedWorkflowId: string | null = null;
+  db: firebase.database.Database;
+  provDb: firebase.database.Database;
 
   //
   projectStore: ProjectStore;
@@ -31,9 +38,12 @@ export class RootStore {
   bundledNodes: string[][];
 
   constructor() {
-    this.provenance = initProvenance<IntentState, IntentEvents, InteractionArtifact>(defaultState, {
-      loadFromUrl: false,
-    });
+    this.provenance = initProvenance<State, IntentEvents, StatusRecord>(
+      { interaction: { type: 'Root' } },
+      {
+        loadFromUrl: false,
+      },
+    );
 
     this.provenance.done();
 
@@ -44,16 +54,15 @@ export class RootStore {
     this.currentNodes = [];
     this.bundledNodes = [];
 
+    const { db, provDb } = initializeFirebase();
+
+    this.db = db;
+    this.provDb = provDb;
+
     makeAutoObservable(this, {
       actions: false,
       provenance: false,
     });
-  }
-
-  get state() {
-    const state = this.provenance.getState(this.provenance.current);
-
-    return JSON.parse(JSON.stringify(state)) as IntentState;
   }
 
   setQueryParams = (search: string) => {
@@ -63,12 +72,17 @@ export class RootStore {
     const debug = searchParams.get('debug');
     const defaultProject = searchParams.get('project');
     const data = searchParams.get('data');
+    const demo = searchParams.get('demo');
     const redirectPath = searchParams.get('redirect');
-    this.debug = debug ? true : false;
-    this.defaultProject = defaultProject ? defaultProject : 'cluster';
-    this.loadDefaultDataset = data ? true : false;
+    const workflowId = searchParams.get('workflow');
+
+    this.debug = debug ? true : workflowId ? true : demo ? true : false;
+    this.defaultProject = defaultProject ? defaultProject : demo ? demo : 'cluster';
+    this.loadDefaultDataset = data || demo ? true : false;
     this.defaultDatasetKey = data !== 'true' ? data : null;
-    this.redirectPath = redirectPath;
+    this.loadSavedProject = demo ? demo : null;
+    this.loadedWorkflowId = workflowId;
+    this.redirectPath = workflowId || demo ? 'explore' : redirectPath;
   };
 }
 

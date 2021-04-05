@@ -6,7 +6,7 @@ from backend.inference_core.algorithms.linear_regression import computeLR
 from backend.inference_core.algorithms.range import range_intent
 from backend.inference_core.algorithms.skyline_algorithm import computeSkyline
 from backend.inference_core.filter import process_predictions
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.server.database.get_predictions import get_predictions
 
 

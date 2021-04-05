@@ -1,4 +1,5 @@
 export type IntentEvents =
+  | 'Set Project'
   | 'Load Dataset'
   | 'Change Dataset'
   | 'Add Plot'
@@ -9,4 +10,5 @@ export type IntentEvents =
   | 'Add Brush'
   | 'Remove Brush'
   | 'Update Brush'
-  | 'Change Brush Type';
+  | 'Change Brush Type'
+  | 'Filter';

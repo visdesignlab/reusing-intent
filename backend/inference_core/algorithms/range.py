@@ -3,7 +3,7 @@ from typing import Any, List
 import numpy as np
 from sklearn import tree
 
-from backend.inference_core.intent_contract import Prediction
+from backend.inference_core.prediction import Prediction
 from backend.inference_core.prediction_stats import getStats
 
 
@@ -74,7 +74,6 @@ def get_decision_paths(model: tree.DecisionTreeClassifier, data, selection):
                 + sign
                 + str(round(threshold[node_id], 2))
             )
-
             rules.append(rule)
         paths.add(tuple(rules))
 
@@ -91,8 +90,12 @@ def range_intent(dataset, dimensions, selection, max_depth=None) -> List[Predict
 
     rules = get_decision_paths(clf, data, selection)
 
+    member_ids = dataset.id.tolist()
+
     mask: Any = get_mask_from_rules(data, rules)
-    member_ids = dataset.loc[mask, "id"].tolist()
+
+    if mask is not None:
+        member_ids = dataset.loc[mask, "id"].tolist()
     current_depth = clf.get_depth()
 
     intent = "Range" if max_depth is None else "SimplifiedRange"
