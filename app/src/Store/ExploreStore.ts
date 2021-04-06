@@ -172,7 +172,7 @@ export class ExploreStore {
 
     const { filter } = this.state;
 
-    if (!filter) return []
+    if (!filter) return [];
 
     Object.values(filter.points).forEach((p) => {
       selections.push(p);
@@ -231,6 +231,24 @@ export class ExploreStore {
 
   get compDataset() {
     let dataset = this.rootStore.projectStore.currentComparisonDatasets[1];
+
+    if (!dataset) {
+      const dt_str = window.localStorage.getItem('dataset');
+
+      if (!dt_str) throw new Error('Dataset not loaded');
+
+      dataset = JSON.parse(dt_str) as Dataset;
+
+      return dataset;
+    }
+
+    window.localStorage.setItem('dataset', JSON.stringify(dataset));
+
+    return dataset;
+  }
+
+  get origCompDataset() {
+    let dataset = this.rootStore.projectStore.currentComparisonDatasets[0];
 
     if (!dataset) {
       const dt_str = window.localStorage.getItem('dataset');

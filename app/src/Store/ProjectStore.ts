@@ -147,15 +147,22 @@ export class ProjectStore {
   }
 
   get compDatasetValues() {
-    if (this.currentComparisonDatasets.length < 2)
-    {
-      return []
+    if (this.currentComparisonDatasets.length < 2) {
+      return [];
     }
 
-    return (
-      this.currentComparisonDatasets[1].values.filter(
-        (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
-      )
+    return this.currentComparisonDatasets[1].values.filter(
+      (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
+    );
+  }
+
+  get originaCompValues() {
+    if (this.currentComparisonDatasets.length < 2) {
+      return [];
+    }
+
+    return this.currentComparisonDatasets[0].values.filter(
+      (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
     );
   }
 
@@ -277,9 +284,10 @@ export class ProjectStore {
       this.currentComparisonDatasets = [this.loadedDataset];
     }
 
+    console.log(datasetKey);
+
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
-
         if (this.currentComparisonDatasets.length > 1) {
           this.currentComparisonDatasets[0] = this.currentComparisonDatasets[1];
           this.comparisonKeys[0] = this.comparisonKeys[1];
@@ -290,13 +298,12 @@ export class ProjectStore {
         this.currentComparisonDatasets.push(response.data);
         this.comparisonKeys.push(datasetKey);
 
-        console.log(toJS(this.currentComparisonDatasets))
-        console.log(toJS(this.comparisonKeys))
-
+        console.log(toJS(this.currentComparisonDatasets));
+        console.log(toJS(this.comparisonKeys));
       }),
     );
 
-    this.loadDatasetWithReapply(datasetKey)
+    this.loadDatasetWithReapply(datasetKey);
   };
 
   //load the dataset into comparison
@@ -372,9 +379,7 @@ export class ProjectStore {
         // this.provenance.importProvenanceGraph(res.data.graph);
         this.currentDatasetKey = datasetKey;
 
-
-
-        console.log(toJS(this.comparisonKeys))
+        console.log(toJS(this.comparisonKeys));
         this.rootStore.exploreStore.stateRecord = res.data;
         setTimeout(
           action(() => (this.isReapplying = false)),

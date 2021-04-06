@@ -141,6 +141,8 @@ const Scatterplot: FC<Props> = ({
       brushSize = null;
   }
 
+  console.log(points, compPoints)
+
   return (
     <svg className={root} id={plot.id}>
       <defs>

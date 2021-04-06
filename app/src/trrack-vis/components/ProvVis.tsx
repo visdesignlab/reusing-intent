@@ -501,6 +501,7 @@ function ProvVis<T, S extends string, A>({
                 })}
               </>
             )}
+            
           </NodeGroup>
           <NodeGroup
             data={stratifiedList}

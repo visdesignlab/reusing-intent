@@ -16,10 +16,10 @@ export function useScatterplotData(
   x_extents: [number, number];
   y_extents: [number, number];
 } {
-  const { compDataset: compDataFull, loadedDataset: fullData, workingValues: data } = useContext(
-    Store,
+  const { compDataset: compDataFull, origCompDataset: origCompFull, loadedDataset: fullData, workingValues: data, isComparison } = useContext(
+    Store, 
   ).exploreStore;
-  const { compDatasetValues: compData } = useContext(Store).projectStore;
+  const { compDatasetValues: compData, originaCompValues: origCompData, currentComparisonDatasets } = useContext(Store).projectStore;
 
 
 
@@ -42,7 +42,24 @@ export function useScatterplotData(
           y: d[y] as number,
           label: d[label] as string,
         })) || [];
-    } else {
+    } else if (isComparison && currentComparisonDatasets.length > 1) {
+      points =
+        origCompData.map((d) => ({
+          id: d['id'] as string,
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[label] as string,
+        })) || [];
+
+      allPoints =
+        origCompFull.values.map((d) => ({
+          id: d['id'] as string,
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[label] as string,
+        })) || [];
+    }
+    else {
       points =
         data.map((d) => ({
           id: d['id'] as string,
@@ -64,7 +81,7 @@ export function useScatterplotData(
     const y_extents = extent(allPoints.map((d) => d.y) as number[]) as [number, number];
 
     return { points, x_extents, y_extents };
-  }, [compData, comparisonData, x, y, label, data, fullData, compDataFull]);
+  }, [compData, comparisonData, x, y, label, data, fullData, compDataFull, origCompFull, origCompData, isComparison, currentComparisonDatasets]);
 
   return dt;
 }
