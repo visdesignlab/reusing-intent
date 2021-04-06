@@ -7,7 +7,9 @@ const useStyles = makeStyles({
     maxWidth: 400,
   },
   media: {
-    height: 400,
+    height: 0,
+    paddingTop: '56.25%', // 16:9,
+    marginTop: '30',
   },
 });
 
@@ -24,7 +26,7 @@ const Landing = () => {
                 <CardActionArea>
                   <CardMedia
                     className={classes.media}
-                    image="../../../public/landingPictures/clusterComplex.png"
+                    src="/public/landingPictures/clusterComplex.png"
                     title="Cluster Complex Version 1"
                 />
                   <CardContent>

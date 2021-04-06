@@ -40,14 +40,20 @@ const Workflows = () => {
 
   return (
     <Paper className={classes.root}>
-      <Typography align="center" style={{fontWeight:"bold",
-        fill: "#F2",
-        fontSize: "18px", 
-      fontFamily: "Lato, Helvetica Neue,Arial,Helvetica,sans-serif"}} variant="h4">
+      <Typography
+        align="center"
+        style={{
+          fontWeight: 'bold',
+          fill: '#F2',
+          fontSize: '18px',
+          fontFamily: 'Lato, Helvetica Neue,Arial,Helvetica,sans-serif',
+        }}
+        variant="h4"
+      >
         Workflows
       </Typography>
       <Divider />
-      <Card variant="outlined">
+      <Card style={{ border: 'none', boxShadow: 'none' }} variant="outlined">
         <CardActions>
           <Button color="primary" onClick={() => addWorkflow()}>
             Add Workflow
