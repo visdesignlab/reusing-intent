@@ -56,10 +56,25 @@ const Action = ({ id }: Props) => {
     <Card className={classes.card} variant="outlined">
       <CardContent>
         <CardActions disableSpacing>
-          <Typography color={isRejected ? 'textSecondary' : 'textPrimary'} variant="button">
-            {node.label}
-            
-          </Typography>
+          <div>
+            <Typography
+              color={isRejected ? 'textSecondary' : 'textPrimary'}
+              display="block"
+              variant="button"
+            >
+              {node.label}
+            </Typography>
+            <Typography
+              color="textSecondary"
+              display="block"
+              variant="subtitle2"
+            >
+              {/* <div>{node.label}</div> */}
+              {provenance.getLatestAnnotation(node.id)
+                ? provenance.getLatestAnnotation(node.id)?.annotation
+                : ''}
+            </Typography>
+          </div>
           <IconButton
             className={classes.close}
             color="secondary"
