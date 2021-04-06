@@ -76,7 +76,17 @@ const PredictionTable = () => {
           <TableHead>
             <TableRow>
               {/* <TableCell width="20%">Intent</TableCell> */}
-              <TableCell width="90%">Intent</TableCell>
+              <TableCell
+                style={{
+                  fontWeight: 'bold',
+                  fill: '#F2',
+                  fontSize: '18px',
+                  fontFamily: 'Lato, Helvetica Neue,Arial,Helvetica,sans-serif',
+                }}
+                width="90%"
+              >
+                Selection Predictions
+              </TableCell>
               <TableCell width="10%" />
             </TableRow>
           </TableHead>

@@ -77,6 +77,28 @@ export function ClearAll({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
   );
 }
 
+//Occurs on clear all click ???
+export function Filter({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+  return (
+    <g>
+      <circle fill="white" r={size - size / 4} />
+      <g>
+        <text
+          dominantBaseline="middle"
+          fill={fill}
+          fontFamily="FontAwesome"
+          fontSize={size}
+
+
+          textAnchor="middle"
+        >
+          &#xf0b0;
+        </text>
+      </g>
+    </g>
+  );
+}
+
 //Occurs on removing a brush
 export function RemoveBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
   return (

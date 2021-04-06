@@ -21,6 +21,8 @@ export function useScatterplotData(
   ).exploreStore;
   const { compDatasetValues: compData } = useContext(Store).projectStore;
 
+
+
   const dt = useMemo(() => {
     let points;
     let allPoints;

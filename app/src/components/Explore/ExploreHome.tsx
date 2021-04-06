@@ -16,7 +16,7 @@ import {
   ChangeBrushSize,
   ChangeBrushType,
   ChangeCategory,
-  ClearAll,
+  Filter,
   Invert,
   LoadDataset,
   LockPrediction,
@@ -144,10 +144,10 @@ export const eventConfig: EventConfig<IntentEvents> = {
     bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
   },
   Filter: {
-    backboneGlyph: <ClearAll size={22} />,
-    currentGlyph: <ClearAll fill="#2185d0" size={22} />,
-    regularGlyph: <ClearAll size={16} />,
-    bundleGlyph: <ClearAll fill="#ccc" size={22} />,
+    backboneGlyph: <Filter size={22} />,
+    currentGlyph: <Filter fill="#2185d0" size={22} />,
+    regularGlyph: <Filter size={16} />,
+    bundleGlyph: <Filter fill="#ccc" size={22} />,
   },
   'Change Brush Type': {
     backboneGlyph: <ChangeBrushType size={22} />,

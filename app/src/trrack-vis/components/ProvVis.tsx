@@ -673,9 +673,9 @@ function ProvVis<T, S extends string, A>({
     },
     {
       menuItem: {
-        key: 'Bookmarks/Annotations',
+        key: 'Bookmarks',
         icon: 'bookmark',
-        content: 'Bookmarks/Annotations',
+        content: 'Bookmarks',
       },
       render: () => <Tab.Pane attached={false}>{bookmarkTabView}</Tab.Pane>,
     },

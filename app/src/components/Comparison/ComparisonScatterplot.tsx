@@ -58,7 +58,6 @@ const CompVis: FC = () => {
   // const spContainerDimension = height > width ? width : height;
   const spContainerDimension = n_plots === 1 ? 800 : 500;
 
-  const [dataDisplay, setDataDisplay] = useState<DataDisplay>('All');
   const classes = useStyles();
   const theme = useTheme();
   const xs = n_plots === 1 ? 'auto' : 6;
@@ -67,12 +66,6 @@ const CompVis: FC = () => {
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
-      <ComparisonLegend
-        dataDisplay={dataDisplay}
-        offset={spContainerDimension - 2 * theme.spacing(1) - 110}
-        selectedPoints={selectedPoints.length > 0}
-        setDataDisplay={setDataDisplay}
-      />
 
       <Paper elevation={3}>
         {n_plots > 1 && (

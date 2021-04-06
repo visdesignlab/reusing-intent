@@ -39,7 +39,7 @@ const Legend: FC<Props> = ({ setDataDisplay, dataDisplay, selectedPoints = false
             dominantBaseline="middle"
             dx="25"
             dy="5"
-            font-weight={dataDisplay === 'Original' ? 'bold' : 'normal'}
+            fontWeight={dataDisplay === 'Original' ? 'bold' : 'normal'}
           >
             v1
           </text>

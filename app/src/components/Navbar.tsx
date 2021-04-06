@@ -9,12 +9,12 @@ import {
   Toolbar,
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
 import React, { FC, useContext } from 'react';
 
 import Store from '../Store/Store';
-import deepCopy from '../Utils/DeepCopy';
 
 import AddPlot from './AddPlotComponent/AddPlot';
 import { storeProvenance } from './Workflow/Firebase';
@@ -58,21 +58,18 @@ const Navbar: FC = () => {
               <ToggleButton value="Rectangular">
                 <CheckBoxOutlineBlankIcon />
               </ToggleButton>
-              <ToggleButton value="Freeform Small">20</ToggleButton>
-              <ToggleButton value="Freeform Medium">35</ToggleButton>
-              <ToggleButton value="Freeform Large">50</ToggleButton>
+              <ToggleButton value="Freeform Small">
+                <RadioButtonUncheckedIcon fontSize="small" />
+              </ToggleButton>
+              <ToggleButton value="Freeform Medium">
+                <RadioButtonUncheckedIcon />
+              </ToggleButton>
+              <ToggleButton value="Freeform Large">
+                <RadioButtonUncheckedIcon fontSize="large" />
+              </ToggleButton>
             </ToggleButtonGroup>
           </FormControl>
           <Divider />
-          <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            // to={{ pathname: '/compare', search } as any}
-            variant="outlined"
-            onClick={() => console.log(deepCopy(provenance.graph))}
-          >
-            Apply
-          </Button>
           {/* <ComparisonDropdown /> */}
           <Button
             color="primary"

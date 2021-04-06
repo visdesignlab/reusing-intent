@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, reaction } from 'mobx';
+import { action, makeAutoObservable, reaction, toJS } from 'mobx';
 
 import { loadDemo, loadFromFirebase } from '../components/Workflow/Firebase';
 import { SERVER } from '../consts';
@@ -18,11 +18,11 @@ export class ProjectStore {
   rootStore: RootStore;
   currentProject: Project | null = null;
   projects: ProjectList = [];
-  comparisonDatasetKey: string | null = null;
   loadedDataset: Dataset | null = null;
   workingDataset: Dataset | null = null;
-  comparisonDataset: Dataset | null = null;
   currentDatasetKey: string | null = null;
+  currentComparisonDatasets: Dataset[] = [];
+  comparisonKeys: string[] = [];
 
   isReapplying = false;
 
@@ -147,10 +147,15 @@ export class ProjectStore {
   }
 
   get compDatasetValues() {
+    if (this.currentComparisonDatasets.length < 2)
+    {
+      return []
+    }
+
     return (
-      this.comparisonDataset?.values.filter(
+      this.currentComparisonDatasets[1].values.filter(
         (d) => !this.rootStore.compareStore.updatedFilterPoints.includes(d.id),
-      ) || []
+      )
     );
   }
 
@@ -267,12 +272,31 @@ export class ProjectStore {
   loadComparisonDataset = (datasetKey: string) => {
     if (!this.currentProject) return;
 
+    if (this.currentComparisonDatasets.length < 1 && this.loadedDataset) {
+      this.comparisonKeys = [this.currentDatasetKey || ''];
+      this.currentComparisonDatasets = [this.loadedDataset];
+    }
+
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
-        this.comparisonDatasetKey = datasetKey;
-        this.comparisonDataset = response.data;
+
+        if (this.currentComparisonDatasets.length > 1) {
+          this.currentComparisonDatasets[0] = this.currentComparisonDatasets[1];
+          this.comparisonKeys[0] = this.comparisonKeys[1];
+          this.currentComparisonDatasets.pop();
+          this.comparisonKeys.pop();
+        }
+
+        this.currentComparisonDatasets.push(response.data);
+        this.comparisonKeys.push(datasetKey);
+
+        console.log(toJS(this.currentComparisonDatasets))
+        console.log(toJS(this.comparisonKeys))
+
       }),
     );
+
+    this.loadDatasetWithReapply(datasetKey)
   };
 
   //load the dataset into comparison
@@ -347,6 +371,10 @@ export class ProjectStore {
       action((res) => {
         // this.provenance.importProvenanceGraph(res.data.graph);
         this.currentDatasetKey = datasetKey;
+
+
+
+        console.log(toJS(this.comparisonKeys))
         this.rootStore.exploreStore.stateRecord = res.data;
         setTimeout(
           action(() => (this.isReapplying = false)),
