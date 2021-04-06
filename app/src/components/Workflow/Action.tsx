@@ -50,13 +50,15 @@ const Action = ({ id }: Props) => {
       isRejected = artifact.artifact.status_record[currentDatasetKey] === 'Rejected';
     }
   }
-
+  
+  //also show annotation, 
   return (
     <Card className={classes.card} variant="outlined">
       <CardContent>
         <CardActions disableSpacing>
           <Typography color={isRejected ? 'textSecondary' : 'textPrimary'} variant="button">
             {node.label}
+            
           </Typography>
           <IconButton
             className={classes.close}

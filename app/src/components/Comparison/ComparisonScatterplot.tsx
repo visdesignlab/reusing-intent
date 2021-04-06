@@ -111,12 +111,12 @@ const CompVis: FC = () => {
             Changed Data
           </Button> */}
         </div>
-        <Scatterplot
+        {/* <Scatterplot
           dataDisplay={dataDisplay}
           originalMarks={false}
           plot={plot}
           size={spContainerDimension - 2 * theme.spacing(1)}
-        />
+        /> */}
       </Paper>
     </Grid>
   ));
