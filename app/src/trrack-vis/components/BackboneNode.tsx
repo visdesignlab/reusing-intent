@@ -195,7 +195,7 @@ function BackboneNode<T, S extends string, A>({
     <g style={{ opacity: 1 }} transform={translate(padding, 0)}>
       {nodeCreationMap[node.id] ? (
         <g>
-          <g transform={translate(-10, -10)}>
+          <g transform={translate(0, -20)}>
             <circle fill="white" opacity="1" r="7" />
 
             <text
@@ -208,8 +208,8 @@ function BackboneNode<T, S extends string, A>({
               fontSize={10}
               fontWeight="bold"
               style={cursorStyle}
-              textAnchor="middle"
-              x={0}
+              textAnchor="start"
+              x={dropDownAdded ? 10 : 0}
               y={0}
             >
               {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
