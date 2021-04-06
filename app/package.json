@@ -2,7 +2,7 @@
   "name": "app",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://vdl.sci.utah.edu/reusing-intent/",
+  "homepage": "https://reapply-workflows.github.io/reapply_workflows/",
   "dependencies": {
     "@firebase/app": "^0.6.17",
     "@firebase/database": "^0.9.6",
