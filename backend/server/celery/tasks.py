@@ -32,16 +32,19 @@ def precomputeOutliers(self, data: Any, combinations, record_id, project):
         state=STARTED, meta={"processed": processed, "to_process": to_process}
     )
 
+    results = []
+
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
         for result in computeDBScan(subset, dimensions, record_id, True):
-            with getSessionScopeFromId(project) as session:
-                session.add(result)
+            results.append(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
+    with getSessionScopeFromId(project) as session:
+        session.add_all(results)
     self.update_state(
         state=SUCCESS, meta={"processed": processed, "to_process": to_process}
     )
@@ -54,6 +57,7 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
     # self.update_state(state=STARTED)
 
     combinations = list(filter(lambda x: len(x) < 3, combinations))
+    print(combinations)
 
     to_process = [get_dbscan_count(data[combo]) for combo in combinations]
     to_process.extend([get_kmeans_count() for _ in combinations])
@@ -64,23 +68,27 @@ def precomputeClusters(self, data: Any, combinations, record_id, project):
         state=STARTED, meta={"processed": processed, "to_process": to_process}
     )
 
+    results = []
+
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
         for result in computeDBScan(subset, dimensions, record_id, False):
-            with getSessionScopeFromId(project) as session:
-                session.add(result)
+            results.append(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
         for result in computeKMeansClusters(subset, dimensions, record_id):
-            with getSessionScopeFromId(project) as session:
-                session.add(result)
+            results.append(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
+
+    with getSessionScopeFromId(project) as session:
+        session.add_all(results)
+
     self.update_state(
         state=SUCCESS, meta={"processed": processed, "to_process": to_process}
     )
@@ -101,16 +109,20 @@ def precomputeLR(self, data: Any, combinations, record_id, project):
         state=STARTED, meta={"processed": processed, "to_process": to_process}
     )
 
+    results = []
+
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
         for result in computeLR(subset, dimensions, record_id):
-            with getSessionScopeFromId(project) as session:
-                session.add(result)
+            results.append(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
+
+    with getSessionScopeFromId(project) as session:
+        session.add_all(results)
 
     self.update_state(
         state=SUCCESS, meta={"processed": processed, "to_process": to_process}
@@ -130,18 +142,20 @@ def precomputeSkyline(self, data: Any, combinations, record_id, project):
         state=STARTED, meta={"processed": processed, "to_process": to_process}
     )
 
+    results = []
+
     for combo in combinations:
         subset = data[combo]
         dimensions = ",".join(combo)
         for result in computeSkyline(subset, dimensions, record_id):
-            with getSessionScopeFromId(project) as session:
-                session.add(result)
-
+            results.append(result)
             processed += 1
             self.update_state(
                 state=STARTED, meta={"processed": processed, "to_process": to_process}
             )
 
+    with getSessionScopeFromId(project) as session:
+        session.add_all(results)
     self.update_state(
         state=SUCCESS, meta={"processed": processed, "to_process": to_process}
     )
