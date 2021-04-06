@@ -52,7 +52,7 @@ def main(projects=[]):
             )
             th.start()
             threads.append(th)
-            time.sleep(1)
+            time.sleep(0.5)
             version += 1
             print()
             print()

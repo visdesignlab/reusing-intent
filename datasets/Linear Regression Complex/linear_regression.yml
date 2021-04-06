@@ -1,0 +1,12 @@
+label_column: Label
+columns:
+  X:
+    fullname: X
+    short: A
+    unit: null
+    dataType: numeric
+  Y:
+    fullname: Y
+    short: B
+    unit: null
+    dataType: numeric
