@@ -7,6 +7,7 @@ import ComparisonHome from './components/Comparison/ComparisonHome';
 import Explore from './components/Explore/Explore';
 import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
+import Landing from './components/Landing/Landing';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
@@ -18,9 +19,10 @@ const search = window.location.search;
 const app = (
   <HashRouter>
     <Switch>
-      <Redirect from="/" to={{ pathname: '/project', search }} exact />
+      <Redirect from="/" to={{ pathname: '/landing', search }} exact />
       <Route component={Explore} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
+      <Route component={Landing} path="/landing" exact />
       <Route component={ComparisonHome} path="/compare" exact />
     </Switch>
   </HashRouter>

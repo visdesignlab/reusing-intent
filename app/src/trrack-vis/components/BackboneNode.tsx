@@ -4,11 +4,13 @@
 import { NodeID, Provenance, ProvenanceNode, StateNode } from '@visdesignlab/trrack';
 import React, { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
-import { Button, Icon, Popup } from 'semantic-ui-react';
+import { Button, Icon, Popup, TextArea, Form } from 'semantic-ui-react';
+import ReactResizeDetector from 'react-resize-detector';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
 import translate from '../Utils/translate';
+
 
 import { treeColor } from './Styles';
 
@@ -26,6 +28,7 @@ type BackboneNodeProps<T, S extends string, A> = {
   bookmark: any;
   nodeMap: any;
   currentDataset: string;
+  setAnnotationHeight: any;
   annotationOpen: number;
   setAnnotationOpen: any;
   exemptList: string[];
@@ -60,6 +63,7 @@ function BackboneNode<T, S extends string, A>({
   setAnnotationOpen,
   exemptList,
   setExemptList,
+  setAnnotationHeight,
   bundleMap,
   eventConfig,
   popupContent,
@@ -78,8 +82,7 @@ function BackboneNode<T, S extends string, A>({
   } as React.CSSProperties;
 
   const [annotateText, setAnnotateText] = useState(
-    node.artifacts && node.artifacts.annotations && 
-    prov.getLatestAnnotation(node.id)?.annotation
+    node.artifacts && node.artifacts.annotations && prov.getLatestAnnotation(node.id)?.annotation
       ? prov.getLatestAnnotation(node.id)?.annotation!
       : '',
   );
@@ -89,6 +92,7 @@ function BackboneNode<T, S extends string, A>({
 
     if (lastAnnotation?.annotation !== annotateText.trim()) {
       prov.addAnnotation(annotateText, node.id);
+      setAnnotateText(annotateText);
       setAnnotationOpen(-1);
     }
   };
@@ -99,7 +103,9 @@ function BackboneNode<T, S extends string, A>({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const handleInputChange = () => {};
+  const handleInputChange = (c: any) => {
+    setAnnotateText(c.target.value);
+  };
 
   // console.log(JSON.parse(JSON.stringify(node)));
   let glyph = (
@@ -170,7 +176,7 @@ function BackboneNode<T, S extends string, A>({
 
   if (
     node.artifacts &&
-    node.artifacts.annotations && 
+    node.artifacts.annotations &&
     node.artifacts.annotations.length > 0 &&
     annotationOpen !== nodeMap[node.id].depth
   ) {
@@ -448,28 +454,47 @@ function BackboneNode<T, S extends string, A>({
 
           {annotationOpen !== -1 && nodeMap[node.id].depth === annotationOpen ? (
             <g transform="translate(15, 25)">
-              <foreignObject height="80" width="175" x="0" y="0">
+              <foreignObject height="400" width="250" x="0" y="0">
                 <div>
-                  <textarea
-                    style={{ maxWidth: 130, resize: 'none' }}
-                    value={annotateText}
-                    onChange={handleInputChange}
-                  />
-                  <button onClick={handleCheck}>Annotate</button>
-
-                  <button onClick={handleClose}>Close</button>
+                  <Form>
+                    <ReactResizeDetector
+                      onResize={(width: number | undefined, height: number | undefined) =>
+                        setAnnotationHeight(height ? height + 15 : 50)
+                      }
+                    >
+                      <TextArea
+                        defaultValue={annotateText}
+                        placeholder="Tell us more"
+                        rows={2}
+                        style={{
+                          width: '170px',
+                          marginRight: '1px',
+                        }}
+                        onInput={handleInputChange}
+                      />
+                      <Button
+                        style={{
+                          margin: '1px',
+                          padding: '5px',
+                          maxWidth: '30px',
+                        }}
+                        onClick={handleCheck}
+                      >
+                        <Icon color="green" name="check" style={{ margin: '0px' }} />
+                      </Button>
+                      <Button
+                        style={{
+                          margin: '1px',
+                          padding: '5px',
+                          maxWidth: '30px',
+                        }}
+                        onClick={handleClose}
+                      >
+                        <Icon color="red" name="close" style={{ margin: '0px' }} />
+                      </Button>
+                    </ReactResizeDetector>
+                  </Form>
                 </div>
-
-                {/* <Input size='massive' icon='close' onChange={handleInputChange}
-                  defaultValue={annotateText.current} placeholder="Edit Annotation" action>
-                    <input />
-                    <Button color="green" type="submit" onClick={handleCheck}>
-                      <Icon name="world"/>
-                    </Button>
-                    <Button color="red" type="submit" onClick={handleClose}>
-                      <Icon name="close"/>
-                    </Button>
-                  </Input> */}
               </foreignObject>
             </g>
           ) : (

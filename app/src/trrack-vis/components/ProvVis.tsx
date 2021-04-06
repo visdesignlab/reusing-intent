@@ -102,7 +102,6 @@ function ProvVis<T, S extends string, A>({
   gutter = 15,
   backboneGutter = 20,
   verticalSpace = 50,
-  annotationHeight = 100,
   clusterVerticalSpace = 50,
   regularCircleRadius = 4,
   backboneCircleRadius = 5,
@@ -131,6 +130,8 @@ function ProvVis<T, S extends string, A>({
   const [first, setFirst] = useState(true);
   const [bookmark, setBookmark] = useState<any>(null);
   const [annotationOpen, setAnnotationOpen] = useState(-1);
+  const [annotationHeight, setAnnotationHeight] = useState(35);
+
 
   let list: string[] = [];
   const eventTypes = new Set<string>();
@@ -571,6 +572,7 @@ function ProvVis<T, S extends string, A>({
                             prov={prov}
                             radius={backboneCircleRadius}
                             rejectedFunction={rejectedFunction}
+                            setAnnotationHeight={setAnnotationHeight}
                             setAnnotationOpen={setAnnotationOpen}
                             setBookmark={setBookmark}
                             setExemptList={setExpandedClusterList}
