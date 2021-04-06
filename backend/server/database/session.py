@@ -2,6 +2,7 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 from .schemas import *  # noqa: *
 from .schemas.base import Base
@@ -9,7 +10,10 @@ from .utils import getDatabasePath
 
 
 def getEngine(id: str):
-    return create_engine(f"sqlite:///{getDatabasePath(id)}")
+    return create_engine(
+        f"sqlite:///{getDatabasePath(id)}",
+        connect_args={"timeout": 60},
+    )
 
 
 def dropAllTables(id: str):
