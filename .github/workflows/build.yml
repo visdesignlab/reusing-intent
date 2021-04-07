@@ -26,7 +26,7 @@ jobs:
         run: |
           cd app
           yarn install
-          yarn build
+          CI=false yarn build
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.0.0
         with:
