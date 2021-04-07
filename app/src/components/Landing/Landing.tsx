@@ -1,3 +1,4 @@
+
 import {
   Button,
   Card,
@@ -59,12 +60,21 @@ const Landing = () => {
     ];
 
     const linkList = [
-      `http://localhost:3000/#/explore/?demo=cluster_complex`,
-      `http://localhost:3000/#/explore/?demo=cluster_simple`,
-      `http://localhost:3000/#/explore/?demo=gapminder_world`,
-      `http://localhost:3000/#/explore/?demo=linear_regression_complex`,
-      `http://localhost:3000/#/explore/?demo=linear_regression_simple`,
-      `http://localhost:3000/#/explore/?demo=outliers`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_complex`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_simple`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=gapminder_world`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_complex`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_simple`,
+      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=outliers`,
+    ];
+
+    const colabLinkList = [
+      `https://colab.research.google.com/drive/18GdpjL9LD5tQBFoWgAjBScWtjvX9WNA8?usp=sharing`,
+      `https://colab.research.google.com/drive/1WdzfTqhSgCML1iq9inw03Z64Lj8qHc1a?usp=sharing`,
+      `https://colab.research.google.com/drive/1E_5Pw0905aGOnYUo7-RwI2pq2WvTI-j4?usp=sharing`,
+      `https://colab.research.google.com/drive/16DJRqPHgoAw1EFwiKm4PmihG3BRHdOxj?usp=sharing`,
+      `https://colab.research.google.com/drive/1zsupVPrE0rxCZfKR3MlS0DIagvBeP55O?usp=sharing`,
+      `https://colab.research.google.com/drive/1uds9y6vKaZDRjfRCVLbbyBjij6T6i3Vb?usp=sharing`,
     ];
 
   return (
@@ -91,9 +101,7 @@ const Landing = () => {
                     <a href={linkList[demoList.indexOf(curr)]}>View Dataset</a>
                   </Button>
                   <Button color="primary" size="small">
-                    <a href="https://colab.research.google.com/drive/1cyXxOEx9SEj9BoUqtOcCJ02LXWynzMVA?usp=sharing">
-                      View Notebook
-                    </a>
+                    <a href={colabLinkList[demoList.indexOf(curr)]}>View Notebook</a>
                   </Button>
                 </CardActions>
               </Card>
