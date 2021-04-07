@@ -79,6 +79,20 @@ const Landing = () => {
 
   return (
     <>
+      <Typography
+        align="center"
+        style={{
+            margin: "20px",
+          fontWeight: 'bold',
+          fill: '#F2',
+          fontSize: '36px',
+          fontFamily: 'Lato, Helvetica Neue,Arial,Helvetica,sans-serif',
+        }}
+        variant="h1"
+      >
+        Reusing Interactive Analysis Workflows
+      </Typography>
+
       <div className={classes.gridContainer}>
         <div className={classes.grid}>
           {demoList.map((curr) => {
@@ -115,9 +129,8 @@ const Landing = () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           variant="outlined"
         >
-          <a href="http://localhost:3000/#/project">Upload Dataset/View Project Explorer</a>
+          <a href="http://localhost:3000/#/project">Project Explorer</a>
         </Button>
-
       </div>
     </>
   );
