@@ -32,7 +32,7 @@ const KMeans = ({ info, xScale, yScale }: Props) => {
         opacity="0.8"
         transform={translate(xScale(selected_center[0]), yScale(selected_center[1]))}
       />
-      <path d={lineGen(info.hull) || ''} fill="gray" opacity="0.3" stroke="black" />
+      <path d={`${lineGen(info.hull)}Z` || ''} fill="gray" opacity="0.3" stroke="black" />
     </g>
   );
 };

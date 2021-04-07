@@ -9,6 +9,7 @@ from backend.inference_core.reapply.data_structures.filter_interaction import (
 )
 from backend.inference_core.reapply.data_structures.plot_interaction import (
     AddPlotInteraction,
+    RemovePlotInteraction,
 )
 from backend.inference_core.reapply.data_structures.point_selection_interaction import (
     PointSelectionInteraction,
@@ -26,6 +27,10 @@ class State(object):
     @property
     def add_plot_interaction(self):
         return AddPlotInteraction(**self._interaction)
+
+    @property
+    def remove_plot_interaction(self):
+        return RemovePlotInteraction(**self._interaction)
 
     @property
     def point_selection_interaction(self):

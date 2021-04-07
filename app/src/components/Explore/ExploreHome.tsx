@@ -173,6 +173,7 @@ const ExploreHome = () => {
     bundledNodes,
     loadedWorkflowId,
     loadSavedProject,
+    dims,
   } = useContext(Store);
 
   const { addToWorkflow } = exploreStore;
@@ -188,10 +189,26 @@ const ExploreHome = () => {
 
     const { numericColumns } = loadedDataset;
 
+    let x_index = 0;
+    let y_index = 1;
+
+    if (dims.length > 0) {
+      const [x, y] = dims;
+
+      x_index =
+        numericColumns.findIndex((d) => d === x) !== -1
+          ? numericColumns.findIndex((d) => d === x)
+          : x_index;
+      y_index =
+        numericColumns.findIndex((d) => d === y) !== -1
+          ? numericColumns.findIndex((d) => d === y)
+          : y_index;
+    }
+
     const plot: Plot = {
       id: getPlotId(),
-      x: numericColumns[0],
-      y: numericColumns[1],
+      x: numericColumns[x_index],
+      y: numericColumns[y_index],
     };
     exploreStore.addPlot(plot);
   });

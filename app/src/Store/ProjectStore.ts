@@ -379,7 +379,6 @@ export class ProjectStore {
         // this.provenance.importProvenanceGraph(res.data.graph);
         this.currentDatasetKey = datasetKey;
 
-        console.log(toJS(this.comparisonKeys));
         this.rootStore.exploreStore.stateRecord = res.data;
         setTimeout(
           action(() => (this.isReapplying = false)),

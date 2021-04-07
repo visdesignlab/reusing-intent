@@ -43,6 +43,14 @@ class Record:
     def update_plot(self, plot: Plot):
         self.plots[plot.id] = plot
 
+    def remove_plot(self, plot: str):
+        if plot in self.plots:
+            del self.plots[plot]
+        if plot in self.pointSelection:
+            del self.pointSelection[plot]
+        if plot in self.brushes:
+            del self.brushes[plot]
+
     def add_point_selection(self, id: str, points: List[str]):
         if id not in self.pointSelection:
             self.pointSelection[id] = []
@@ -142,7 +150,8 @@ class Record:
 
         if self.selections():
             target["isSelected"] = False
-            target[target.id.isin(self.selections())] = True
+            mask = target.id.isin(self.selections())
+            target.loc[mask, "isSelected"] = True
 
         target.drop(["id", "iid"], axis=1, inplace=True)
         return target
@@ -185,7 +194,7 @@ def applyPrediction(
             ids, hull = applyDBScanCluster(
                 target, prediction.dimensions, eps, min_samples, prediction.memberIds
             )
-            info["hull"] = hull
+            new_info["hull"] = hull
         elif intent == Intents.OUTLIER or intent == Intents.NONOUTLIER:
             ids = applyDBScanOutlier(
                 target,

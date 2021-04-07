@@ -75,6 +75,9 @@ class Node(object):
         if int_type == InteractionType.ADD_PLOT:
             interaction = self.state.add_plot_interaction
             record.update_plot(interaction.plot)
+        elif int_type == InteractionType.REMOVE_PLOT:
+            interaction = self.state.remove_plot_interaction
+            record.remove_plot(interaction.plotId)
         elif int_type == InteractionType.POINT_SELECTION:
             interaction = self.state.point_selection_interaction
             record.add_point_selection(interaction.plot, interaction.selected)

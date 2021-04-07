@@ -95,6 +95,7 @@ const PredictionTable = () => {
               return (
                 <TableRow
                   key={pred.hash}
+                  hover
                   onMouseOut={() => {
                     debouncedSetHoveredPrediction(null);
                   }}
@@ -102,10 +103,7 @@ const PredictionTable = () => {
                     debouncedSetHoveredPrediction(pred);
                   }}
                 >
-                  <Tooltip title={pred.description}>
-                    {/* <TableCell width="30%">
-                      <Typography variant="button">{pred.intent}</Typography>
-                    </TableCell> */}
+                  <Tooltip placement="left" title={pred.description}>
                     <TableCell width="90%">
                       <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
                     </TableCell>
