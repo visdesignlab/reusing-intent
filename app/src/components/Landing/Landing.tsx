@@ -60,12 +60,12 @@ const Landing = () => {
   ];
 
   const linkList = [
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_complex`,
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_simple`,
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=gapminder_world`,
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_complex`,
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_simple`,
-    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=outliers`,
+    `/explore?demo=cluster_complex`,
+    `/explore?demo=cluster_simple`,
+    `/explore?demo=gapminder_world`,
+    `/explore?demo=linear_regression_complex`,
+    `/explore?demo=linear_regression_simple`,
+    `/explore?demo=outliers`,
   ];
 
   const colabLinkList = [
@@ -111,8 +111,13 @@ const Landing = () => {
                   </Typography>
                 </CardContent>
                 <CardActions>
-                  <Button color="primary" size="small">
-                    <a href={linkList[demoList.indexOf(curr)]}>View Dataset</a>
+                  <Button
+                    color="primary"
+                    component={Link}
+                    size="small"
+                    to={linkList[demoList.indexOf(curr)]}
+                  >
+                    View Dataset
                   </Button>
                   <Button color="primary" size="small">
                     <a href={colabLinkList[demoList.indexOf(curr)]}>View Notebook</a>
