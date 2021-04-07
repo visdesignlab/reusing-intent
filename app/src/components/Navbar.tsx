@@ -17,7 +17,6 @@ import React, { FC, useContext } from 'react';
 import Store from '../Store/Store';
 
 import AddPlot from './AddPlotComponent/AddPlot';
-import { storeProvenance } from './Workflow/Firebase';
 
 const useStyles = makeStyles((theme: Theme) => ({
   formControl: {
@@ -32,10 +31,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Navbar: FC = () => {
   const classes = useStyles();
   // const [open, setOpen] = useState(false);
-  const store = useContext(Store);
-  const { provenance, provDb } = store;
-  const { workflows } = store.exploreStore;
-  const { currentProject } = store.projectStore;
+
 
   const {
     exploreStore: { brushType, switchBrush, filter },
@@ -94,7 +90,7 @@ const Navbar: FC = () => {
             Filter In
           </Button>
 
-          <Button
+          {/* <Button
             color="primary"
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
@@ -104,7 +100,7 @@ const Navbar: FC = () => {
             }}
           >
             Store prov
-          </Button>
+          </Button> */}
 
           {/* <Button
             color="primary"
