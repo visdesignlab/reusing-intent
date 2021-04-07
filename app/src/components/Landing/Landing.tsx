@@ -1,4 +1,3 @@
-
 import {
   Button,
   Card,
@@ -10,6 +9,7 @@ import {
 } from '@material-ui/core';
 import { observer } from 'mobx-react';
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles({
   root: {
@@ -42,43 +42,57 @@ const Landing = () => {
   const classes = useStyles();
 
   const demoList = [
-    'Cluster Complex',
-    'Cluster Simple',
-    'Gapminder World',
-    'Linear Regression Complex',
-    'Linear Regression Simple',
+    'Cluster Complex Demo',
+    'Cluster Simple Demo',
+    'Gapminder World Demo',
+    'Linear Regression Complex Demo',
+    'Linear Regression Simple Demo',
     'Outliers',
   ];
 
-    const imageList = [
-      `${process.env.PUBLIC_URL}/landingPictures/clusterComplex.png`,
-      `${process.env.PUBLIC_URL}/landingPictures/clusterSimple.png`,
-      `${process.env.PUBLIC_URL}/landingPictures/gapminder.png`,
-      `${process.env.PUBLIC_URL}/landingPictures/linearComplex.png`,
-      `${process.env.PUBLIC_URL}/landingPictures/linearSimple.png`,
-      `${process.env.PUBLIC_URL}/landingPictures/Outliers.png`,
-    ];
+  const imageList = [
+    `${process.env.PUBLIC_URL}/landingPictures/clusterComplex.png`,
+    `${process.env.PUBLIC_URL}/landingPictures/clusterSimple.png`,
+    `${process.env.PUBLIC_URL}/landingPictures/gapminder.png`,
+    `${process.env.PUBLIC_URL}/landingPictures/linearComplex.png`,
+    `${process.env.PUBLIC_URL}/landingPictures/linearSimple.png`,
+    `${process.env.PUBLIC_URL}/landingPictures/Outliers.png`,
+  ];
 
-    const linkList = [
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_complex`,
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_simple`,
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=gapminder_world`,
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_complex`,
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_simple`,
-      `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=outliers`,
-    ];
+  const linkList = [
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_complex`,
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=cluster_simple`,
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=gapminder_world`,
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_complex`,
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=linear_regression_simple`,
+    `https://reapply-workflows.github.io/reapply_workflows/#/explore?demo=outliers`,
+  ];
 
-    const colabLinkList = [
-      `https://colab.research.google.com/drive/18GdpjL9LD5tQBFoWgAjBScWtjvX9WNA8?usp=sharing`,
-      `https://colab.research.google.com/drive/1WdzfTqhSgCML1iq9inw03Z64Lj8qHc1a?usp=sharing`,
-      `https://colab.research.google.com/drive/1E_5Pw0905aGOnYUo7-RwI2pq2WvTI-j4?usp=sharing`,
-      `https://colab.research.google.com/drive/16DJRqPHgoAw1EFwiKm4PmihG3BRHdOxj?usp=sharing`,
-      `https://colab.research.google.com/drive/1zsupVPrE0rxCZfKR3MlS0DIagvBeP55O?usp=sharing`,
-      `https://colab.research.google.com/drive/1uds9y6vKaZDRjfRCVLbbyBjij6T6i3Vb?usp=sharing`,
-    ];
+  const colabLinkList = [
+    `https://colab.research.google.com/drive/18GdpjL9LD5tQBFoWgAjBScWtjvX9WNA8?usp=sharing`,
+    `https://colab.research.google.com/drive/1WdzfTqhSgCML1iq9inw03Z64Lj8qHc1a?usp=sharing`,
+    `https://colab.research.google.com/drive/1E_5Pw0905aGOnYUo7-RwI2pq2WvTI-j4?usp=sharing`,
+    `https://colab.research.google.com/drive/16DJRqPHgoAw1EFwiKm4PmihG3BRHdOxj?usp=sharing`,
+    `https://colab.research.google.com/drive/1zsupVPrE0rxCZfKR3MlS0DIagvBeP55O?usp=sharing`,
+    `https://colab.research.google.com/drive/1uds9y6vKaZDRjfRCVLbbyBjij6T6i3Vb?usp=sharing`,
+  ];
 
   return (
     <>
+      <Typography
+        align="center"
+        style={{
+          margin: '20px',
+          fontWeight: 'bold',
+          fill: '#F2',
+          fontSize: '36px',
+          fontFamily: 'Lato, Helvetica Neue,Arial,Helvetica,sans-serif',
+        }}
+        variant="h1"
+      >
+        Reusing Interactive Analysis Workflows
+      </Typography>
+
       <div className={classes.gridContainer}>
         <div className={classes.grid}>
           {demoList.map((curr) => {
@@ -113,11 +127,12 @@ const Landing = () => {
         <Button
           color="primary"
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          component={Link}
+          to="/project"
           variant="outlined"
         >
-          <a href="http://localhost:3000/#/project">Upload Dataset/View Project Explorer</a>
+          Project Explorer
         </Button>
-
       </div>
     </>
   );

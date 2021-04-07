@@ -77,6 +77,7 @@ const PredictionTable = () => {
             <TableRow>
               {/* <TableCell width="20%">Intent</TableCell> */}
               <TableCell
+                align="center"
                 style={{
                   fontWeight: 'bold',
                   fill: '#F2',
@@ -103,7 +104,7 @@ const PredictionTable = () => {
                     debouncedSetHoveredPrediction(pred);
                   }}
                 >
-                  <Tooltip placement="left" title={pred.description}>
+                  <Tooltip title={pred.description}>
                     <TableCell width="90%">
                       <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
                     </TableCell>
