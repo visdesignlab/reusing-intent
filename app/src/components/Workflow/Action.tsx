@@ -10,6 +10,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { useContext } from 'react';
+import { isChildNode } from '@visdesignlab/trrack';
 
 import Store from '../../Store/Store';
 
@@ -70,7 +71,7 @@ const Action = ({ id }: Props) => {
               variant="subtitle2"
             >
               {/* <div>{node.label}</div> */}
-              {provenance.getLatestAnnotation(node.id)
+              {isChildNode(node) && node.artifacts && node.artifacts.annotations && provenance.getLatestAnnotation(node.id)
                 ? provenance.getLatestAnnotation(node.id)?.annotation
                 : ''}
             </Typography>

@@ -1,7 +1,7 @@
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter, Redirect, Route, Switch } from 'react-router-dom';
+import { HashRouter, Route, Switch } from 'react-router-dom';
 
 import ComparisonHome from './components/Comparison/ComparisonHome';
 import Explore from './components/Explore/Explore';
@@ -14,15 +14,13 @@ whyDidYouRender(React, {
   exclude: [/XGrid|RowCells|GridCell/],
 });
 
-const search = window.location.search;
 
 const app = (
   <HashRouter>
     <Switch>
-      <Redirect from="/" to={{ pathname: '/landing', search }} exact />
       <Route component={Explore} path="/explore" exact />
       <Route component={ProjectHome} path="/project" exact />
-      <Route component={Landing} path="/landing" exact />
+      <Route component={Landing} path="/" exact />
       <Route component={ComparisonHome} path="/compare" exact />
     </Switch>
   </HashRouter>
