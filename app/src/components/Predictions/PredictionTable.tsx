@@ -77,6 +77,7 @@ const PredictionTable = () => {
             <TableRow>
               {/* <TableCell width="20%">Intent</TableCell> */}
               <TableCell
+                align="center"
                 style={{
                   fontWeight: 'bold',
                   fill: '#F2',
@@ -103,9 +104,6 @@ const PredictionTable = () => {
                   }}
                 >
                   <Tooltip title={pred.description}>
-                    {/* <TableCell width="30%">
-                      <Typography variant="button">{pred.intent}</Typography>
-                    </TableCell> */}
                     <TableCell width="90%">
                       <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
                     </TableCell>

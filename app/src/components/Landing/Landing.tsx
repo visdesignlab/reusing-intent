@@ -42,11 +42,11 @@ const Landing = () => {
   const classes = useStyles();
 
   const demoList = [
-    'Cluster Complex',
-    'Cluster Simple',
-    'Gapminder World',
-    'Linear Regression Complex',
-    'Linear Regression Simple',
+    'Cluster Complex Demo',
+    'Cluster Simple Demo',
+    'Gapminder World Demo',
+    'Linear Regression Complex Demo',
+    'Linear Regression Simple Demo',
     'Outliers',
   ];
 
