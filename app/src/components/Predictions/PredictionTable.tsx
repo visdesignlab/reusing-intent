@@ -76,7 +76,18 @@ const PredictionTable = () => {
           <TableHead>
             <TableRow>
               {/* <TableCell width="20%">Intent</TableCell> */}
-              <TableCell width="90%">Intent</TableCell>
+              <TableCell
+                align="center"
+                style={{
+                  fontWeight: 'bold',
+                  fill: '#F2',
+                  fontSize: '18px',
+                  fontFamily: 'Lato, Helvetica Neue,Arial,Helvetica,sans-serif',
+                }}
+                width="90%"
+              >
+                Selection Predictions
+              </TableCell>
               <TableCell width="10%" />
             </TableRow>
           </TableHead>
@@ -85,6 +96,7 @@ const PredictionTable = () => {
               return (
                 <TableRow
                   key={pred.hash}
+                  hover
                   onMouseOut={() => {
                     debouncedSetHoveredPrediction(null);
                   }}
@@ -93,9 +105,6 @@ const PredictionTable = () => {
                   }}
                 >
                   <Tooltip title={pred.description}>
-                    {/* <TableCell width="30%">
-                      <Typography variant="button">{pred.intent}</Typography>
-                    </TableCell> */}
                     <TableCell width="90%">
                       <Bar label={`${pred.intent} (${pred.rank.toFixed(2)})`} rank={pred.rank} />
                     </TableCell>

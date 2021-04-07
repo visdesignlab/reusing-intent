@@ -27,7 +27,7 @@ export class RootStore {
   loadedWorkflowId: string | null = null;
   db: firebase.database.Database;
   provDb: firebase.database.Database;
-
+  dims: string[] = [];
   //
   projectStore: ProjectStore;
   exploreStore: ExploreStore;
@@ -75,6 +75,7 @@ export class RootStore {
     const demo = searchParams.get('demo');
     const redirectPath = searchParams.get('redirect');
     const workflowId = searchParams.get('workflow');
+    const dims = searchParams.get('dims');
 
     this.debug = debug ? true : workflowId ? true : demo ? true : false;
     this.defaultProject = defaultProject ? defaultProject : demo ? demo : 'cluster';
@@ -83,6 +84,7 @@ export class RootStore {
     this.loadSavedProject = demo ? demo : null;
     this.loadedWorkflowId = workflowId;
     this.redirectPath = workflowId || demo ? 'explore' : redirectPath;
+    this.dims = dims ? dims.split(',') : [];
   };
 }
 

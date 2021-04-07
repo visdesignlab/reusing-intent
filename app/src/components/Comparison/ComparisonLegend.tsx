@@ -39,9 +39,9 @@ const Legend: FC<Props> = ({ setDataDisplay, dataDisplay, selectedPoints = false
             dominantBaseline="middle"
             dx="25"
             dy="5"
-            font-weight={dataDisplay === 'Original' ? 'bold' : 'normal'}
+            fontWeight={dataDisplay === 'Original' ? 'bold' : 'normal'}
           >
-            v1
+            Base
           </text>
         </g>
         <g
@@ -59,7 +59,7 @@ const Legend: FC<Props> = ({ setDataDisplay, dataDisplay, selectedPoints = false
             <rect height={25} opacity=".2" rx={20} transform={translate(0, -8)} width={100} />
           ) : null}
           <text dominantBaseline="middle" dx="25" dy="5">
-            v2
+            Updated
           </text>
         </g>
 

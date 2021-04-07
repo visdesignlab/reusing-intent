@@ -32,8 +32,6 @@ class Graph(object):
         for node in self.nodes.values():
             node.infer(self.nodes)
 
-        self.print_graph()
-
     def print_graph(self):
         tree = {}
         iterate(self.nodes, self.root, tree)
@@ -91,7 +89,7 @@ class Graph(object):
                 v["interaction"],
                 v["data"].shape,
                 "---",
-                "Approved" if v["isApproved"] else "Not Approved",
+                "Approved" if v["isApproved"] else "Not Reviewed",
             )
             print(v["data"].head())
             print("------------------------------------")

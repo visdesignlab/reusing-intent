@@ -57,6 +57,7 @@ export class ExploreStore {
   showCategories = false;
   brushType: BrushType = 'Rectangular';
   stateRecord: { [key: string]: Record } = {};
+  isComparison = false;
   predictions: Predictions = [];
   currBrushed: string[] = [];
   workflows: Workflows = {};
@@ -166,6 +167,20 @@ export class ExploreStore {
     return deepCopy(Array.from(new Set(selections)));
   }
 
+  get filteredPoints() {
+    const selections: string[] = [];
+
+    const { filter } = this.state;
+
+    if (!filter) return [];
+
+    Object.values(filter.points).forEach((p) => {
+      selections.push(p);
+    });
+
+    return deepCopy(Array.from(new Set(selections)));
+  }
+
   get workingValues() {
     const { filter } = this.state;
 
@@ -215,7 +230,25 @@ export class ExploreStore {
   }
 
   get compDataset() {
-    let dataset = this.rootStore.projectStore.comparisonDataset;
+    let dataset = this.rootStore.projectStore.currentComparisonDatasets[1];
+
+    if (!dataset) {
+      const dt_str = window.localStorage.getItem('dataset');
+
+      if (!dt_str) throw new Error('Dataset not loaded');
+
+      dataset = JSON.parse(dt_str) as Dataset;
+
+      return dataset;
+    }
+
+    window.localStorage.setItem('dataset', JSON.stringify(dataset));
+
+    return dataset;
+  }
+
+  get origCompDataset() {
+    let dataset = this.rootStore.projectStore.currentComparisonDatasets[0];
 
     if (!dataset) {
       const dt_str = window.localStorage.getItem('dataset');
@@ -469,6 +502,10 @@ export class ExploreStore {
 
   setHoveredPrediction = (prediction: Prediction | null) => {
     this.hoveredPrediction = prediction;
+  };
+
+  setComparison = (comp: boolean) => {
+    this.isComparison = comp;
   };
 
   // ##################################################################### //

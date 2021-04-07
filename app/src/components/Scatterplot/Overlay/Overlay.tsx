@@ -24,6 +24,8 @@ type Props = {
 const Overlay: FC<Props> = ({ prediction, xScale, yScale }: Props) => {
   const { info } = prediction;
 
+  console.log(JSON.parse(JSON.stringify(prediction)));
+
   switch (prediction.algorithm) {
     case 'DBScan':
       switch (prediction.intent) {
