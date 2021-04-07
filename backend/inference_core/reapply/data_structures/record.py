@@ -146,7 +146,10 @@ class Record:
         target = data.copy()
         if self.filter:
             points = self.filter["points"]
-            target = target[~target.id.isin(points)]
+            if "in" in self.filter["type"].lower():
+                target = target[target.id.isin(points)]
+            else:
+                target = target[~target.id.isin(points)]
 
         if self.selections():
             target["isSelected"] = False

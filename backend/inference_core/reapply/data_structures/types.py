@@ -48,6 +48,7 @@ class Intents(Enum):
     RANGE = "Range"
     LINEARREGRESSION = "LINEARREGRESSION"
     LRWITHIN = "LR:within"
+    LROUTSIDE = "LR:outside"
     QUADRATICREGRESSION = "QUADRATICREGRESSION"
     NONOUTLIER = "NonOutlier"
     SIMPLIFIEDRANGE = "SimplifiedRange"
