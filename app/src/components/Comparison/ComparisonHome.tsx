@@ -40,7 +40,7 @@ const useStyles = makeStyles(() => ({
 const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const {
     exploreStore: { n_plots, addPlot },
-    projectStore: { loadedDataset, comparisonDataset },
+    projectStore: { loadedDataset },
     provenance,
     setQueryParams,
     loadedWorkflowId,
@@ -69,31 +69,12 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
   });
 
   const classes = useStyles();
-
-  if (!comparisonDataset)
-    return <Redirect to={{ pathname: '/project', search: location.search }} />;
-
+  
   return (
     <div className={classes.root}>
       <CssBaseline />
       <div className={classes.layout}>
         <ComparisonScatterplot />
-        {/* <ProvVis
-          approvedFunction={() => console.log('approved')}
-          brushCallback={brushedNodes}
-          bundleMap={bundle}
-          changeCurrent={(nodeID: string) => provenance.goToNode(nodeID)}
-          current={provenance.graph.current}
-          currentDataset={loadedDataset.key}
-          ephemeralUndo={false}
-          eventConfig={eventConfig}
-          nodeCreationMap={nodeCreationMap}
-          nodeMap={provenance.graph.nodes}
-          prov={provenance}
-          rejectedFunction={() => console.log('rejected')}
-          root={provenance.graph.root}
-          undoRedoButtons
-        /> */}
       </div>
     </div>
   );

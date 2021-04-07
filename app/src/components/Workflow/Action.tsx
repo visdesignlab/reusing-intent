@@ -10,6 +10,7 @@ import {
 import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { useContext } from 'react';
+import { isChildNode } from '@visdesignlab/trrack';
 
 import Store from '../../Store/Store';
 
@@ -50,14 +51,31 @@ const Action = ({ id }: Props) => {
       isRejected = artifact.artifact.status_record[currentDatasetKey] === 'Rejected';
     }
   }
-
+  
+  //also show annotation, 
   return (
     <Card className={classes.card} variant="outlined">
       <CardContent>
         <CardActions disableSpacing>
-          <Typography color={isRejected ? 'textSecondary' : 'textPrimary'} variant="button">
-            {node.label}
-          </Typography>
+          <div>
+            <Typography
+              color={isRejected ? 'textSecondary' : 'textPrimary'}
+              display="block"
+              variant="button"
+            >
+              {node.label}
+            </Typography>
+            <Typography
+              color="textSecondary"
+              display="block"
+              variant="subtitle2"
+            >
+              {/* <div>{node.label}</div> */}
+              {isChildNode(node) && node.artifacts && node.artifacts.annotations && provenance.getLatestAnnotation(node.id)
+                ? provenance.getLatestAnnotation(node.id)?.annotation
+                : ''}
+            </Typography>
+          </div>
           <IconButton
             className={classes.close}
             color="secondary"

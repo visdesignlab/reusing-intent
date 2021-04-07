@@ -16,7 +16,7 @@ import {
   ChangeBrushSize,
   ChangeBrushType,
   ChangeCategory,
-  ClearAll,
+  Filter,
   Invert,
   LoadDataset,
   LockPrediction,
@@ -144,10 +144,10 @@ export const eventConfig: EventConfig<IntentEvents> = {
     bundleGlyph: <RemoveBrush fill="#2185d0" size={22} />,
   },
   Filter: {
-    backboneGlyph: <ClearAll size={22} />,
-    currentGlyph: <ClearAll fill="#2185d0" size={22} />,
-    regularGlyph: <ClearAll size={16} />,
-    bundleGlyph: <ClearAll fill="#ccc" size={22} />,
+    backboneGlyph: <Filter size={22} />,
+    currentGlyph: <Filter fill="#2185d0" size={22} />,
+    regularGlyph: <Filter size={16} />,
+    bundleGlyph: <Filter fill="#ccc" size={22} />,
   },
   'Change Brush Type': {
     backboneGlyph: <ChangeBrushType size={22} />,
@@ -173,6 +173,7 @@ const ExploreHome = () => {
     bundledNodes,
     loadedWorkflowId,
     loadSavedProject,
+    dims,
   } = useContext(Store);
 
   const { addToWorkflow } = exploreStore;
@@ -188,10 +189,26 @@ const ExploreHome = () => {
 
     const { numericColumns } = loadedDataset;
 
+    let x_index = 0;
+    let y_index = 1;
+
+    if (dims.length > 0) {
+      const [x, y] = dims;
+
+      x_index =
+        numericColumns.findIndex((d) => d === x) !== -1
+          ? numericColumns.findIndex((d) => d === x)
+          : x_index;
+      y_index =
+        numericColumns.findIndex((d) => d === y) !== -1
+          ? numericColumns.findIndex((d) => d === y)
+          : y_index;
+    }
+
     const plot: Plot = {
       id: getPlotId(),
-      x: numericColumns[0],
-      y: numericColumns[1],
+      x: numericColumns[x_index],
+      y: numericColumns[y_index],
     };
     exploreStore.addPlot(plot);
   });

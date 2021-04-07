@@ -46,8 +46,9 @@ class Result:
     @property
     def results(self):
         if not self.isApproved:
+            print("This workflow has not been reviewed for all interactions.")
             print(
-                f"This workflow is not approved for all interactions. Please go to following url: http://localhost:3000/#/project?workflow={self.workflow.id}&project={self.workflow.project}&data={self.graph.target_id}"
+                f"Please go to following url: https://reapply-workflows.github.io/reapply_workflows/#/project?workflow={self.workflow.id}&project={self.workflow.project}&data={self.graph.target_id}"
             )
         return self.graph.results
 
@@ -72,7 +73,8 @@ class Workflow:
 
     @property
     def describe(self):
-        return self._name
+        graph = Graph(target=pd.DataFrame(columns=["Label"]), target_id="a", **self.g)
+        graph.print_graph()
 
     def apply(self, target: pd.DataFrame, label: str):
         columns = target.columns
@@ -91,7 +93,7 @@ class Reapply:
         init_firebase()
         self._workflows: Dict[str, Workflow] = {}
 
-    def add_workflow(self, id: str):
+    def load_workflow(self, id: str):
         ref = db.reference(id)
         workflow: Any = ref.get()
         self._workflows[id] = Workflow(**workflow)

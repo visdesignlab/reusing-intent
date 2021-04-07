@@ -21,7 +21,7 @@ const DBScan = ({ info, xScale, yScale }: Props) => {
 
   return (
     <g>
-      <path d={lineGen(info.hull) || ''} fill="gray" opacity="0.3" stroke="black" />
+      <path d={`${lineGen(info.hull)}Z` || ''} fill="gray" opacity="0.3" stroke="black" />
     </g>
   );
 };

@@ -18,60 +18,20 @@ export class CompareStore {
   // ##################################################################### //
 
   get compDataset() {
-    const dataset = this.rootStore.projectStore.comparisonDataset;
+    const dataset = this.rootStore.projectStore.currentComparisonDatasets[1];
 
     return dataset;
   }
 
   get selectedPointsComparison() {
-    const t: string[] = [];
 
-    return t;
-    // let selectedPoints: string[] = [];
-    // const { plots } = this.rootStore.exploreStore.state;
-    // const graph = this.rootStore.exploreStore.provenance.graph;
+    const currArr = this.rootStore.exploreStore.selectedPoints;
 
-    // Object.values(plots).forEach((plot) => {
-    //   selectedPoints.push(...plot.selectedPoints);
-
-    //   const brushes = plot.brushes;
-    //   Object.values(brushes).forEach((brush) => {
-    //     if (brush.points) selectedPoints.push(...brush.points);
-    //   });
-    // });
-
-    // const { selectedPrediction } = this.rootStore.exploreStore.state;
-
-    // if (!isEmptyOrNull(selectedPrediction))
-    //   selectedPoints = [...selectedPoints, ...selectedPrediction.memberIds];
-
-    // for (const a in this.updatedActions) {
-    //   const act = JSON.parse(JSON.stringify(this.updatedActions[a]));
-
-    //   if (
-    //     !act ||
-    //     !act.added ||
-    //     graph.nodes[a].label === 'Add Plot' ||
-    //     graph.nodes[a].label === 'Filter' ||
-    //     this.isBelowCurrent(a, graph.current)
-    //   ) {
-    //     continue;
-    //   }
-
-    //   selectedPoints.push(...act.added);
-    // }
-
-    // for (const j of this.rootStore.state.filterList) {
-    //   selectedPoints.splice(selectedPoints.indexOf(j), 1);
-    // }
-
-    // return Array.from(new Set(selectedPoints));
+    return Array.from(new Set(currArr));
   }
 
   get updatedFilterPoints() {
-    const t: string[] = [];
-
-    return t;
+    return this.rootStore.exploreStore.filteredPoints;
     // let arr = this.rootStore.state.filterList;
 
     // const graph = this.rootStore.exploreStore.provenance.graph;

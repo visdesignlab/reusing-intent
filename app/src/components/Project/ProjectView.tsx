@@ -46,10 +46,8 @@ const ProjectView = () => {
   const {
     projectStore: {
       currentProject,
-      comparisonDatasetKey,
       loadedDatasetKey: datasetKey,
       loadDataset,
-      loadComparisonDataset,
     },
     search,
   } = useContext(Store);
@@ -76,16 +74,16 @@ const ProjectView = () => {
     loadDataset,
   );
 
-  const { Dropdown: ComparisonDropdown } = useDropdown(
-    'dataset-dropdown',
-    'Comparison Dataset',
-    '',
-    datasetOptions,
-    comparisonDatasetKey && datasetOptions.map((d) => d.key).includes(comparisonDatasetKey)
-      ? comparisonDatasetKey
-      : '',
-    loadComparisonDataset,
-  );
+  // const { Dropdown: ComparisonDropdown } = useDropdown(
+  //   'dataset-dropdown',
+  //   'Comparison Dataset',
+  //   '',
+  //   datasetOptions,
+  //   comparisonDatasetKey && datasetOptions.map((d) => d.key).includes(comparisonDatasetKey)
+  //     ? comparisonDatasetKey
+  //     : '',
+  //   loadComparisonDataset,
+  // );
 
   if (!currentProject) return <div>Unloaded</div>;
 
@@ -101,7 +99,6 @@ const ProjectView = () => {
             {currentProject.name}
           </Typography>
           <DatasetDropdown />
-          {comparisonView ? <ComparisonDropdown /> : null}
           <Button
             color="primary"
             startIcon={<AddIcon />}

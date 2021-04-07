@@ -118,8 +118,8 @@ export const DatasetTable = observer((p: paramType) => {
   const ref = useRef<HTMLDivElement>(null);
   const classes = useStyles();
   const headerHeight = 56;
-  const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
-  const { rows, columns } = useDataGridFormat(loadedDataset, comparisonDataset, headerHeight, true);
+  const { loadedDataset } = useContext(Store).projectStore;
+  const { rows, columns } = useDataGridFormat(loadedDataset, null, headerHeight, true);
 
   return (
     <div
@@ -145,10 +145,10 @@ export const DatasetTable = observer((p: paramType) => {
 export const ComparisonTable = observer(() => {
   const ref = useRef<HTMLDivElement>(null);
   const headerHeight = 56;
-  const { loadedDataset, comparisonDataset } = useContext(Store).projectStore;
+  const { currentComparisonDatasets } = useContext(Store).projectStore;
   const { rows, columns } = useDataGridFormat(
-    comparisonDataset,
-    loadedDataset,
+    currentComparisonDatasets[0],
+    currentComparisonDatasets[1],
     headerHeight,
     false,
   );
