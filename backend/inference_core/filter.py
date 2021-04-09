@@ -14,15 +14,17 @@ def process_predictions(predictions: List[Prediction]) -> List[Prediction]:
         columns=["hash", "rank", "algorithm", "intent", "info", "prediction"],
     )
 
+    print(preds, preds.columns)
+
     preds = filter_low_ranks(preds)
-    preds = filter_duplicate_predictions(preds)
+    preds = filter_duplicate_predictions(preds)  # type: ignore
     preds = sort_by_rank(preds)
 
     return preds["prediction"].tolist()
 
 
-def filter_low_ranks(prediction: pd.DataFrame):
-    return prediction[prediction["rank"] >= 0.1]
+def filter_low_ranks(prediction: pd.DataFrame, val=0.1):
+    return prediction[prediction["rank"] >= val]
 
 
 def sort_by_rank(predictions: pd.DataFrame):

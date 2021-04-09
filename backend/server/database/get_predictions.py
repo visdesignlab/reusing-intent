@@ -58,5 +58,4 @@ def get_predictions(record_id, dataset, selections, dimensions, session):
     for a in algs:
         predictions.extend(a.predict(selections, dataset))
 
-    print(predictions)
     return predictions

@@ -168,11 +168,12 @@ const ExploreHome = () => {
 
   const {
     exploreStore,
-    projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
+    projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode, currentProject },
     provenance,
     bundledNodes,
     loadedWorkflowId,
     loadSavedProject,
+    debug,
     dims,
   } = useContext(Store);
 
@@ -190,7 +191,7 @@ const ExploreHome = () => {
     const { numericColumns } = loadedDataset;
 
     let x_index = 0;
-    let y_index = 2;
+    let y_index = 1;
 
     if (dims.length > 0) {
       const [x, y] = dims;
@@ -203,6 +204,12 @@ const ExploreHome = () => {
         numericColumns.findIndex((d) => d === y) !== -1
           ? numericColumns.findIndex((d) => d === y)
           : y_index;
+    }
+
+    if (debug && currentProject && currentProject.key === 'gapminder_world') {
+      console.log(JSON.parse(JSON.stringify(numericColumns)));
+      x_index = 4;
+      y_index = 2;
     }
 
     const plot: Plot = {

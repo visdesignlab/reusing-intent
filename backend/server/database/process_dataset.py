@@ -73,7 +73,7 @@ def process_dataset(project, dataset, version, description, sourceMetadata):
             uploadDataset(dataset_df, "Dataset", conn)
 
     dimensions = list(dataset_df.select_dtypes("number").columns)
-    combinations = getCombinations(dimensions)[0:10]
+    combinations = getCombinations(dimensions, upper_limit=3)
 
     task_trackers = precompute(dataset_df, combinations, project, dataset_record_id)
     return dataset_hash, task_trackers

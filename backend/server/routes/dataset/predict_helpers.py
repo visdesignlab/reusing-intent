@@ -28,7 +28,7 @@ def process_filtered(dataset, selections, dimensions, filtered_indices):
     subset_dims = subset[dimensions]
     selections = [1 if i in selections else 0 for i in subset["id"].values.tolist()]
 
-    dims = ",".join(dimensions)
+    dims = ",".join(sorted(dimensions))
     kmeansCluster = computeKMeansClusters(subset_dims, dims, -1)
     dbscanCluster = computeDBScan(subset_dims, dims, -1, False)
     dbscanOutlier = computeDBScan(subset_dims, dims, -1, True)
