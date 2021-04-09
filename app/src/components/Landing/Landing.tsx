@@ -8,8 +8,46 @@ import {
   Typography,
 } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { FC, useContext, useEffect } from 'react';
+import { Link, Redirect, RouteComponentProps } from 'react-router-dom';
+
+import Store from '../../Store/Store';
+
+const demoList = [
+  'Cluster Complex Demo',
+  'Cluster Simple Demo',
+  'Gapminder World Demo',
+  'Linear Regression Complex Demo',
+  'Linear Regression Simple Demo',
+  'Outliers',
+];
+
+const imageList = [
+  `${process.env.PUBLIC_URL}/landingPictures/clusterComplex.png`,
+  `${process.env.PUBLIC_URL}/landingPictures/clusterSimple.png`,
+  `${process.env.PUBLIC_URL}/landingPictures/gapminder.png`,
+  `${process.env.PUBLIC_URL}/landingPictures/linearComplex.png`,
+  `${process.env.PUBLIC_URL}/landingPictures/linearSimple.png`,
+  `${process.env.PUBLIC_URL}/landingPictures/Outliers.png`,
+];
+
+const linkList = [
+  `/explore?demo=cluster_complex`,
+  `/explore?demo=cluster_simple`,
+  `/explore?demo=gapminder_world`,
+  `/explore?demo=linear_regression_complex`,
+  `/explore?demo=linear_regression_simple`,
+  `/explore?demo=outliers`,
+];
+
+const colabLinkList = [
+  `https://colab.research.google.com/drive/18GdpjL9LD5tQBFoWgAjBScWtjvX9WNA8?usp=sharing`,
+  `https://colab.research.google.com/drive/1WdzfTqhSgCML1iq9inw03Z64Lj8qHc1a?usp=sharing`,
+  `https://colab.research.google.com/drive/1E_5Pw0905aGOnYUo7-RwI2pq2WvTI-j4?usp=sharing`,
+  `https://colab.research.google.com/drive/16DJRqPHgoAw1EFwiKm4PmihG3BRHdOxj?usp=sharing`,
+  `https://colab.research.google.com/drive/1zsupVPrE0rxCZfKR3MlS0DIagvBeP55O?usp=sharing`,
+  `https://colab.research.google.com/drive/1uds9y6vKaZDRjfRCVLbbyBjij6T6i3Vb?usp=sharing`,
+];
 
 const useStyles = makeStyles({
   root: {
@@ -38,44 +76,23 @@ const useStyles = makeStyles({
   },
 });
 
-const Landing = () => {
+const Landing: FC<RouteComponentProps> = ({ location }: RouteComponentProps) => {
   const classes = useStyles();
 
-  const demoList = [
-    'Cluster Complex Demo',
-    'Cluster Simple Demo',
-    'Gapminder World Demo',
-    'Linear Regression Complex Demo',
-    'Linear Regression Simple Demo',
-    'Outliers',
-  ];
+  const {
+    setQueryParams,
+    debug,
+    redirectPath,
+    projectStore: { loadedDataset },
+    search,
+  } = useContext(Store);
 
-  const imageList = [
-    `${process.env.PUBLIC_URL}/landingPictures/clusterComplex.png`,
-    `${process.env.PUBLIC_URL}/landingPictures/clusterSimple.png`,
-    `${process.env.PUBLIC_URL}/landingPictures/gapminder.png`,
-    `${process.env.PUBLIC_URL}/landingPictures/linearComplex.png`,
-    `${process.env.PUBLIC_URL}/landingPictures/linearSimple.png`,
-    `${process.env.PUBLIC_URL}/landingPictures/Outliers.png`,
-  ];
+  useEffect(() => {
+    setQueryParams(location.search);
+  }, [location.search, setQueryParams]);
 
-  const linkList = [
-    `/explore?demo=cluster_complex`,
-    `/explore?demo=cluster_simple`,
-    `/explore?demo=gapminder_world`,
-    `/explore?demo=linear_regression_complex`,
-    `/explore?demo=linear_regression_simple`,
-    `/explore?demo=outliers`,
-  ];
-
-  const colabLinkList = [
-    `https://colab.research.google.com/drive/18GdpjL9LD5tQBFoWgAjBScWtjvX9WNA8?usp=sharing`,
-    `https://colab.research.google.com/drive/1WdzfTqhSgCML1iq9inw03Z64Lj8qHc1a?usp=sharing`,
-    `https://colab.research.google.com/drive/1E_5Pw0905aGOnYUo7-RwI2pq2WvTI-j4?usp=sharing`,
-    `https://colab.research.google.com/drive/16DJRqPHgoAw1EFwiKm4PmihG3BRHdOxj?usp=sharing`,
-    `https://colab.research.google.com/drive/1zsupVPrE0rxCZfKR3MlS0DIagvBeP55O?usp=sharing`,
-    `https://colab.research.google.com/drive/1uds9y6vKaZDRjfRCVLbbyBjij6T6i3Vb?usp=sharing`,
-  ];
+  if (debug && redirectPath === 'explore' && loadedDataset)
+    return <Redirect to={{ pathname: '/explore', search }} />;
 
   return (
     <>

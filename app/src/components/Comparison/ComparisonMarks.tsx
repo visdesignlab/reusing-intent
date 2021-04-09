@@ -30,10 +30,6 @@ const Marks: FC<Props> = ({
 
   const { updatedFilterPoints } = useContext(Store).compareStore;
 
-  console.log(dataDisplay)
-  console.log(compPoints)
-  console.log(points)
-
   if (!compPoints || dataDisplay === 'Original') {
     return (
       <>

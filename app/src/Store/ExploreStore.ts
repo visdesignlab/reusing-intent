@@ -48,6 +48,8 @@ export type WorkflowType = {
 
 type Workflows = { [key: string]: WorkflowType };
 
+let disposers: any[] = [];
+
 export class ExploreStore {
   rootStore: RootStore;
   isLoadingData = false;
@@ -55,7 +57,7 @@ export class ExploreStore {
   hoveredPrediction: Prediction | null = null;
   multiBrushBehaviour: MultiBrushBehaviour = 'Union';
   showCategories = false;
-  brushType: BrushType = 'Rectangular';
+  brushType: BrushType = 'Freeform Medium';
   stateRecord: { [key: string]: Record } = {};
   isComparison = false;
   predictions: Predictions = [];
@@ -69,14 +71,19 @@ export class ExploreStore {
     this.rootStore = rootStore;
     makeAutoObservable(this);
 
-    reaction(
+    if (disposers.length > 0) {
+      disposers.forEach((dis) => dis());
+      disposers = [];
+    }
+
+    const ds1 = reaction(
       () => this.state,
       () => {
         this.addPredictions();
       },
     );
 
-    reaction(
+    const ds2 = reaction(
       () => Object.values(this.provenance.graph.nodes).length,
       (curr, prev) => {
         if (this.isImporting) return;
@@ -95,6 +102,8 @@ export class ExploreStore {
         });
       },
     );
+
+    disposers = [ds1, ds2];
   }
 
   // ##################################################################### //

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, reaction, toJS } from 'mobx';
+import { action, makeAutoObservable, reaction } from 'mobx';
 
 import { loadDemo, loadFromFirebase } from '../components/Workflow/Firebase';
 import { SERVER } from '../consts';
@@ -284,8 +284,6 @@ export class ProjectStore {
       this.currentComparisonDatasets = [this.loadedDataset];
     }
 
-    console.log(datasetKey);
-
     Axios.get(`${SERVER}/${this.currentProject.key}/dataset/${datasetKey}`).then(
       action((response: AxiosResponse<Dataset>) => {
         if (this.currentComparisonDatasets.length > 1) {
@@ -297,9 +295,6 @@ export class ProjectStore {
 
         this.currentComparisonDatasets.push(response.data);
         this.comparisonKeys.push(datasetKey);
-
-        console.log(toJS(this.currentComparisonDatasets));
-        console.log(toJS(this.comparisonKeys));
       }),
     );
 

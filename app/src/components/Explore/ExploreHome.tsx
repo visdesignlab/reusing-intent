@@ -190,7 +190,7 @@ const ExploreHome = () => {
     const { numericColumns } = loadedDataset;
 
     let x_index = 0;
-    let y_index = 1;
+    let y_index = 2;
 
     if (dims.length > 0) {
       const [x, y] = dims;

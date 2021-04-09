@@ -2,25 +2,24 @@ import {
   Chip,
   CircularProgress,
   createStyles,
+  FormControlLabel,
   Grid,
   IconButton,
   makeStyles,
   Paper,
+  Switch,
   Theme,
   useTheme,
-  Switch,
-  FormControlLabel,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
 import React, { FC, useContext, useState } from 'react';
-import { toJS } from 'mobx';
 
 import Store from '../Store/Store';
 
-import Scatterplot from './Scatterplot/Scatterplot';
-import { DataDisplay } from './Comparison/ComparisonScatterplot';
 import ComparisonLegend from './Comparison/ComparisonLegend';
+import { DataDisplay } from './Comparison/ComparisonScatterplot';
+import Scatterplot from './Scatterplot/Scatterplot';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,8 +47,24 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const Visualization: FC = () => {
   const {
-    exploreStore: { plots, removePlot, isLoadingData, n_plots, isComparison, setComparison, selectedPoints},
-    projectStore: { currentProject, currentDatasetKey, loadDatasetWithReapply, loadComparisonDataset, isReapplying, currentComparisonDatasets, comparisonKeys },
+    exploreStore: {
+      plots,
+      removePlot,
+      isLoadingData,
+      n_plots,
+      isComparison,
+      setComparison,
+      selectedPoints,
+    },
+    projectStore: {
+      currentProject,
+      currentDatasetKey,
+      loadDatasetWithReapply,
+      loadComparisonDataset,
+      isReapplying,
+      currentComparisonDatasets,
+      comparisonKeys,
+    },
   } = useContext(Store);
 
   // const spContainerDimension = height > width ? width : height;
@@ -62,16 +77,16 @@ const Visualization: FC = () => {
 
   const loader = <CircularProgress />;
 
-  console.log(isComparison, toJS(currentComparisonDatasets), toJS(comparisonKeys))
-
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
-      {isComparison && currentComparisonDatasets.length > 1? (<ComparisonLegend
-        dataDisplay={dataDisplay}
-        offset={spContainerDimension - 2 * theme.spacing(1) - 110}
-        selectedPoints={selectedPoints.length > 0}
-        setDataDisplay={setDataDisplay}
-      />) : null}
+      {isComparison && currentComparisonDatasets.length > 1 ? (
+        <ComparisonLegend
+          dataDisplay={dataDisplay}
+          offset={spContainerDimension - 2 * theme.spacing(1) - 110}
+          selectedPoints={selectedPoints.length > 0}
+          setDataDisplay={setDataDisplay}
+        />
+      ) : null}
 
       <Paper elevation={3}>
         {n_plots > 1 && (
@@ -95,8 +110,6 @@ const Visualization: FC = () => {
   ));
 
   if (!currentProject || !currentDatasetKey) return <div />;
-
-  console.log(toJS(comparisonKeys))
 
   return (
     <div className={classes.root}>
@@ -123,7 +136,8 @@ const Visualization: FC = () => {
           />
         ))}
 
-        <FormControlLabel control={
+        <FormControlLabel
+          control={
             <Switch
               checked={isComparison}
               color="primary"
