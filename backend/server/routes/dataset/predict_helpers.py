@@ -12,6 +12,7 @@ from backend.server.database.get_predictions import get_predictions
 
 def process_regular(record_id, dataset, selections, dimensions, session):
     selections = [1 if i in selections else 0 for i in dataset["id"].values.tolist()]
+
     predictions: List[Prediction] = get_predictions(
         record_id, dataset, selections, dimensions, session
     )

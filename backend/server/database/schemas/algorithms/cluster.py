@@ -38,7 +38,7 @@ class ClusterBase(IntentBase):
 
         return df, unique_vals
 
-    def predict(self, selection: List[int], dataset) -> List[Prediction]:
+    def predict(self, selection: List[int], dataset, orig_dims=[]) -> List[Prediction]:
         output, unique_vals = self.processOutput()
         sels = np.array(selection)
         ids = dataset["id"]
@@ -50,9 +50,7 @@ class ClusterBase(IntentBase):
                 memberIds=self.getMemberIds(vals.values, ids),
                 dimensions=self.getDimensionArr(),
                 info=self.getClusterParams(
-                    dataset.loc[
-                        vals.values.astype(bool), self.getDimensionArr()
-                    ].values,
+                    dataset.loc[vals.values.astype(bool), orig_dims].values,
                     u,
                 ),
                 algorithm=self.algorithm,

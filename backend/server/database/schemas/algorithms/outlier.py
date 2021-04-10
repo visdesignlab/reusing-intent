@@ -23,7 +23,7 @@ class OutlierBase(IntentBase):
         df = pd.DataFrame(arr, columns=["Outlier", "NonOutlier"])
         return df
 
-    def predict(self, selection: List[int], dataset) -> List[Prediction]:
+    def predict(self, selection: List[int], dataset, orig_dims=[]) -> List[Prediction]:
         output = self.processOutput()
         sels = np.array(selection)
         ids = dataset["id"]

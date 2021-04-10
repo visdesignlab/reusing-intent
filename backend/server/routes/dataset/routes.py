@@ -132,7 +132,7 @@ def getDatasetByKey(project: str, key: str):
 @datasetRoute.route("/<project>/dataset/predict/<key>", methods=["POST"])
 def predict(project: str, key: str):
     selections = request.json["selections"]
-    dimensions = sorted(request.json["dimensions"])
+    dimensions = request.json["dimensions"]
     filtered_ids = []
 
     if "filtered_ids" in request.json:

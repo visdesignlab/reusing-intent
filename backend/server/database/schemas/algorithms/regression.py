@@ -23,7 +23,7 @@ class RegressionBase(IntentBase):
 
         return df
 
-    def predict(self, selection: List[int], dataset):
+    def predict(self, selection: List[int], dataset, orig_dims=[]):
         output = self.processOutput()
         sels = np.array(selection)
         ids = dataset["id"]

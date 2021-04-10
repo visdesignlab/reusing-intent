@@ -41,6 +41,8 @@ const Skyline: FC<Props> = ({ info, xScale, yScale }: Props) => {
       y: yScale(val[1]),
     }));
 
+    console.log(xScale.domain(), yScale.domain(), JSON.parse(JSON.stringify(frontier)));
+
     return { scaled_frontier };
   }, [xScale, yScale, frontier]);
 

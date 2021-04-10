@@ -92,12 +92,17 @@ class Record:
     ):
         sels = deepcopy(self.selections())
         self.empty()
-        self.prediction = applyPrediction(
-            prediction,
-            sels,
-            data,
-            target_id,
+        dimensions = prediction.dimensions
+        plot = filter(
+            lambda p: ",".join(dimensions) == ",".join(sorted(p.dimensions)),
+            self.plots.values(),
         )
+        plot = list(plot)
+
+        if len(list(plot)) > 0:
+            dimensions = plot[0].dimensions
+
+        self.prediction = applyPrediction(prediction, sels, data, target_id, dimensions)
 
     def set_filter(self, filterType):
         sels = deepcopy(self.selections())
@@ -165,13 +170,14 @@ def applyPrediction(
     selections: List[str],
     target: pd.DataFrame,
     target_id: str,
+    dims,
 ) -> Prediction:
     if prediction.original_id is not None and prediction.original_id == target_id:
         return prediction
 
     algorithm = Algorithms(prediction.algorithm)
     intent = Intents(prediction.intent)
-    dimensions = prediction.dimensions
+    # dimensions = prediction.dimensions
     info = prediction.info
     sels = target.id.isin(selections)
 
@@ -181,7 +187,7 @@ def applyPrediction(
     if algorithm == Algorithms.KMEANS:
         ids, centers, hull, closest_center = applyKMeans(
             target,
-            dimensions,
+            dims,
             info["params"]["n_clusters"],
             info["selected_center"],
             np.array(info["centers"]),
@@ -195,13 +201,13 @@ def applyPrediction(
         min_samples = info["params"]["min_samples"]
         if intent == Intents.CLUSTER:
             ids, hull = applyDBScanCluster(
-                target, prediction.dimensions, eps, min_samples, prediction.memberIds
+                target, dims, eps, min_samples, prediction.memberIds
             )
             new_info["hull"] = hull
         elif intent == Intents.OUTLIER or intent == Intents.NONOUTLIER:
             ids = applyDBScanOutlier(
                 target,
-                prediction.dimensions,
+                dims,
                 eps,
                 min_samples,
                 intent != Intents.NONOUTLIER,
@@ -211,7 +217,7 @@ def applyPrediction(
     elif algorithm == Algorithms.BNL:
         ids, new_info = applySkyline(target, prediction.dimensions, info["sense"])
         ids = ids.astype(bool)
-        new_info["frontier"] = target[ids][prediction.dimensions].values.tolist()
+        new_info["frontier"] = target[ids][dims].values.tolist()
         ids = target[ids].id
     elif algorithm == Algorithms.LR:
         return apply_linear_regression(target, prediction, sels)

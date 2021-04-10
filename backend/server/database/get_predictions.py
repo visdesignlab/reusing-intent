@@ -12,38 +12,39 @@ from backend.server.database.schemas.algorithms.skyline import Skyline
 
 def get_predictions(record_id, dataset, selections, dimensions, session):
     predictions: List[Prediction] = []
+    dims = sorted(dimensions)
     kmeanscluster = (
         session.query(KMeansCluster)
         .filter(KMeansCluster.record_id == record_id)
-        .filter(KMeansCluster.dimensions == ",".join(dimensions))
+        .filter(KMeansCluster.dimensions == ",".join(dims))
         .distinct(KMeansCluster.output)
         .all()
     )
     dbscancluster = (
         session.query(DBScanCluster)
         .filter(DBScanCluster.record_id == record_id)
-        .filter(DBScanCluster.dimensions == ",".join(dimensions))
+        .filter(DBScanCluster.dimensions == ",".join(dims))
         .distinct(DBScanCluster.output)
         .all()
     )
     dbscanoutlier = (
         session.query(DBScanOutlier)
         .filter(DBScanOutlier.record_id == record_id)
-        .filter(DBScanOutlier.dimensions == ",".join(dimensions))
+        .filter(DBScanOutlier.dimensions == ",".join(dims))
         .distinct(DBScanOutlier.output)
         .all()
     )
     linearregression = (
         session.query(LinearRegression)
         .filter(LinearRegression.record_id == record_id)
-        .filter(LinearRegression.dimensions == ",".join(dimensions))
+        .filter(LinearRegression.dimensions == ",".join(dims))
         .distinct(LinearRegression.output)
         .all()
     )
     skyline = (
         session.query(Skyline)
         .filter(Skyline.record_id == record_id)
-        .filter(Skyline.dimensions == ",".join(dimensions))
+        .filter(Skyline.dimensions == ",".join(dims))
         .distinct(Skyline.output)
         .all()
     )
@@ -56,6 +57,6 @@ def get_predictions(record_id, dataset, selections, dimensions, session):
     algs.extend(skyline)
 
     for a in algs:
-        predictions.extend(a.predict(selections, dataset))
+        predictions.extend(a.predict(selections, dataset, dimensions))
 
     return predictions
