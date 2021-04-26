@@ -5,10 +5,10 @@ module.exports = {
   // Run ESLint on changes to JavaScript/TypeScript files
   "**/*.(ts|js)?(x)": (filenames) =>
     `cd app && yarn lint ${filenames.join(" ")}`,
-  "**/*.py": () => [
-    `poetry run isort backend`,
-    `poetry run black backend`,
-    `poetry run flake8 backend`,
-    `poetry run mypy backend`,
+  "./backend/**/*.py": (filenames) => [
+    `poetry run isort  ${filenames.join(" ")}`,
+    `poetry run black ${filenames.join(" ")}`,
+    `poetry run flake8 ${filenames.join(" ")}`,
+    `poetry run mypy ${filenames.join(" ")}`,
   ],
 };
