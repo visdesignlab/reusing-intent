@@ -1,5 +1,4 @@
 import { ProvenanceGraph } from '@visdesignlab/trrack';
-import React from 'react';
 import { Button } from 'semantic-ui-react';
 import { style } from 'typestyle';
 

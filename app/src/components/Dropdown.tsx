@@ -7,7 +7,7 @@ import {
   Select,
   Theme,
 } from '@material-ui/core';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

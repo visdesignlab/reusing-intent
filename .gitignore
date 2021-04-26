@@ -210,3 +210,5 @@ yarn.lock
 dump.rdb
 .eslintcache
 database
+
+!lint-staged.config.js

@@ -1,7 +1,7 @@
 import { makeStyles, Typography } from '@material-ui/core';
 import clsx from 'clsx';
 import { observer } from 'mobx-react';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 import translate from '../../../Utils/Translate';
 

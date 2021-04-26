@@ -10,7 +10,7 @@ import {
 import AddIcon from '@material-ui/icons/Add';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { observer } from 'mobx-react';
-import React, { useContext, useMemo, useState } from 'react';
+import { useContext, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 import Store from '../../Store/Store';
@@ -44,11 +44,7 @@ const useStyles = makeStyles(() =>
 const ProjectView = () => {
   const classes = useStyles();
   const {
-    projectStore: {
-      currentProject,
-      loadedDatasetKey: datasetKey,
-      loadDataset,
-    },
+    projectStore: { currentProject, loadedDatasetKey: datasetKey, loadDataset },
     search,
   } = useContext(Store);
 

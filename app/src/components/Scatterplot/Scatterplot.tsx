@@ -1,7 +1,7 @@
 import { createStyles, makeStyles, useTheme } from '@material-ui/core';
 import { select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext } from 'react';
+import { FC, useCallback, useContext } from 'react';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';

@@ -2,7 +2,7 @@ import { createStyles, makeStyles, Typography } from '@material-ui/core';
 import clsx from 'clsx';
 import { scaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import translate from '../../Utils/Translate';
 import { RANK_BAR_FOREGROUND } from '../ColorSpecs';

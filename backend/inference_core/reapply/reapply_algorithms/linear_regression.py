@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from backend.inference_core.algorithms.linear_regression import computeLR

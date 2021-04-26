@@ -21,7 +21,6 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.6",
     "@visdesignlab/trrack": "^2.0.0-alpha.5",
-    "@visdesignlab/trrack-vis": "^2.0.0-alpha.9",
     "@welldone-software/why-did-you-render": "^6.0.3",
     "axios": "^0.21.1",
     "browserify-fs": "^1.0.0",
@@ -30,6 +29,7 @@
     "debounce": "^1.2.0",
     "firebase": "^8.3.0",
     "firestore": "^1.1.6",
+    "firebase-admin": "^9.5.0",
     "font-awesome": "^4.7.0",
     "formik": "^2.2.6",
     "fs": "^0.0.1-security",
@@ -56,6 +56,7 @@
     "build": "CI=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "type-check": "tsc --project tsconfig.json --pretty --noEmit",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "lint:fix": "eslint --fix 'src/**/*.{ts,tsx}'"
   },

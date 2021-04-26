@@ -2,14 +2,12 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
-import { Redirect, RouteComponentProps } from 'react-router-dom';
+import { FC, useContext, useEffect } from 'react';
+import { RouteComponentProps } from 'react-router-dom';
 
-import { ProvVis } from '../../trrack-vis/index';
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';
 import { getPlotId } from '../../Utils/IDGens';
-import { eventConfig } from '../Explore/ExploreHome';
 
 import ComparisonScatterplot from './ComparisonScatterplot';
 
@@ -44,7 +42,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
     provenance,
     setQueryParams,
     loadedWorkflowId,
-    loadSavedProject
+    loadSavedProject,
   } = useContext(Store);
 
   useEffect(() => {
@@ -69,7 +67,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
   });
 
   const classes = useStyles();
-  
+
   return (
     <div className={classes.root}>
       <CssBaseline />

@@ -2,7 +2,7 @@ import { Tooltip } from '@material-ui/core';
 import clsx from 'clsx';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useContext } from 'react';
+import { FC, useContext } from 'react';
 
 import Store from '../../Store/Store';
 

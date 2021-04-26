@@ -8,7 +8,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
+import { FC, useContext, useEffect } from 'react';
 import { Link, Redirect, RouteComponentProps } from 'react-router-dom';
 
 import Store from '../../Store/Store';

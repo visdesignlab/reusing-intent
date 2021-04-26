@@ -12,7 +12,7 @@ import AddIcon from '@material-ui/icons/Add';
 import CloseIcon from '@material-ui/icons/Close';
 import DoneIcon from '@material-ui/icons/Done';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext, useState } from 'react';
+import { FC, useCallback, useContext, useState } from 'react';
 
 import Store from '../../Store/Store';
 import { Plot } from '../../Store/Types/Plot';

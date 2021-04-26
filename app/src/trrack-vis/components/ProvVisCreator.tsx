@@ -2,7 +2,6 @@
 /* eslint-disable no-unused-vars */
 import { NodeID, Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
 import { configure } from 'mobx';
-import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';

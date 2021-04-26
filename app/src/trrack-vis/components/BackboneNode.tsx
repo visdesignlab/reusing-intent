@@ -2,15 +2,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 /* eslint-disable no-unused-vars */
 import { NodeID, Provenance, ProvenanceNode, StateNode } from '@visdesignlab/trrack';
-import React, { ReactChild, useState } from 'react';
+import { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
-import { Button, Icon, Popup, TextArea, Form } from 'semantic-ui-react';
 import ReactResizeDetector from 'react-resize-detector';
+import { Button, Form, Icon, Popup, TextArea } from 'semantic-ui-react';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
 import translate from '../Utils/translate';
-
 
 import { treeColor } from './Styles';
 

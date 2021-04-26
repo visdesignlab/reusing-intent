@@ -5,15 +5,14 @@ import { HashRouter, Route, Switch } from 'react-router-dom';
 
 import ComparisonHome from './components/Comparison/ComparisonHome';
 import Explore from './components/Explore/Explore';
+import Landing from './components/Landing/Landing';
 import ProjectHome from './components/Project/ProjectHome';
 import './index.css';
-import Landing from './components/Landing/Landing';
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
   exclude: [/XGrid|RowCells|GridCell/],
 });
-
 
 const app = (
   <HashRouter>

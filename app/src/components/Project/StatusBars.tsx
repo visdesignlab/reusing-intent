@@ -1,7 +1,7 @@
 import { LinearProgress, List, ListItem, ListItemText } from '@material-ui/core';
 import Axios from 'axios';
 import { observer } from 'mobx-react';
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import { SERVER } from '../../consts';
 

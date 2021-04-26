@@ -2,7 +2,6 @@ from contextlib import contextmanager
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 from .schemas import *  # noqa: *
 from .schemas.base import Base

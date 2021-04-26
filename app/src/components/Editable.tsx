@@ -1,6 +1,6 @@
 import { Input, Tooltip, Typography } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 type Props = {
   text: string;

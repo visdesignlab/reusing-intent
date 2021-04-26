@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
 import { StateNode } from '@visdesignlab/trrack';
-import React from 'react';
 import { Animate } from 'react-move';
 
 import { EventConfig } from '../Utils/EventConfig';

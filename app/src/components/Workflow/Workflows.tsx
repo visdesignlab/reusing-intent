@@ -11,7 +11,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 
 import Store from '../../Store/Store';
 

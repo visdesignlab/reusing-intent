@@ -3,7 +3,7 @@ import { makeStyles, Typography } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { ValueFormatterParams } from '@material-ui/x-grid';
 import { observer } from 'mobx-react';
-import React, { useCallback, useContext, useMemo, useRef } from 'react';
+import { useCallback, useContext, useMemo, useRef } from 'react';
 
 import Store from '../../Store/Store';
 import { Dataset } from '../../Store/Types/Dataset';

@@ -11,12 +11,9 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useState } from 'react';
+import { FC, useContext } from 'react';
 
 import Store from '../../Store/Store';
-import Scatterplot from '../Scatterplot/Scatterplot';
-
-import ComparisonLegend from './ComparisonLegend';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -66,7 +63,6 @@ const CompVis: FC = () => {
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
-
       <Paper elevation={3}>
         {n_plots > 1 && (
           <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>

@@ -1,7 +1,7 @@
 import { makeStyles } from '@material-ui/core';
 import { quadtree, ScaleLinear, select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useEffect, useMemo, useRef, useState } from 'react';
 
 import translate from '../../Utils/Translate';
 

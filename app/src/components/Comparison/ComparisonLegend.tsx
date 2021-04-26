@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 import translate from '../../Utils/Translate';
 import useScatterplotStyle from '../Scatterplot/styles';

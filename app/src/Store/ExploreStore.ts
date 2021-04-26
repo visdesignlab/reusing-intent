@@ -1,6 +1,6 @@
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import Axios, { AxiosResponse } from 'axios';
-import { action, makeAutoObservable, reaction } from 'mobx';
+import { action, IReactionDisposer, makeAutoObservable, reaction } from 'mobx';
 
 import deepCopy from '../Utils/DeepCopy';
 import { getWorkflowID } from '../Utils/IDGens';
@@ -48,7 +48,7 @@ export type WorkflowType = {
 
 type Workflows = { [key: string]: WorkflowType };
 
-let disposers: any[] = [];
+let disposers: IReactionDisposer[] = [];
 
 export class ExploreStore {
   rootStore: RootStore;

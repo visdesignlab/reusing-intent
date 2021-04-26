@@ -2,7 +2,7 @@ import { makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, Fragment, useMemo } from 'react';
+import { FC, Fragment, useMemo } from 'react';
 
 import { SkylineInfo } from '../../../Store/Types/Prediction';
 import translate from '../../../Utils/Translate';
@@ -40,8 +40,6 @@ const Skyline: FC<Props> = ({ info, xScale, yScale }: Props) => {
       x: xScale(val[0]),
       y: yScale(val[1]),
     }));
-
-    console.log(xScale.domain(), yScale.domain(), JSON.parse(JSON.stringify(frontier)));
 
     return { scaled_frontier };
   }, [xScale, yScale, frontier]);

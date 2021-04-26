@@ -1,5 +1,4 @@
 import { NodeID, ProvenanceGraph } from '@visdesignlab/trrack';
-import React from 'react';
 import { NodeGroup } from 'react-move';
 
 import { EventConfig } from '../Utils/EventConfig';

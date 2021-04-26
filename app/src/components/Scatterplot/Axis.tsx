@@ -1,6 +1,6 @@
 import { axisBottom, axisLeft, axisRight, axisTop, ScaleLinear, select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect, useMemo, useRef } from 'react';
+import { FC, useContext, useEffect, useMemo, useRef } from 'react';
 
 import Store from '../../Store/Store';
 import translate from '../../Utils/Translate';

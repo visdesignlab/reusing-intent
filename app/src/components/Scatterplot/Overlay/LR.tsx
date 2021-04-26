@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { LinearRegressionInfo } from '../../../Store/Types/Prediction';
 

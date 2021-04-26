@@ -1,5 +1,5 @@
 import { quadtree, ScaleLinear } from 'd3';
-import React, { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { getBrushId } from '../../../Utils/IDGens';
 import { Brush, BrushAffectType, BrushCollection } from '../Types/Brush';

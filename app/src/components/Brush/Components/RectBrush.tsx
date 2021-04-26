@@ -1,6 +1,6 @@
 import { createStyles, makeStyles } from '@material-ui/core';
 import clsx from 'clsx';
-import React, { FC, useEffect, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 
 import translate from '../../../Utils/Translate';
 

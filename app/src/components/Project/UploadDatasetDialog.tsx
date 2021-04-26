@@ -12,7 +12,7 @@ import {
 import Axios, { AxiosResponse } from 'axios';
 import { useFormik } from 'formik';
 import { observer } from 'mobx-react';
-import React, { ChangeEvent, FC, useCallback, useContext, useState } from 'react';
+import { ChangeEvent, FC, useCallback, useContext, useState } from 'react';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
 import { SERVER } from '../../consts';

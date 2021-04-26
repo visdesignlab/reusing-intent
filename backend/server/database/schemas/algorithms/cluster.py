@@ -13,15 +13,26 @@ from ..base import Base
 
 
 class ClusterBase(IntentBase):
-    def getClusterParams(self, vals, idx):
+    def getClusterParams(self, vals, idx, dims, orig_dims):
         info = self.getInfo()
         info["hull"] = []
         if vals.shape[0] >= 3:
+            # try:
             hull = ConvexHull(vals)
             info["hull"] = vals[hull.vertices, :].tolist()
+            # except:  # noqa: ignore
+            #     print(vals)
+            #     print("Cannot calculate")
         if self.algorithm == "DBScan":
             return info
-        info["selected_center"] = info["centers"][idx]
+
+        center = info["centers"][idx]
+
+        if ",".join(dims) != ",".join(orig_dims):
+            center = center[::-1]
+
+        info["selected_center"] = center
+
         return info
 
     def processOutput(self):
@@ -52,6 +63,8 @@ class ClusterBase(IntentBase):
                 info=self.getClusterParams(
                     dataset.loc[vals.values.astype(bool), orig_dims].values,
                     u,
+                    self.getDimensionArr(),
+                    orig_dims,
                 ),
                 algorithm=self.algorithm,
                 membership=getStats(

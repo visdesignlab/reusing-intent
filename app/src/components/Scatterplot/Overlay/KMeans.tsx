@@ -1,6 +1,6 @@
 import { line, ScaleLinear, symbol, symbolWye } from 'd3';
 import { observer } from 'mobx-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { KMeansInfo } from '../../../Store/Types/Prediction';
 import translate from '../../../Utils/Translate';

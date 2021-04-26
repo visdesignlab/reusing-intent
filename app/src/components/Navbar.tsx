@@ -12,7 +12,7 @@ import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext } from 'react';
+import { FC, useContext } from 'react';
 
 import Store from '../Store/Store';
 
@@ -31,7 +31,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Navbar: FC = () => {
   const classes = useStyles();
   // const [open, setOpen] = useState(false);
-
 
   const {
     exploreStore: { brushType, switchBrush, filter },
@@ -66,10 +65,8 @@ const Navbar: FC = () => {
             </ToggleButtonGroup>
           </FormControl>
           <Divider />
-          {/* <ComparisonDropdown /> */}
           <Button
             color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
               filter('Out');
@@ -80,10 +77,8 @@ const Navbar: FC = () => {
 
           <Button
             color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              // loadComparisonFilter("demo")
               filter('In');
             }}
           >

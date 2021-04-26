@@ -13,7 +13,7 @@ import {
 import AddBoxIcon from '@material-ui/icons/AddBox';
 import FolderIcon from '@material-ui/icons/Folder';
 import { observer } from 'mobx-react';
-import React, { useContext, useState } from 'react';
+import { useContext, useState } from 'react';
 
 import Store from '../../Store/Store';
 

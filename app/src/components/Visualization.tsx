@@ -13,7 +13,7 @@ import {
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useState } from 'react';
+import { FC, useContext, useState } from 'react';
 
 import Store from '../Store/Store';
 

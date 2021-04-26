@@ -13,11 +13,11 @@ import {
   Nodes,
   Provenance,
   ProvenanceNode,
-  StateNode,
+  StateNode
 } from '@visdesignlab/trrack';
 import * as d3 from 'd3';
 import { observer } from 'mobx-react';
-import React, { ReactChild, useEffect, useState } from 'react';
+import { ReactChild, useEffect, useState } from 'react';
 import { NodeGroup } from 'react-move';
 import { Popup, Tab } from 'semantic-ui-react';
 import { style } from 'typestyle';
@@ -36,6 +36,8 @@ import linkTransitions from './LinkTransitions';
 import nodeTransitions from './NodeTransitions';
 import { treeColor } from './Styles';
 import UndoRedoButton from './UndoRedoButton';
+
+
 
 const container = style({
   alignItems: 'center',
@@ -131,7 +133,6 @@ function ProvVis<T, S extends string, A>({
   const [bookmark, setBookmark] = useState<any>(null);
   const [annotationOpen, setAnnotationOpen] = useState(-1);
   const [annotationHeight, setAnnotationHeight] = useState(35);
-
 
   let list: string[] = [];
   const eventTypes = new Set<string>();
@@ -502,7 +503,6 @@ function ProvVis<T, S extends string, A>({
                 })}
               </>
             )}
-            
           </NodeGroup>
           <NodeGroup
             data={stratifiedList}

@@ -8,9 +8,9 @@ import {
   Typography,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import { observer } from 'mobx-react';
-import React, { useContext } from 'react';
 import { isChildNode } from '@visdesignlab/trrack';
+import { observer } from 'mobx-react';
+import { useContext } from 'react';
 
 import Store from '../../Store/Store';
 
@@ -51,8 +51,8 @@ const Action = ({ id }: Props) => {
       isRejected = artifact.artifact.status_record[currentDatasetKey] === 'Rejected';
     }
   }
-  
-  //also show annotation, 
+
+  //also show annotation,
   return (
     <Card className={classes.card} variant="outlined">
       <CardContent>
@@ -65,13 +65,12 @@ const Action = ({ id }: Props) => {
             >
               {node.label}
             </Typography>
-            <Typography
-              color="textSecondary"
-              display="block"
-              variant="subtitle2"
-            >
+            <Typography color="textSecondary" display="block" variant="subtitle2">
               {/* <div>{node.label}</div> */}
-              {isChildNode(node) && node.artifacts && node.artifacts.annotations && provenance.getLatestAnnotation(node.id)
+              {isChildNode(node) &&
+              node.artifacts &&
+              node.artifacts.annotations &&
+              provenance.getLatestAnnotation(node.id)
                 ? provenance.getLatestAnnotation(node.id)?.annotation
                 : ''}
             </Typography>

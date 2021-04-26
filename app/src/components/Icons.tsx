@@ -1,5 +1,3 @@
-import React from 'react';
-
 import translate from '../Utils/Translate';
 
 // import { symbol, symbols } from 'd3';
@@ -8,13 +6,10 @@ type AddTaskGlyphProps = {
   size?: number;
   fill?: string;
   scale?: number;
-}
+};
 
 //Occurs on selecting rectangular brush
-export function ChangeBrushType({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function ChangeBrushType({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -56,7 +51,7 @@ export function ChangeBrushType({
 }
 
 //Occurs on clear all click ???
-export function ClearAll({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function ClearAll({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -66,8 +61,6 @@ export function ClearAll({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf2ed;
@@ -78,7 +71,7 @@ export function ClearAll({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //Occurs on clear all click ???
-export function Filter({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function Filter({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -88,8 +81,6 @@ export function Filter({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf0b0;
@@ -100,7 +91,7 @@ export function Filter({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //Occurs on removing a brush
-export function RemoveBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function RemoveBrush({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -110,8 +101,6 @@ export function RemoveBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf057;
@@ -122,7 +111,7 @@ export function RemoveBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //Occurs on shifting a rectangle size, dragging it ???
-export function ChangeBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function ChangeBrush({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -132,8 +121,6 @@ export function ChangeBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf044;
@@ -144,7 +131,7 @@ export function ChangeBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //Occurs on invert
-export function Invert({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function Invert({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -154,8 +141,6 @@ export function Invert({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf042;
@@ -165,23 +150,56 @@ export function Invert({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
   );
 }
 
-export function TurnPrediction({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function TurnPrediction({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
       <g transform={translate(-size / 2, -size / 2)}>
         <svg height={size} viewBox="0 0 141.75 141.75" width={size}>
           <g id="Layer 1">
-            <path d="M11.34-11.34L11.6801+130.41L153.09+130.41" fill="none" opacity="1" stroke={fill} strokeLinecap="round" strokeLinejoin="miter" strokeWidth="25"/>
-            <path d="M41.0944+103.248C41.0944+96.3307+46.8061+90.7234+53.8519+90.7234C60.8977+90.7234+66.6094+96.4351+66.6094+103.481C66.6094+110.527+60.8977+116.238+53.8519+116.238C46.8061+116.238+41.0944+110.165+41.0944+103.248Z" fill={fill} opacity="1"/>
-            <path d="M28.3369+70.6417C28.3369+63.7248+34.0486+58.1175+41.0944+58.1175C48.1402+58.1175+53.8519+63.8292+53.8519+70.875C53.8519+77.9208+48.1402+83.6325+41.0944+83.6325C34.0486+83.6325+28.3369+77.5587+28.3369+70.6417Z" fill={fill} opacity="1"/>
-            <path d="M66.6094+83.3992C66.6094+76.4823+72.3211+70.875+79.3669+70.875C86.4127+70.875+92.1244+76.5867+92.1244+83.6325C92.1244+90.6783+86.4127+96.39+79.3669+96.39C72.3211+96.39+66.6094+90.3162+66.6094+83.3992Z" fill={fill} opacity="1"/>
-            <path d="M53.8519+57.8842C53.8519+50.9673+59.5636+45.36+66.6094+45.36C73.6552+45.36+79.3669+51.0717+79.3669+58.1175C79.3669+65.1633+73.6552+70.875+66.6094+70.875C59.5636+70.875+53.8519+64.8012+53.8519+57.8842Z" fill={fill} opacity="1"/>
-            <path d="M101.341+31.4476C101.341+24.5307+107.053+18.9234+114.098+18.9234C121.144+18.9234+126.856+24.6352+126.856+31.6809C126.856+38.7267+121.144+44.4384+114.098+44.4384C107.053+44.4384+101.341+38.3646+101.341+31.4476Z" fill={fill} opacity="1"/>
-            <path d="M90.001+31.2403C90.001+18.175+100.79+7.58342+114.098+7.58342C127.407+7.58342+138.196+18.3722+138.196+31.6809C138.196+44.9896+127.407+55.7784+114.098+55.7784C100.79+55.7784+90.001+44.3056+90.001+31.2403Z" fill="none" opacity="1" stroke={fill} strokeLinecap="round" strokeLinejoin="round" strokeWidth="8"/>
+            <path
+              d="M11.34-11.34L11.6801+130.41L153.09+130.41"
+              fill="none"
+              opacity="1"
+              stroke={fill}
+              strokeLinecap="round"
+              strokeLinejoin="miter"
+              strokeWidth="25"
+            />
+            <path
+              d="M41.0944+103.248C41.0944+96.3307+46.8061+90.7234+53.8519+90.7234C60.8977+90.7234+66.6094+96.4351+66.6094+103.481C66.6094+110.527+60.8977+116.238+53.8519+116.238C46.8061+116.238+41.0944+110.165+41.0944+103.248Z"
+              fill={fill}
+              opacity="1"
+            />
+            <path
+              d="M28.3369+70.6417C28.3369+63.7248+34.0486+58.1175+41.0944+58.1175C48.1402+58.1175+53.8519+63.8292+53.8519+70.875C53.8519+77.9208+48.1402+83.6325+41.0944+83.6325C34.0486+83.6325+28.3369+77.5587+28.3369+70.6417Z"
+              fill={fill}
+              opacity="1"
+            />
+            <path
+              d="M66.6094+83.3992C66.6094+76.4823+72.3211+70.875+79.3669+70.875C86.4127+70.875+92.1244+76.5867+92.1244+83.6325C92.1244+90.6783+86.4127+96.39+79.3669+96.39C72.3211+96.39+66.6094+90.3162+66.6094+83.3992Z"
+              fill={fill}
+              opacity="1"
+            />
+            <path
+              d="M53.8519+57.8842C53.8519+50.9673+59.5636+45.36+66.6094+45.36C73.6552+45.36+79.3669+51.0717+79.3669+58.1175C79.3669+65.1633+73.6552+70.875+66.6094+70.875C59.5636+70.875+53.8519+64.8012+53.8519+57.8842Z"
+              fill={fill}
+              opacity="1"
+            />
+            <path
+              d="M101.341+31.4476C101.341+24.5307+107.053+18.9234+114.098+18.9234C121.144+18.9234+126.856+24.6352+126.856+31.6809C126.856+38.7267+121.144+44.4384+114.098+44.4384C107.053+44.4384+101.341+38.3646+101.341+31.4476Z"
+              fill={fill}
+              opacity="1"
+            />
+            <path
+              d="M90.001+31.2403C90.001+18.175+100.79+7.58342+114.098+7.58342C127.407+7.58342+138.196+18.3722+138.196+31.6809C138.196+44.9896+127.407+55.7784+114.098+55.7784C100.79+55.7784+90.001+44.3056+90.001+31.2403Z"
+              fill="none"
+              opacity="1"
+              stroke={fill}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="8"
+            />
           </g>
         </svg>
       </g>
@@ -190,10 +208,7 @@ export function TurnPrediction({
 }
 
 //When the check is clicked
-export function LockPrediction({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function LockPrediction({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -203,8 +218,6 @@ export function LockPrediction({
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf0eb;
@@ -215,7 +228,7 @@ export function LockPrediction({
 }
 
 //When a rectangular brush is added
-export function AddBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function AddBrush({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -225,7 +238,6 @@ export function AddBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
           textAnchor="middle"
         >
           &#xf5cb;
@@ -236,10 +248,7 @@ export function AddBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //When a point is individually deselected
-export function PointDeselection({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function PointDeselection({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -249,8 +258,6 @@ export function PointDeselection({
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf12d;
@@ -261,10 +268,7 @@ export function PointDeselection({
 }
 
 //When a brush or individual selection is made
-export function PointSelection({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function PointSelection({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -274,8 +278,6 @@ export function PointSelection({
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf1fc;
@@ -286,7 +288,7 @@ export function PointSelection({
 }
 
 //When add plot is clicked, or initial loading of data.
-export function AddPlot({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function AddPlot({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -328,7 +330,7 @@ export function AddPlot({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
 }
 
 //Whenever a new dataset is selected
-export function LoadDataset({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function LoadDataset({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -338,8 +340,6 @@ export function LoadDataset({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf0ce;
@@ -349,15 +349,31 @@ export function LoadDataset({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
   );
 }
 
-export function MultiBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
+export function MultiBrush({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
       <g transform={translate(-size / 2, -size / 2)}>
         <svg height={size} viewBox="0 0 141.75 141.75" width={size}>
           <g id="Layer 1">
-            <path d="M70.875+133.084C94.2246+133.264+117.574+113.829+117.574+87.3323C117.574+60.8354+117.574+0+117.574+0" fill="none" opacity="1" stroke={fill} strokeLinecap="butt" strokeLinejoin="round" strokeWidth="15"/>
-            <path d="M70.875+133.084C47.5254+133.264+24.1758+113.829+24.1758+87.3323C24.1758+60.8354+24.1758+0+24.1758+0" fill="none" opacity="1" stroke={fill} strokeLinecap="butt" strokeLinejoin="round" strokeWidth="15"/>
+            <path
+              d="M70.875+133.084C94.2246+133.264+117.574+113.829+117.574+87.3323C117.574+60.8354+117.574+0+117.574+0"
+              fill="none"
+              opacity="1"
+              stroke={fill}
+              strokeLinecap="butt"
+              strokeLinejoin="round"
+              strokeWidth="15"
+            />
+            <path
+              d="M70.875+133.084C47.5254+133.264+24.1758+113.829+24.1758+87.3323C24.1758+60.8354+24.1758+0+24.1758+0"
+              fill="none"
+              opacity="1"
+              stroke={fill}
+              strokeLinecap="butt"
+              strokeLinejoin="round"
+              strokeWidth="15"
+            />
           </g>
         </svg>
       </g>
@@ -365,10 +381,7 @@ export function MultiBrush({ size = 15, fill = "#ccc" }: AddTaskGlyphProps) {
   );
 }
 
-export function SwitchCategoryVisibility({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function SwitchCategoryVisibility({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -378,8 +391,6 @@ export function SwitchCategoryVisibility({
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf61f;
@@ -389,10 +400,7 @@ export function SwitchCategoryVisibility({
   );
 }
 
-export function ChangeBrushSize({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function ChangeBrushSize({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -451,10 +459,7 @@ export function ChangeBrushSize({
   );
 }
 
-export function ChangeCategory({
-  size = 15,
-  fill = "#ccc",
-}: AddTaskGlyphProps) {
+export function ChangeCategory({ size = 15, fill = '#ccc' }: AddTaskGlyphProps) {
   return (
     <g>
       <circle fill="white" r={size - size / 4} />
@@ -464,8 +469,6 @@ export function ChangeCategory({
           fill={fill}
           fontFamily="FontAwesome"
           fontSize={size}
-
-
           textAnchor="middle"
         >
           &#xf61f;

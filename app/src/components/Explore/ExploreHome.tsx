@@ -1,7 +1,7 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import React, { useContext, useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 
 import Store from '../../Store/Store';
 import { IntentEvents } from '../../Store/Types/IntentEvents';
@@ -207,9 +207,8 @@ const ExploreHome = () => {
     }
 
     if (debug && currentProject && currentProject.key === 'gapminder_world') {
-      console.log(JSON.parse(JSON.stringify(numericColumns)));
-      x_index = 4;
-      y_index = 2;
+      x_index = 2;
+      y_index = 1;
     }
 
     const plot: Plot = {

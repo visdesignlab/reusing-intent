@@ -10,7 +10,7 @@ import {
 } from '@material-ui/core';
 import Axios from 'axios';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext, useState } from 'react';
+import { FC, useCallback, useContext, useState } from 'react';
 
 import { SERVER } from '../../consts';
 import Store from '../../Store/Store';

@@ -1,6 +1,6 @@
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
 import {
   DBScanInfo,

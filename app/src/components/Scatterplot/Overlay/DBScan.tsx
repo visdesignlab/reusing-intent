@@ -1,6 +1,6 @@
 import { line, ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { DBScanInfo } from '../../../Store/Types/Prediction';
 

@@ -16,7 +16,7 @@ import FileCopyIcon from '@material-ui/icons/FileCopy';
 import ShareIcon from '@material-ui/icons/Share';
 import { Alert } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { useCallback, useContext, useState } from 'react';
+import { useCallback, useContext, useState } from 'react';
 
 import { WorkflowType } from '../../Store/ExploreStore';
 import Store from '../../Store/Store';

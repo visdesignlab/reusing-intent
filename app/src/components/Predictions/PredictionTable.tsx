@@ -16,7 +16,7 @@ import {
 import TouchAppIcon from '@material-ui/icons/TouchApp';
 import debounce from 'debounce';
 import { observer } from 'mobx-react';
-import React, { useContext, useMemo } from 'react';
+import { useContext, useMemo } from 'react';
 
 import Store from '../../Store/Store';
 
