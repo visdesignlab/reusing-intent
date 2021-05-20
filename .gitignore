@@ -212,3 +212,4 @@ dump.rdb
 database
 
 !lint-staged.config.js
+!commitlint.config.js
