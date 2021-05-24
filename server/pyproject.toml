@@ -7,6 +7,8 @@ authors = ["Kiran Gadhave <kirangadhave2@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.6"
 reapply-workflows = {path = "../reapply-workflows/", develop = true}
+Flask = "^2.0.1"
+SQLAlchemy = "^1.4.15"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
