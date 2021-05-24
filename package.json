@@ -6,7 +6,12 @@
   "author": "Kiran Gadhave <kirangadhave2@gmail.com>",
   "license": "MIT",
   "private": true,
-  "scripts": {},
+  "scripts": {
+    "install:reapply-workflows": "cd reapply-workflows && poetry install",
+    "install:server": "cd server && poetry install",
+    "install:all": "yarn install:reapply-workflows && yarn install:server",
+    "list:env": "cd server && echo 'Server' && poetry env info && cd ../reapply-workflows && echo '\n\nLibrary' && poetry env info"
+  },
   "devDependencies": {
     "@commitlint/cli": "^12.1.1",
     "@commitlint/config-conventional": "^12.1.1",
