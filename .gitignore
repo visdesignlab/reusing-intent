@@ -122,7 +122,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
 venv/
 ENV/
 env.bak/
@@ -213,3 +212,4 @@ database
 
 !lint-staged.config.js
 !commitlint.config.js
+!env/
