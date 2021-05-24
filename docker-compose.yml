@@ -1,0 +1,33 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    env_file:
+      - env/common.env
+    volumes:
+      - ./database/:/var/lib/postgresql/data/
+  flask-server:
+    build: .
+    env_file:
+      - env/common.env
+      - env/dev.env
+    depends_on:
+      - postgres
+    volumes:
+      - .:/code
+    command: sh -c "cd server && poetry run python src/server/__init__.py"
+  reverse:
+    hostname: reverse
+    image: nginx:1.19
+    depends_on:
+      - flask-server
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - .nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+
+volumes:
+  postgres_data:
