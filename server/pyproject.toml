@@ -5,13 +5,17 @@ description = ""
 authors = ["Kiran Gadhave <kirangadhave2@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7.1"
 reapply-workflows = {path = "../reapply-workflows/", develop = true}
 Flask = "^2.0.1"
 SQLAlchemy = "^1.4.15"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+isort = "^5.8.0"
+black = "^21.5b1"
+flake8 = "^3.9.2"
+mypy = "^0.812"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
