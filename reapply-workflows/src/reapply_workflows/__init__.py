@@ -1,7 +1,9 @@
-__version__ = '0.2.0'
+from .inference_core.inference import infer
+
 
 def hello():
-  return "HEllo, World 2!"
+    return "HEllo, World 2!"
+
 
 def hello2():
-  return "Jello, Jworld"
+    return "Jello, Jworld"
