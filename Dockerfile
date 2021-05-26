@@ -9,12 +9,14 @@ WORKDIR /code
 
 COPY ./reapply-workflows/pyproject.toml /code/reapply-workflows/
 COPY ./reapply-workflows/poetry.lock /code/reapply-workflows/
+RUN cd reapply-workflows && poetry install && poetry update
 
 COPY ./server/pyproject.toml /code/server/
 COPY ./server/poetry.lock /code/server/
 
-RUN cd reapply-workflows && poetry install && poetry update
 COPY ./reapply-workflows/ /code/reapply-workflows/
 RUN cd server && poetry install && poetry update
 
 COPY . /code/
+
+RUN echo $FLASK_APP
