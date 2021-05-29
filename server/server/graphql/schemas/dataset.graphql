@@ -1,0 +1,5 @@
+type Dataset {
+  id: ID!
+  version: String!
+  project_id: String!
+}

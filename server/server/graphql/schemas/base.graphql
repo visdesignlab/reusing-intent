@@ -1,0 +1,10 @@
+schema {
+  query: Query
+  # mutation: Mutation
+}
+
+type Query {
+  hello: String!
+  projects: ProjectsResult!
+  project(id: ID!): ProjectResult!
+}

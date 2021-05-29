@@ -10,6 +10,8 @@ reapply-workflows = {path = "../reapply-workflows/", develop = true}
 Flask = "^2.0.1"
 SQLAlchemy = "^1.4.15"
 ariadne = "^0.13.0"
+Flask-SQLAlchemy = "^2.5.1"
+psycopg2 = "^2.8.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

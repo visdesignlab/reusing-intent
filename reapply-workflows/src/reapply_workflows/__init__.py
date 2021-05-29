@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from .inference_core.inference import infer
 
 

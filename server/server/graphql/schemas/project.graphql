@@ -1,0 +1,17 @@
+type ProjectsResult {
+  success: Boolean!
+  errors: [String]
+  projects: [Project]
+}
+
+type ProjectResult {
+  success: Boolean!
+  errors: [String]
+  projects: Project
+}
+
+type Project {
+  id: ID!
+  name: String!
+  datasets: [Dataset]!
+}
