@@ -14,7 +14,7 @@ jobs:
           cd app
           yarn install
           yarn lint
-  test_python:
+  test_server:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,13 +32,41 @@ jobs:
         run: poetry install
       - name: Lint server with isort
         working-directory: ./server
-        run: poetry run isort backend/**/*.py
+        run: poetry run isort server/**/*.py
       - name: Lint server with black
         working-directory: ./server
-        run: poetry run black backend/**/*.py
+        run: poetry run black server/**/*.py
       - name: Lint server with flake8
         working-directory: ./server
-        run: poetry run flake8 backend/**/*.py
+        run: poetry run flake8 server/**/*.py
       - name: Lint server with mypy
         working-directory: ./server
-        run: poetry run mypy backend/**/*.py
+        run: poetry run mypy server/**/*.py
+  test_library:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Get Python3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+      - name: Get Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.1.6
+      - name: Install server
+        working-directory: ./reapply-workflows
+        run: poetry install
+      - name: Lint server with isort
+        working-directory: ./reapply-workflows
+        run: poetry run isort src/**/*.py
+      - name: Lint server with black
+        working-directory: ./reapply-workflows
+        run: poetry run black src/**/*.py
+      - name: Lint server with flake8
+        working-directory: ./reapply-workflows
+        run: poetry run flake8 src/**/*.py
+      - name: Lint server with mypy
+        working-directory: ./reapply-workflows
+        run: poetry run mypy src/**/*.py
