@@ -152,6 +152,8 @@ const Scatterplot: FC<Props> = ({
         <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
         <Axis columnName={y} scale={yScale} type="left" />
         {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
+        
+
         {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
         <BrushComponent
           bottom={sp_dimension}

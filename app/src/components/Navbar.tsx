@@ -7,12 +7,16 @@ import {
   makeStyles,
   Theme,
   Toolbar,
+  Dialog,
+  DialogContent,
+  TextField,
+  DialogActions,
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext } from 'react';
+import React, { FC, useContext, useState } from 'react';
 
 import Store from '../Store/Store';
 
@@ -30,11 +34,11 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 const Navbar: FC = () => {
   const classes = useStyles();
-  // const [open, setOpen] = useState(false);
-
+  const [open, setOpen] = useState(false);
+  const [labelName, setLabelName] = useState("");
 
   const {
-    exploreStore: { brushType, switchBrush, filter },
+    exploreStore: { brushType, switchBrush, filter, aggregate, label },
   } = useContext(Store);
 
   return (
@@ -89,6 +93,28 @@ const Navbar: FC = () => {
           >
             Filter In
           </Button>
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              aggregate();
+            }}
+          >
+            Aggregate
+          </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              setOpen(true);
+            }}
+          >
+            Label Nodes
+          </Button>
 
           {/* <Button
             color="primary"
@@ -113,27 +139,34 @@ const Navbar: FC = () => {
             Bundle
           </Button> */}
 
-          {/* <Dialog aria-labelledby="form-dialog-title" open={open} onClose={handleClose}>
+          <Dialog aria-labelledby="form-dialog-title" open={open} onClose={() => setOpen(false)}>
             <DialogContent>
               <TextField
+                autoComplete="off"
                 id="name"
-                label="Bundle Name"
+                label="Aggregate Name"
                 margin="dense"
                 type="email"
                 autoFocus
                 fullWidth
-                onChange={(e) => console.log(e.target.value)}
+                onChange={(e) => setLabelName(e.target.value)}
               />
             </DialogContent>
             <DialogActions>
-              <Button color="primary" onClick={handleClose}>
+              <Button color="primary" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button color="primary" onClick={handleClose}>
-                Create Bundle
+              <Button
+                color="primary"
+                onClick={() => {
+                  label(labelName);
+                  setOpen(false);
+                }}
+              >
+                Add Label to Nodes
               </Button>
             </DialogActions>
-          </Dialog> */}
+          </Dialog>
         </Toolbar>
       </AppBar>
     </div>

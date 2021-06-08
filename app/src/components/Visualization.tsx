@@ -21,6 +21,7 @@ import Store from '../Store/Store';
 import Scatterplot from './Scatterplot/Scatterplot';
 import { DataDisplay } from './Comparison/ComparisonScatterplot';
 import ComparisonLegend from './Comparison/ComparisonLegend';
+import LabelLegend from './Label/LabelLegend';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -66,12 +67,16 @@ const Visualization: FC = () => {
 
   const scatterPlots = plots.map((plot) => (
     <Grid key={plot.id} xs={xs} item>
-      {isComparison && currentComparisonDatasets.length > 1? (<ComparisonLegend
-        dataDisplay={dataDisplay}
-        offset={spContainerDimension - 2 * theme.spacing(1) - 110}
-        selectedPoints={selectedPoints.length > 0}
-        setDataDisplay={setDataDisplay}
-      />) : null}
+      {isComparison && currentComparisonDatasets.length > 1 ? (
+        <ComparisonLegend
+          dataDisplay={dataDisplay}
+          offset={spContainerDimension - 2 * theme.spacing(1) - 110}
+          selectedPoints={selectedPoints.length > 0}
+          setDataDisplay={setDataDisplay}
+        />
+      ) : null}
+
+      <LabelLegend offset={spContainerDimension - 2 * theme.spacing(1) - 110} />
 
       <Paper elevation={3}>
         {n_plots > 1 && (
@@ -123,7 +128,8 @@ const Visualization: FC = () => {
           />
         ))}
 
-        <FormControlLabel control={
+        <FormControlLabel
+          control={
             <Switch
               checked={isComparison}
               color="primary"

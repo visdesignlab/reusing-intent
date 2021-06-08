@@ -19,7 +19,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "importHelpers": true,
-    "jsx": "react-jsx",
+    "jsx": "react",
     "downlevelIteration": true
   },
   "include": [

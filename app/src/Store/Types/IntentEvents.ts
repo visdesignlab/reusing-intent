@@ -11,4 +11,6 @@ export type IntentEvents =
   | 'Remove Brush'
   | 'Update Brush'
   | 'Change Brush Type'
-  | 'Filter';
+  | 'Filter'
+  | 'Aggregate'
+  | 'Label';

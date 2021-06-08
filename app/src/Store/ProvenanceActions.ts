@@ -99,10 +99,30 @@ const filterAction = createAction<State, ['In' | 'Out'], IntentEvents>(
   .saveStateMode('Complete')
   .setEventType('Filter');
 
+const aggregateAction = createAction<State, [], IntentEvents>(
+  (state: State) => {
+    state.interaction = {
+      type: 'Aggregation',
+    };
+  },
+)
+  .saveStateMode('Complete')
+  .setEventType('Aggregate');
+
+const labelAction = createAction<State, [], IntentEvents>((state: State) => {
+  state.interaction = {
+    type: 'Label',
+  };
+})
+  .saveStateMode('Complete')
+  .setEventType('Label');
+
 export const provenanceActions = {
   addPlotAction,
   removePlotAction,
   filterAction,
+  aggregateAction,
+  labelAction,
   pointSelectionAction,
   predictionSelectionAction,
   addBrushAction,

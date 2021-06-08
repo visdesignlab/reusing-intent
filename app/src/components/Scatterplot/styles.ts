@@ -1,11 +1,11 @@
 import { makeStyles } from '@material-ui/core';
 
-import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from '../ColorSpecs';
+import { IPNS, ISNP, MATCHES, NON_UNION, UNION, AGG, FIRST_LABEL, SECOND_LABEL, THIRD_LABEL, FOURTH_LABEL, FIFTH_LABEL, } from '../ColorSpecs';
 
 const useScatterplotStyle = makeStyles({
   newColor: {
     stroke: 'blue !important',
-    fill: 'blue !important'
+    fill: 'blue !important',
   },
   removedColor: {
     stroke: 'red !important',
@@ -58,6 +58,30 @@ const useScatterplotStyle = makeStyles({
   ipns: {
     fill: `${IPNS} !important`,
     opacity: 1,
+  },
+  aggregatePoint: {
+    fill: `${AGG} !important`,
+  },
+  hoveredAgg: {
+    opacity: `0.5 !important`,
+  },
+  normalAgg: {
+    opacity: `1.0 !important`,
+  },
+  firstLabel: {
+    fill: `${FIRST_LABEL} !important`,
+  },
+  secondLabel: {
+    fill: `${SECOND_LABEL} !important`,
+  },
+  thirdLabel: {
+    fill: `${THIRD_LABEL} !important`,
+  },
+  fourthLabel: {
+    fill: `${FOURTH_LABEL} !important`,
+  },
+  fifthLabel: {
+    fill: `${FIFTH_LABEL} !important`,
   },
 });
 

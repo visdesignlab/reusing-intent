@@ -66,6 +66,14 @@ export type FilterOutInteraction = BaseFilterInteraction & {
   filterType: 'Out';
 };
 
+export type AggregationInteraction = {
+  type: 'Aggregation';
+};
+
+export type LabelInteraction = {
+  type: 'Label';
+};
+
 type RootInteraction = {
   type: 'Root';
 };
@@ -82,6 +90,8 @@ export type Interaction =
   | SelectPredictionInteraction
   | FilterInInteraction
   | FilterOutInteraction
+  | AggregationInteraction
+  | LabelInteraction
   | RootInteraction;
 
 export type State = {

@@ -22,6 +22,8 @@ function getDefaultRecord(): Record {
     pointSelection: {},
     prediction: null,
     filter: null,
+    aggregate: {},
+    label: {},
   };
 }
 
@@ -37,6 +39,8 @@ type Record = {
   pointSelection: { [key: string]: string[] };
   prediction: Prediction | null;
   filter: Filter | null;
+  aggregate: { [key: string]: string[] };
+  label: { [key: string]: string[] };
 };
 
 export type WorkflowType = {
@@ -405,6 +409,46 @@ export class ExploreStore {
     state.pointSelection = {};
     state.prediction = null;
     state.filter = filter;
+
+    this.stateRecord[this.currentNode] = state;
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
+  aggregate = () => {
+    const { aggregateAction } = this.rootStore.actions;
+
+    aggregateAction.setLabel(`Aggregate Selected Nodes`);
+    const { state } = this;
+    const tempPoints = this.selectedPoints;
+
+    this.provenance.apply(aggregateAction());
+
+    state.brushes = {};
+    state.brushSelections = {};
+    state.pointSelection = {};
+    state.aggregate[state.aggregate ? Object.keys(state.aggregate).length : 0] = tempPoints;
+    state.prediction = null;
+
+    this.stateRecord[this.currentNode] = state;
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
+  label = (name: string) => {
+    const { labelAction } = this.rootStore.actions;
+
+    labelAction.setLabel(`Label Nodes ${name}`);
+    const { state } = this;
+    const tempPoints = this.selectedPoints;
+
+    this.provenance.apply(labelAction());
+
+    state.brushes = {};
+    state.brushSelections = {};
+    state.pointSelection = {};
+    state.label[name] = tempPoints;
+    state.prediction = null;
 
     this.stateRecord[this.currentNode] = state;
 
