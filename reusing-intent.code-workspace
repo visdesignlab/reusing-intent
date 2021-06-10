@@ -5,6 +5,18 @@
     }
   ],
   "settings": {
-    "jupyter.jupyterServerType": "local"
+    "jupyter.jupyterServerType": "local",
+    "sqltools.connections": [
+      {
+        "previewLimit": 50,
+        "server": "localhost",
+        "port": 5432,
+        "askForPassword": true,
+        "driver": "PostgreSQL",
+        "name": "Reapply Workflows",
+        "database": "psql_server",
+        "username": "admin"
+      }
+    ]
   }
 }

@@ -8,6 +8,8 @@ authors = ["Kiran Gadhave <kirangadhave2@gmail.com>"]
 python = "^3.7.1"
 numpy = "^1.20.3"
 pandas = "^1.2.4"
+scikit-learn = "^0.24.2"
+paretoset = "^1.2.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

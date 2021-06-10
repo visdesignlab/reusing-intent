@@ -1,6 +1,4 @@
-# flake8: noqa
-
-from .inference_core.inference import infer
+__version__ = "0.1.0"
 
 
 def hello():

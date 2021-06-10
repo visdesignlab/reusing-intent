@@ -12,6 +12,10 @@ SQLAlchemy = "^1.4.15"
 ariadne = "^0.13.0"
 Flask-SQLAlchemy = "^2.5.1"
 psycopg2 = "^2.8.6"
+pyarrow = "^4.0.1"
+PyYAML = "^5.4.1"
+celery = "^5.1.0"
+redis = "^3.5.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -19,6 +23,8 @@ isort = "^5.8.0"
 black = "^21.5b1"
 flake8 = "^3.9.2"
 mypy = "^0.812"
+watchdog = "^2.1.2"
+argh = "^0.26.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,14 +1,21 @@
-from ariadne import graphql_sync, load_schema_from_path, make_executable_schema
+from ariadne import (
+    graphql_sync,
+    load_schema_from_path,
+    make_executable_schema,
+    snake_case_fallback_resolvers,
+)
 from ariadne.constants import PLAYGROUND_HTML
 from flask import Blueprint, Flask, jsonify, request
 
-from .resolvers import query
+from .resolvers import mutation, query
 
 graphql_bp = Blueprint("graphql", __name__, url_prefix="/graphql")
 
 type_defs = load_schema_from_path("/code/server/server/graphql/schemas/")
 
-schema = make_executable_schema(type_defs, query)
+schema = make_executable_schema(
+    type_defs, query, mutation, snake_case_fallback_resolvers
+)
 
 
 @graphql_bp.route("/", methods=["GET"])

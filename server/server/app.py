@@ -1,53 +1,63 @@
 import os
-import pprint
 
-from flask import Flask
+from flask import Flask, jsonify, request
 from reapply_workflows import hello, hello2
 
+from .celery import configure_celery
 from .db import db
-from .db.models.dataset_record import DatasetRecord
-from .db.models.project import Project
 from .graphql import init_graphql
+from .utils.process_dataset import process
 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.secret_key = os.getenv("SECRET_KEY")
 
 
 init_graphql(app)
 db.init_app(app)
+configure_celery(app)
 
-pp = pprint.PrettyPrinter()
 
 with app.app_context():
+    print("Database Creation")
     db.create_all()
-    db.drop_all()
-    db.create_all()
-    project = Project(name="Test")
-    db.session.add(project)
-
-    db.session.commit()
-
-    # database_record = dat
-    dataset_rec = DatasetRecord(version="1", project_id=project.id)
-    db.session.add(dataset_rec)
-    dataset_rec = DatasetRecord(version="2", project_id=project.id)
-    db.session.add(dataset_rec)
-
-    project = Project(name="Test er")
-    db.session.add(project)
-
-    db.session.commit()
-
-    dataset_rec = DatasetRecord(version="1.3", project_id=project.id)
-    db.session.add(dataset_rec)
-    dataset_rec = DatasetRecord(version="2.4", project_id=project.id)
-    db.session.add(dataset_rec)
-
-    db.session.commit()
-    pp.pprint([p.to_dict() for p in Project.query.all()])
 
 
 @app.route("/")
 def hello_world():
-    return "<pre>{} {}</pre>".format(hello(), hello2())
+    from .celery.tasks import test_task
+
+    test = test_task.delay()
+    return "<pre>{} {} {}</pre>".format(hello(), hello2(), test.task_id)
+
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    if "project" not in request.form:
+        return "Specify project name", 400
+
+    if "version" not in request.form:
+        return "Specify dataset version", 400
+
+    if "dataset" not in request.files:
+        return "Please upload a dataset file", 400
+
+    try:
+        project = request.form["project"]
+        version = request.form["version"]
+        dataset = request.files["dataset"]
+        sourceMetadata = (
+            request.files["metadata"] if "metadata" in request.files else None
+        )
+
+        # if "status" in session and session["status"] == "Uploading":
+        #     raise Exception("File upload already in progress, please check status!")
+        # else:
+        #     session["status"] = "Uploading"
+
+        output = process(project, version, dataset, sourceMetadata)
+
+        return jsonify(output), 200
+    except Exception as ex:
+        return str(ex), 400

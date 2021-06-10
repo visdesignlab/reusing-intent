@@ -10,7 +10,10 @@ class DatasetRecord(BaseModel):
     project_id = db.Column(
         UUID(as_uuid=True), db.ForeignKey("project.id"), nullable=False
     )
+    hash = db.Column(db.String, nullable=False)
+    meta = db.Column(db.String, nullable=False)
+    data = db.Column(db.LargeBinary, nullable=False)
 
     _default_fields = ["version", "project_id"]
-    _hidden_fields = []
+    _hidden_fields = ["data"]
     _readonly_fields = []

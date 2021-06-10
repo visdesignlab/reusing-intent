@@ -7,7 +7,7 @@ type ProjectsResult {
 type ProjectResult {
   success: Boolean!
   errors: [String]
-  projects: Project
+  project: Project
 }
 
 type Project {
