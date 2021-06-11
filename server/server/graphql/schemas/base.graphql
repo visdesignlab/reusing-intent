@@ -6,7 +6,8 @@ schema {
 type Query {
   hello: String!
   projects: ProjectsResult!
-  project(id: ID!): ProjectResult!
+  data(record_id: ID): DataResult!
+  predictions(record_id: ID!): PredictionsResult!
 }
 
 type Mutation {

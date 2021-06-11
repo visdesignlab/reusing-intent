@@ -26,5 +26,4 @@ def resolve_create_project(*_, project_name):
     except Exception as errors:
         payload = {"success": False, "errors": [errors]}
 
-    print(payload)
     return payload

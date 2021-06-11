@@ -1,0 +1,8 @@
+type PredictionsResult {
+  success: Boolean!
+  errors: [String]
+  predictions: [Prediction]
+}
+
+scalar Prediction
+# union PredictionInfo = String

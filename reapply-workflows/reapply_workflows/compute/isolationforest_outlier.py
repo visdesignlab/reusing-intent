@@ -10,4 +10,8 @@ def isolationforest_outlier(data: np.ndarray, contamination=0.1):
     clf = IsolationForest(contamination=contamination)
     clf.fit(scaled_data)
 
-    return clf, clf.fit_predict(scaled_data)
+    labels = clf.fit_predict(scaled_data)
+
+    labels = np.where(labels != -1, 0, labels)
+
+    return clf, labels

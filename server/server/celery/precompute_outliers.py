@@ -1,5 +1,6 @@
 import json
 
+import numpy as np
 import pandas as pd
 from celery.exceptions import Ignore
 from celery.states import STARTED, SUCCESS
@@ -38,11 +39,13 @@ def compute_dbscan_outliers(ctx, data, combinations, record_id):
             for eps in epss:
                 for m in min_samples:
                     clf = dbscan(data[combo].values, eps, m)
+                    labels = clf.labels_
+                    labels = np.where(labels != -1, 0, labels)
                     out = DBScanOutlier(
                         record_id=record_id,
                         params=json.dumps(clf.get_params()),
                         dimensions=",".join(combo),
-                        output=",".join(map(str, clf.labels_)),
+                        output=",".join(map(str, labels)),
                     )
                     db.session.add(out)
                     db.session.commit()

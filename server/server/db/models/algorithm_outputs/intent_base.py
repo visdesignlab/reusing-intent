@@ -36,6 +36,19 @@ class IntentBase(BaseModel):
     def intent(self) -> str:
         pass
 
-    _default_fields = ["record_id", "info", "dimensions"]
+    @property
+    @abstractmethod
+    def results(self) -> str:
+        pass
+
+    _default_fields = [
+        "record_id",
+        "info",
+        "dimensions",
+        "params",
+        "results",
+        "algorithm",
+        "intent",
+    ]
     _hidden_fields = []
     _readonly_fields = []
