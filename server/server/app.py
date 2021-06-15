@@ -1,6 +1,8 @@
 import os
 
 from flask import Flask, jsonify, request
+
+# from flask_cors import CORS
 from reapply_workflows import hello, hello2
 
 from .celery import configure_celery
@@ -9,6 +11,7 @@ from .graphql import init_graphql
 from .utils.process_dataset import process
 
 app = Flask(__name__)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("SQLALCHEMY_DATABASE_URI")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.secret_key = os.getenv("SECRET_KEY")

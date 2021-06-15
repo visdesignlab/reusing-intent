@@ -5,6 +5,7 @@
     }
   ],
   "settings": {
+    "eslint.workingDirectories": ["app"],
     "jupyter.jupyterServerType": "local",
     "sqltools.connections": [
       {

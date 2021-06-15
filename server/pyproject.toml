@@ -16,6 +16,7 @@ pyarrow = "^4.0.1"
 PyYAML = "^5.4.1"
 celery = "^5.1.0"
 redis = "^3.5.3"
+Flask-Cors = "^3.0.10"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

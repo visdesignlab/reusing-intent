@@ -18,7 +18,6 @@ def resolve_projects(*_):
 @convert_kwargs_to_snake_case
 def resolve_create_project(*_, project_name):
     try:
-        print("Test")
         project = Project(name=project_name)
         db.session.add(project)
         db.session.commit()

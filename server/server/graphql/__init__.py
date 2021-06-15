@@ -1,3 +1,5 @@
+import json
+
 from ariadne import (
     graphql_sync,
     load_schema_from_path,
@@ -25,7 +27,7 @@ def graphql_playground():
 
 @graphql_bp.route("/", methods=["POST"])
 def graphql_server():
-    data = request.get_json()
+    data = json.loads(request.get_data())
 
     success, result = graphql_sync(schema, data, context_value=request)
 
