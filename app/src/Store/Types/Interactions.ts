@@ -1,6 +1,6 @@
 import { Brush } from '../../components/Brush/Types/Brush';
 
-import { Plot, PlotID } from './Plot';
+import { Plot, SPlotID } from './Plot';
 import { Prediction } from './Prediction';
 
 export type AddPlotInteraction = {
@@ -10,12 +10,12 @@ export type AddPlotInteraction = {
 
 export type RemovePlotInteraction = {
   type: 'RemovePlot';
-  plot: PlotID;
+  plot: SPlotID;
 };
 
 type BasePointSelection = {
   type: 'PointSelection';
-  plot: PlotID;
+  plot: SPlotID;
   selected: string[];
 };
 
@@ -29,7 +29,7 @@ export type PointDeselectionInteraction = BasePointSelection & {
 
 type BaseBrushInteraction = {
   type: 'Brush';
-  plot: PlotID;
+  plot: SPlotID;
   brush: Brush | string;
 };
 

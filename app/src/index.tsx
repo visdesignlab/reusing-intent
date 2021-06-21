@@ -6,6 +6,7 @@ import { HashRouter, Route, Switch } from 'react-router-dom';
 import ComparisonHome from './components/Comparison/ComparisonHome';
 import Explore from './components/Explore/Explore';
 import ProjectHome from './components/Project/ProjectHome';
+import PcpHome from './components/ParallelCoordinates/PcpHome'
 import './index.css';
 import Landing from './components/Landing/Landing';
 
@@ -22,6 +23,7 @@ const app = (
       <Route component={ProjectHome} path="/project" exact />
       <Route component={Landing} path="/" exact />
       <Route component={ComparisonHome} path="/compare" exact />
+      <Route component={PcpHome} path="/pcp" exact />
     </Switch>
   </HashRouter>
 );

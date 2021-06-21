@@ -22,8 +22,13 @@ export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
   'Freeform Large': 50,
 };
 
+
+
+
+
 export function getDefaultPlot(): Plot {
   return {
+    type: 'scatter',
     id: '',
     x: '',
     y: '',

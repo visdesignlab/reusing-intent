@@ -61,6 +61,7 @@ const AddPlot: FC = () => {
 
   const handleSubmit = useCallback(() => {
     const plot: Plot = {
+      type: "scatter",
       id: getPlotId(),
       x: xCol,
       y: yCol,

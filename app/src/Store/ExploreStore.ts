@@ -11,7 +11,7 @@ import { BrushType, ExtendedBrushCollection, MultiBrushBehaviour } from './Inten
 import { RootStore } from './Store';
 import { Status } from './Types/Artifacts';
 import { Dataset } from './Types/Dataset';
-import { Plot, Plots } from './Types/Plot';
+import { Plot, Plots, SPlot} from './Types/Plot';
 import { Prediction, Predictions } from './Types/Prediction';
 
 function getDefaultRecord(): Record {
@@ -377,7 +377,7 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  removePlot = (plot: Plot) => {
+  removePlot = (plot: SPlot) => {
     const { removePlotAction } = this.rootStore.actions;
 
     removePlotAction.setLabel(`Remove plot: ${plot.x} - ${plot.y}`);
@@ -498,19 +498,20 @@ export class ExploreStore {
 
     switch (type) {
       case 'Add':
-        addBrushAction.setLabel(`Added brush to: ${plot.x}-${plot.y}`);
+        addBrushAction.setLabel(`Added brush to: ${plot.id}`);
+        // addBrushAction.setLabel(`Added brush to: ${plot.x}-${plot.y}`);
         this.provenance.apply(addBrushAction(plot, brushes[affectedId]));
         state.brushSelections[affectedId] = brushes[affectedId].points;
         state.brushes[plot.id] = brushes;
         break;
       case 'Update':
-        updateBrushAction.setLabel(`Updated brush in: ${plot.x}-${plot.y}`);
+        updateBrushAction.setLabel(`Updated brush in: ${plot.id}`);
         this.provenance.apply(updateBrushAction(plot, brushes[affectedId]));
         state.brushSelections[affectedId] = brushes[affectedId].points;
         state.brushes[plot.id] = brushes;
         break;
       case 'Remove':
-        removeBrushAction.setLabel(`Removed brush in: ${plot.x}-${plot.y}`);
+        removeBrushAction.setLabel(`Removed brush in: ${plot.id}`);
         this.provenance.apply(removeBrushAction(plot, affectedId));
         delete state.brushSelections[affectedId];
         delete brushes[affectedId];
@@ -565,7 +566,14 @@ export class ExploreStore {
     this.isLoadingPredictions = true;
 
     Object.values(this.state.plots).forEach((plt) => {
-      dimensions.push(...[plt.x, plt.y]);
+      if(plt.type === "scatter")
+      {
+        dimensions.push(...[plt.x, plt.y]);
+      }
+      else
+      {
+        dimensions.push(...plt.dimensions);
+      }
     });
 
     Axios.post(`${SERVER}/${this.currentProject.key}/dataset/predict/${this.currentDatasetKey}`, {

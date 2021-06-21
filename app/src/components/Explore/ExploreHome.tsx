@@ -206,6 +206,7 @@ const ExploreHome = () => {
     }
 
     const plot: Plot = {
+      type: "scatter",
       id: getPlotId(),
       x: numericColumns[x_index],
       y: numericColumns[y_index],

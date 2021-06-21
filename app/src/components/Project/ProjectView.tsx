@@ -122,6 +122,21 @@ const ProjectView = () => {
           >
             Load Dataset
           </Button>
+          <Button
+            color="primary"
+            component={Link}
+            startIcon={<LaunchIcon />}
+            to={
+              {
+                pathname: '/pcp',
+                search,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              } as any
+            }
+            variant="outlined"
+          >
+            Load PCP
+          </Button>
           <Switch
             checked={comparisonView}
             color="primary"

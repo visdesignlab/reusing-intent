@@ -5,7 +5,7 @@ import React, { FC, useCallback, useContext } from 'react';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
-import { Plot } from '../../Store/Types/Plot';
+import { Plot, SPlot } from '../../Store/Types/Plot';
 import translate from '../../Utils/Translate';
 import BrushComponent, { BrushSelections } from '../Brush/Components/BrushComponent';
 import { BrushAffectType, BrushCollection } from '../Brush/Types/Brush';
@@ -68,7 +68,7 @@ const Scatterplot: FC<Props> = ({
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
 
-  const { x, y } = plot;
+  const { x, y } = plot as SPlot;
 
   const classes = useScatterplotStyle();
 

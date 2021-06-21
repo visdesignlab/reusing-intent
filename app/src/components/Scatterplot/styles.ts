@@ -83,6 +83,22 @@ const useScatterplotStyle = makeStyles({
   fifthLabel: {
     fill: `${FIFTH_LABEL} !important`,
   },
+
+  normalLine: {
+    opacity: 0.2,
+    stroke: 'grey',
+    strokeWidth: '2',
+  },
+  hoverLine: {
+    opacity: 0.5,
+    stroke: 'blue',
+    strokeWidth: '4',
+  },
+  selectedLine: {
+    stroke: 'blue',
+    opacity: 0.5,
+    strokeWidth: '2',
+  },
 });
 
 export default useScatterplotStyle;

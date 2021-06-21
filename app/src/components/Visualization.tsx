@@ -17,6 +17,7 @@ import React, { FC, useContext, useState } from 'react';
 import { toJS } from 'mobx';
 
 import Store from '../Store/Store';
+import { SPlot } from '../Store/Types/Plot';
 
 import Scatterplot from './Scatterplot/Scatterplot';
 import { DataDisplay } from './Comparison/ComparisonScatterplot';
@@ -83,7 +84,7 @@ const Visualization: FC = () => {
           <IconButton
             className={classes.closeIcon}
             onClick={() => {
-              removePlot(plot);
+              removePlot(plot as SPlot);
             }}
           >
             <CloseIcon />

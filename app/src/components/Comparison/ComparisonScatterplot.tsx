@@ -15,6 +15,7 @@ import React, { FC, useContext, useState } from 'react';
 
 import Store from '../../Store/Store';
 import Scatterplot from '../Scatterplot/Scatterplot';
+import { SPlot } from '../../Store/Types/Plot';
 
 import ComparisonLegend from './ComparisonLegend';
 
@@ -64,12 +65,12 @@ const CompVis: FC = () => {
 
   const loader = <CircularProgress />;
 
-  const scatterPlots = plots.map((plot) => (
+  const scatterPlots = plots.filter((plot) => plot.type === "scatter").map((plot) => (
     <Grid key={plot.id} xs={xs} item>
 
       <Paper elevation={3}>
         {n_plots > 1 && (
-          <IconButton className={classes.closeIcon} onClick={() => removePlot(plot)}>
+          <IconButton className={classes.closeIcon} onClick={() => removePlot(plot as SPlot)}>
             <CloseIcon />
           </IconButton>
         )}

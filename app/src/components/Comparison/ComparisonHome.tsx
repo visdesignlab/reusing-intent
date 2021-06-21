@@ -61,6 +61,7 @@ const ComparisonHome: FC<RouteComponentProps> = ({ location }: RouteComponentPro
     if (n_plots > 0 || !loadedDataset || loadedWorkflowId || loadSavedProject) return;
     const { numericColumns } = loadedDataset;
     const plot: Plot = {
+      type: "scatter",
       id: getPlotId(),
       x: numericColumns[0],
       y: numericColumns[1],
