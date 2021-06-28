@@ -11,7 +11,6 @@ class DatasetRecord(BaseModel):
         UUID(as_uuid=True), db.ForeignKey("project.id"), nullable=False
     )
     hash = db.Column(db.String, nullable=False)
-    meta = db.Column(db.String, nullable=False)
     data = db.Column(db.LargeBinary, nullable=False)
 
     _default_fields = ["version", "project_id"]

@@ -15,7 +15,7 @@ const httpLink = createHttpLink({
   uri: 'http://localhost/graphql/',
 });
 
-const client = new ApolloClient({
+export const apolloClient = new ApolloClient({
   link: httpLink,
   cache: new InMemoryCache(),
   headers: {
@@ -33,7 +33,7 @@ whyDidYouRender(React, {
 
 const App = () => {
   return (
-    <ApolloProvider client={client}>
+    <ApolloProvider client={apolloClient}>
       <StoreContext.Provider value={new RootStore()}>
         <CssBaseline>
           <BaseLayout>

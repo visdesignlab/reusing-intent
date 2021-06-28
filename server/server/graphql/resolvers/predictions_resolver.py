@@ -1,18 +1,34 @@
-from ...db.models.algorithm_outputs.outlier import DBScanOutlier, IsolationForestOutlier
+from io import BytesIO
+
+import pandas as pd
+from reapply_workflows.inference.inference import Inference
+from reapply_workflows.inference.intent import Intent as IRW
+
+from ...db.models.dataset_record import DatasetRecord
+from ...db.models.intent import Intent
 
 
 def resolve_predictions(*_, record_id):
     try:
-        print(record_id)
-        dbscan_outlier_predictions = DBScanOutlier.query.filter_by(
-            record_id=record_id
-        ).all()
+        record = DatasetRecord.query.filter_by(id=record_id).first()
 
-        isolation_forest_predictions = IsolationForestOutlier.query.filter_by(
-            record_id=record_id
-        ).all()
+        data_raw = BytesIO(record.data)
 
-        predictions = [*dbscan_outlier_predictions, *isolation_forest_predictions]
+        data = pd.read_parquet(data_raw)
+
+        dimensions = sorted(["cmr", "tfr"])
+
+        intents = (
+            Intent.query.filter_by(record_id=record_id)
+            .filter_by(dimensions=",".join(dimensions))
+            .all()
+        )
+
+        user_sel = data.sample(n=50, random_state=1).id.to_list()
+
+        inference = Inference(data, user_sel, dimensions, [])
+
+        predictions = inference.predict()
 
         payload = {
             "success": True,
@@ -20,4 +36,5 @@ def resolve_predictions(*_, record_id):
         }
     except Exception as err:
         payload = {"success": False, "errors": [str(err)]}
+        raise err
     return payload

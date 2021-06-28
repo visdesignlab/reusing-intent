@@ -1,8 +1,11 @@
 import numpy as np
-import numpy.ma as ma
 from sklearn.linear_model import TheilSenRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import PolynomialFeatures
+
+
+def regression_params():
+    return [2, 3, 4, 5]
 
 
 def regression(
@@ -10,14 +13,11 @@ def regression(
     theilsen_max_iter=300,
     order="auto",
     threshold_multiplier=2,
-    determine_best_degree=False,
 ):
     if order == "auto":
         order = get_best_degree(data)
     elif not isinstance(order, int):
         order = 1
-
-    print(order)
 
     reg = Pipeline(
         [
@@ -41,14 +41,13 @@ def regression(
 
     for _ in range(10):
         if mask_length == sum(inlier_mask):
-            print("Break", mask_length, sum(inlier_mask))
             break
         else:
-            # print(_, mask_length, sum(inlier_mask))
             mask_length = sum(inlier_mask)
 
-        i_X = ma.masked_array(X, mask=inlier_mask).data
-        i_Y = ma.masked_array(Y, mask=inlier_mask).data
+        inlier_mask = inlier_mask.astype(bool)
+        i_X = X[inlier_mask]
+        i_Y = Y[inlier_mask]
 
         reg.fit(i_X, i_Y)
         ts = reg.predict(X)
@@ -91,7 +90,7 @@ def get_best_degree(data):
 
         reg.fit(X, Y)
 
-        out = reg.predict(X.reshape(-1, 1))
+        out = reg.predict(X)
 
         Sr = np.sum(np.square(Y - out))
 

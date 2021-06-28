@@ -6,7 +6,7 @@ schema {
 type Query {
   hello: String!
   projects: ProjectsResult!
-  data(record_id: ID): DataResult!
+  data(record_id: ID!): DataResult!
   predictions(record_id: ID!): PredictionsResult!
 }
 

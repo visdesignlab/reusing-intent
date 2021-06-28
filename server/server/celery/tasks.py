@@ -2,6 +2,16 @@ import os
 
 from flask import Flask
 
+from server.celery.precompute_clusters import (
+    compute_dbscan_clusters,
+    compute_kmeans_clusters,
+)
+from server.celery.precompute_regression import (
+    compute_linear_regression,
+    compute_polynomial_regression,
+)
+from server.celery.precompute_skyline import compute_skyline
+
 from ..db import db
 from . import celery_app as celery
 from .precompute_outliers import (
@@ -31,3 +41,33 @@ def precompute_dbscan_outliers(self, data, combinations, record_id):
 def precompute_isolationforest_outliers(self, data, combinations, record_id):
     with app.app_context():
         compute_isolationforest_outliers(self, data, combinations, record_id)
+
+
+@celery.task(bind=True)
+def precompute_kmeans_clusters(self, data, combinations, record_id):
+    with app.app_context():
+        compute_kmeans_clusters(self, data, combinations, record_id)
+
+
+@celery.task(bind=True)
+def precompute_dbscan_clusters(self, data, combinations, record_id):
+    with app.app_context():
+        compute_dbscan_clusters(self, data, combinations, record_id)
+
+
+@celery.task(bind=True)
+def precompute_skylines(self, data, combinations, record_id):
+    with app.app_context():
+        compute_skyline(self, data, combinations, record_id)
+
+
+@celery.task(bind=True)
+def precompute_linear_regression(self, data, combinations, record_id):
+    with app.app_context():
+        compute_linear_regression(self, data, combinations, record_id)
+
+
+@celery.task(bind=True)
+def precompute_polynomial_regression(self, data, combinations, record_id):
+    with app.app_context():
+        compute_polynomial_regression(self, data, combinations, record_id)

@@ -4,6 +4,10 @@ from sklearn.ensemble import IsolationForest
 from ..scalers.robust import fit_transform
 
 
+def isolationforest_params():
+    return [0.1, 0.2, 0.3, 0.4, 0.5]
+
+
 def isolationforest_outlier(data: np.ndarray, contamination=0.1):
     scaled_data = fit_transform(data)
 

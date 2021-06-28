@@ -1,8 +1,8 @@
-import json
 from io import BytesIO
 
 import pandas as pd
 
+from ...db.models.dataset_meta import DatasetMeta
 from ...db.models.dataset_record import DatasetRecord
 
 
@@ -11,7 +11,15 @@ def resolve_data(*_, record_id):
         dataset_record = DatasetRecord.query.filter_by(id=record_id).first()
         file = BytesIO(dataset_record.data)
         data = pd.read_parquet(file)
-        column_info = json.loads(dataset_record.meta)
+        project_id = dataset_record.project_id
+
+        ci = DatasetMeta.query.filter_by(project_id=project_id).all()
+
+        column_info = {}
+
+        for c in ci:
+            col = c.to_dict()
+            column_info[col["key"]] = col
 
         columns = []
         categorical_columns = []

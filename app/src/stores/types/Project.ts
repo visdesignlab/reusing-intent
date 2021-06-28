@@ -3,8 +3,8 @@ import { Datasets } from './Dataset';
 export type ProjectResult = {
   projects: {
     success: boolean;
-    errors: string[] | null;
-    projects: Projects | null;
+    errors: string[];
+    projects: Projects;
   };
 };
 

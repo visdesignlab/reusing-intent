@@ -1,15 +1,20 @@
 import itertools
-import json
 from typing import List
 
 import pandas as pd
 import yaml
 
 from ..celery.tasks import (
+    precompute_dbscan_clusters,
     precompute_dbscan_outliers,
     precompute_isolationforest_outliers,
+    precompute_kmeans_clusters,
+    precompute_linear_regression,
+    precompute_polynomial_regression,
+    precompute_skylines,
 )
 from ..db import db
+from ..db.models.dataset_meta import DatasetMeta
 from ..db.models.dataset_record import DatasetRecord
 from ..db.models.project import Project
 from .add_ids import add_ids
@@ -60,10 +65,19 @@ def process(project: str, version: str, dataset, source_metadata=None):
         version=version,
         project_id=p.id,
         hash=dataset_hash,
-        meta=json.dumps(metadata),
         data=data_binary,
     )
     db.session.add(rec)
+
+    for key, value in metadata.items():
+        check = DatasetMeta.query.filter_by(project_id=p.id).filter_by(key=key).all()
+
+        if len(check) > 0:
+            continue
+
+        meta = DatasetMeta(project_id=p.id, key=key, **value)
+        db.session.add(meta)
+
     db.session.commit()
 
     dimensions = list(data.select_dtypes("number").columns)
@@ -78,11 +92,27 @@ def process(project: str, version: str, dataset, source_metadata=None):
     isolationforest_outlier_tracker = precompute_isolationforest_outliers.delay(
         data_json, combinations, rec.id
     )
+    kmeans_cluster_tracker = precompute_kmeans_clusters.delay(
+        data_json, combinations, rec.id
+    )
+    dbscan_cluster_tracker = precompute_dbscan_clusters.delay(
+        data_json, combinations, rec.id
+    )
+    skyline_tracker = precompute_skylines.delay(data_json, combinations, rec.id)
+    linear_tracker = precompute_linear_regression.delay(data_json, combinations, rec.id)
+    polynomial_tracker = precompute_polynomial_regression.delay(
+        data_json, combinations, rec.id
+    )
 
     return {
         "trackers": {
             "dbscan-outlier": dbscan_outlier_tracker.task_id,
             "isolationforest-outlier": isolationforest_outlier_tracker.task_id,
+            "kmeans-cluster": kmeans_cluster_tracker.task_id,
+            "dbscan-cluster": dbscan_cluster_tracker.task_id,
+            "skyline": skyline_tracker.task_id,
+            "linear": linear_tracker.task_id,
+            "poly": polynomial_tracker.task_id,
         }
     }
 
@@ -99,6 +129,7 @@ def get_metadata(data: pd.DataFrame, label: str, source_metadata=None):
     metadata = {}
 
     for count, (column, values) in enumerate(data.iteritems()):
+        options = None
         data_type = values.dtype
         if column == label:
             data_type = "label"
@@ -107,6 +138,7 @@ def get_metadata(data: pd.DataFrame, label: str, source_metadata=None):
             data_type = column
         elif data_type == "object":
             data_type = "categorical"
+            options = list(set(values.tolist()))
         elif "int" in str(data_type) or "float" in str(data_type):
             data_type = "numeric"
 
@@ -115,6 +147,7 @@ def get_metadata(data: pd.DataFrame, label: str, source_metadata=None):
             "unit": None,
             "short": chars[count],
             "data_type": data_type,
+            "options": ",".join(map(str, options)) if options else options,
         }
 
         metadata[column] = desc
@@ -131,7 +164,7 @@ def getCombinations(dimensions: List[str], lower_limit=1, upper_limit=-1):
     combinations = []
     ul = upper_limit if upper_limit > 1 else len(dimensions) + 1
 
-    for length in range(lower_limit, ul):
+    for length in range(lower_limit, ul + 1):
         subset = list(itertools.combinations(dimensions, length))
         combinations.extend(subset)
     combinations = [sorted(list(s)) for s in combinations]
