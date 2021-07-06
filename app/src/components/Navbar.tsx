@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 import {
   AppBar,
@@ -11,12 +12,17 @@ import {
   DialogContent,
   TextField,
   DialogActions,
+  Menu,
+  MenuItem,
+
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import { ToggleButton, ToggleButtonGroup } from '@material-ui/lab';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useState } from 'react';
+import React, { FC, useContext, useState, ReactElement } from 'react';
+import NestedMenuItem from 'material-ui-nested-menu-item';
+
 
 import Store from '../Store/Store';
 
@@ -35,7 +41,22 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Navbar: FC = () => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [menuDrop, setMenuDrop] = useState<HTMLButtonElement | null>(null);
+
   const [labelName, setLabelName] = useState("");
+
+  const menuButton = (
+    <Button
+      color="primary"
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      variant="outlined"
+      onClick={(event) => {
+        setMenuDrop(event.currentTarget);
+      }}
+    >
+      Menu
+    </Button>
+  );
 
   const {
     exploreStore: { brushType, switchBrush, filter, aggregate, label },
@@ -47,7 +68,7 @@ const Navbar: FC = () => {
         <Toolbar>
           <AddPlot />
           <Divider orientation="vertical" flexItem />
-          <FormControl className={classes.formControl}>
+          {/* <FormControl className={classes.formControl}>
             <ToggleButtonGroup
               value={brushType}
               exclusive
@@ -68,76 +89,66 @@ const Navbar: FC = () => {
                 <RadioButtonUncheckedIcon fontSize="large" />
               </ToggleButton>
             </ToggleButtonGroup>
-          </FormControl>
+          </FormControl> */}
           <Divider />
-          {/* <ComparisonDropdown /> */}
-          <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              filter('Out');
-            }}
-          >
-            Filter Out
-          </Button>
 
-          <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              // loadComparisonFilter("demo")
-              filter('In');
-            }}
+          {menuButton}
+          <Menu
+            anchorEl={menuDrop}
+            id="simple-menu"
+            open={Boolean(menuDrop)}
+            keepMounted
+            onClose={() => setMenuDrop(null)}
           >
-            Filter In
-          </Button>
-          <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              aggregate();
-            }}
-          >
-            Aggregate
-          </Button>
+            <MenuItem onClick={() => console.log('here')}>Set Label</MenuItem>
 
-          <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              // loadComparisonFilter("demo")
-              setOpen(true);
-            }}
-          >
-            Label Nodes
-          </Button>
+            <NestedMenuItem
+              label="Change Brush"
+              parentMenuOpen={menuDrop}
+              onClick={() => console.log('Hello')}
+            >
+              <MenuItem onClick={() => switchBrush('Rectangular')}>
+                Rectangular Brush (add little image)
+              </MenuItem>
+              <MenuItem onClick={() => switchBrush('Freeform Small')}>
+                Freeform Small Brush (add little image)
+              </MenuItem>
+              <MenuItem onClick={() => switchBrush('Freeform Medium')}>
+                Freeform Medium Brush (add little image)
+              </MenuItem>
+              <MenuItem onClick={() => switchBrush('Freeform Large')}>
+                Freeform Large Brush (add little image)
+              </MenuItem>
+            </NestedMenuItem>
+            <NestedMenuItem
+              label="Filter Selection"
+              parentMenuOpen={menuDrop}
+              onClick={() => console.log('Hello')}
+            >
+              <MenuItem onClick={() => console.log('here')}>In</MenuItem>
+              <MenuItem onClick={() => console.log('here')}>Out</MenuItem>
+            </NestedMenuItem>
 
-          {/* <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              // loadComparisonFilter("demo")
-              storeProvenance(provenance.graph, workflows, provDb, currentProject?.key || 'Empty');
-            }}
-          >
-            Store prov
-          </Button> */}
-
-          {/* <Button
-            color="primary"
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            variant="outlined"
-            onClick={() => {
-              setOpen(true);
-            }}
-          >
-            Bundle
-          </Button> */}
+            <NestedMenuItem
+              label="Aggregate Selection"
+              parentMenuOpen={menuDrop}
+              onClick={() => console.log('Hello')}
+            >
+              <MenuItem onClick={() => console.log('here')}>Aggregate by Mean</MenuItem>
+              <MenuItem onClick={() => console.log('here')}>Aggregate by Density</MenuItem>
+              <MenuItem onClick={() => console.log('here')}>Aggregate by Something else</MenuItem>
+            </NestedMenuItem>
+            <MenuItem onClick={() => console.log('here')}>Add Category</MenuItem>
+            <NestedMenuItem
+              label="Assign Selection to Category"
+              parentMenuOpen={menuDrop}
+              onClick={() => console.log('Hello')}
+            >
+              <MenuItem onClick={() => console.log('here')}>Demo Category A</MenuItem>
+              <MenuItem onClick={() => console.log('here')}>Demo Category B</MenuItem>
+              <MenuItem onClick={() => console.log('here')}>Demo Category C</MenuItem>
+            </NestedMenuItem>
+          </Menu>
 
           <Dialog aria-labelledby="form-dialog-title" open={open} onClose={() => setOpen(false)}>
             <DialogContent>

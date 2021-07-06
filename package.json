@@ -15,6 +15,7 @@
     "start:worker": "poetry run celery -A backend.server.celery.init.celery worker  "
   },
   "dependencies": {
-    "firebase-admin": "^9.5.0"
+    "firebase-admin": "^9.5.0",
+    "material-ui-nested-menu-item": "^1.0.2"
   }
 }
