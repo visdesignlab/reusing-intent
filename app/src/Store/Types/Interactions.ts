@@ -74,6 +74,15 @@ export type LabelInteraction = {
   type: 'Label';
 };
 
+export type CreateCategory = {
+  type: 'CreateCategory';
+  categoryName: string
+};
+
+export type AddToCategory = {
+  type: 'AddToCategory';
+};
+
 type RootInteraction = {
   type: 'Root';
 };
@@ -92,6 +101,8 @@ export type Interaction =
   | FilterOutInteraction
   | AggregationInteraction
   | LabelInteraction
+  | CreateCategory
+  | AddToCategory
   | RootInteraction;
 
 export type State = {

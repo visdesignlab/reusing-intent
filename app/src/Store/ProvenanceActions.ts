@@ -109,6 +109,23 @@ const aggregateAction = createAction<State, [], IntentEvents>(
   .saveStateMode('Complete')
   .setEventType('Aggregate');
 
+const createCategoryAction = createAction<State, [string], IntentEvents>((state: State, name: string) => {
+  state.interaction = {
+    type: 'CreateCategory',
+    categoryName: name,
+  };
+})
+  .saveStateMode('Complete')
+  .setEventType('CreateCategory');
+
+const addToCategoryAction = createAction<State, [], IntentEvents>((state: State) => {
+  state.interaction = {
+    type: 'AddToCategory',
+  };
+})
+  .saveStateMode('Complete')
+  .setEventType('AddToCategory');
+
 const labelAction = createAction<State, [], IntentEvents>((state: State) => {
   state.interaction = {
     type: 'Label',
@@ -127,5 +144,7 @@ export const provenanceActions = {
   predictionSelectionAction,
   addBrushAction,
   updateBrushAction,
+  createCategoryAction,
+  addToCategoryAction,
   removeBrushAction,
 };

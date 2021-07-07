@@ -41,9 +41,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 const Navbar: FC = () => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+  const [openCategoryCreate, setOpenCategoryCreate] = useState(false);
   const [menuDrop, setMenuDrop] = useState<HTMLButtonElement | null>(null);
 
   const [labelName, setLabelName] = useState("");
+  const [categoryCreationName, setCategoryCreationName] = useState('');
+
 
   const menuButton = (
     <Button
@@ -59,8 +62,11 @@ const Navbar: FC = () => {
   );
 
   const {
-    exploreStore: { brushType, switchBrush, filter, aggregate, label },
+    exploreStore: { brushType, switchBrush, filter, aggregate, label, createCategory, addToCategory, categories },
   } = useContext(Store);
+
+  console.log(categories);
+
 
   return (
     <div>
@@ -90,6 +96,63 @@ const Navbar: FC = () => {
               </ToggleButton>
             </ToggleButtonGroup>
           </FormControl> */}
+
+          {/* <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              filter('In');
+            }}
+          >
+            Filter In
+          </Button>
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              aggregate();
+            }}
+          >
+            Aggregate
+          </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              setOpen(true);
+            }}
+          >
+            Label Nodes
+          </Button> */}
+
+          {/* <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              // loadComparisonFilter("demo")
+              storeProvenance(provenance.graph, workflows, provDb, currentProject?.key || 'Empty');
+            }}
+          >
+            Store prov
+          </Button> */}
+
+          {/* <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            variant="outlined"
+            onClick={() => {
+              setOpen(true);
+            }}
+          >
+            Bundle
+          </Button> */}
           <Divider />
 
           {menuButton}
@@ -100,7 +163,7 @@ const Navbar: FC = () => {
             keepMounted
             onClose={() => setMenuDrop(null)}
           >
-            <MenuItem onClick={() => console.log('here')}>Set Label</MenuItem>
+            <MenuItem onClick={() => setOpen(true)}>Set Label</MenuItem>
 
             <NestedMenuItem
               label="Change Brush"
@@ -125,8 +188,8 @@ const Navbar: FC = () => {
               parentMenuOpen={menuDrop}
               onClick={() => console.log('Hello')}
             >
-              <MenuItem onClick={() => console.log('here')}>In</MenuItem>
-              <MenuItem onClick={() => console.log('here')}>Out</MenuItem>
+              <MenuItem onClick={() => filter('In')}>In</MenuItem>
+              <MenuItem onClick={() => filter('Out')}>Out</MenuItem>
             </NestedMenuItem>
 
             <NestedMenuItem
@@ -134,19 +197,19 @@ const Navbar: FC = () => {
               parentMenuOpen={menuDrop}
               onClick={() => console.log('Hello')}
             >
-              <MenuItem onClick={() => console.log('here')}>Aggregate by Mean</MenuItem>
-              <MenuItem onClick={() => console.log('here')}>Aggregate by Density</MenuItem>
-              <MenuItem onClick={() => console.log('here')}>Aggregate by Something else</MenuItem>
+              <MenuItem onClick={() => aggregate()}>Aggregate by Mean</MenuItem>
             </NestedMenuItem>
-            <MenuItem onClick={() => console.log('here')}>Add Category</MenuItem>
+            <MenuItem onClick={() => setOpenCategoryCreate(true)}>Create Category</MenuItem>
             <NestedMenuItem
               label="Assign Selection to Category"
               parentMenuOpen={menuDrop}
               onClick={() => console.log('Hello')}
             >
-              <MenuItem onClick={() => console.log('here')}>Demo Category A</MenuItem>
-              <MenuItem onClick={() => console.log('here')}>Demo Category B</MenuItem>
-              <MenuItem onClick={() => console.log('here')}>Demo Category C</MenuItem>
+              {Object.keys(categories).map((a: string) => {
+                console.log(a)
+
+                return (<MenuItem key={a} onClick={() => addToCategory(a)}>{a}</MenuItem>);
+              })}
             </NestedMenuItem>
           </Menu>
 
@@ -155,7 +218,7 @@ const Navbar: FC = () => {
               <TextField
                 autoComplete="off"
                 id="name"
-                label="Aggregate Name"
+                label="Label Name"
                 margin="dense"
                 type="email"
                 autoFocus
@@ -175,6 +238,35 @@ const Navbar: FC = () => {
                 }}
               >
                 Add Label to Nodes
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog aria-labelledby="form-dialog-title" open={openCategoryCreate} onClose={() => setOpenCategoryCreate(false)}>
+            <DialogContent>
+              <TextField
+                autoComplete="off"
+                id="name"
+                label="Category Name"
+                margin="dense"
+                type="email"
+                autoFocus
+                fullWidth
+                onChange={(e) => setCategoryCreationName(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button color="primary" onClick={() => setOpenCategoryCreate(false)}>
+                Cancel
+              </Button>
+              <Button
+                color="primary"
+                onClick={() => {
+                  createCategory(categoryCreationName);
+                  setOpenCategoryCreate(false);
+                }}
+              >
+                Create Category
               </Button>
             </DialogActions>
           </Dialog>

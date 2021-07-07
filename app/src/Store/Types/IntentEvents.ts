@@ -13,4 +13,6 @@ export type IntentEvents =
   | 'Change Brush Type'
   | 'Filter'
   | 'Aggregate'
+  | 'CreateCategory'
+  | 'AddToCategory'
   | 'Label';

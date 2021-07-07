@@ -23,6 +23,7 @@ function getDefaultRecord(): Record {
     prediction: null,
     filter: null,
     aggregate: {},
+    categories: {},
     label: {},
   };
 }
@@ -40,6 +41,7 @@ type Record = {
   prediction: Prediction | null;
   filter: Filter | null;
   aggregate: { [key: string]: string[] };
+  categories: { [key: string]: string[] };
   label: { [key: string]: string[] };
 };
 
@@ -137,6 +139,10 @@ export class ExploreStore {
 
   get provenance() {
     return this.rootStore.provenance;
+  }
+
+  get categories() {
+    return this.state.categories;
   }
 
   get currentProject() {
@@ -435,6 +441,41 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
+  createCategory = (name: string) => {
+    const { createCategoryAction } = this.rootStore.actions;
+
+    createCategoryAction.setLabel(`Add Custom Category`);
+    const { state } = this;
+
+    this.provenance.apply(createCategoryAction(name));
+
+    state.categories[name] = [];
+
+    this.stateRecord[this.currentNode] = state;
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
+  addToCategory = (name: string) => {
+    const { addToCategoryAction } = this.rootStore.actions;
+
+    addToCategoryAction.setLabel(`Add Selected Points to ${name}`);
+    const { state } = this;
+    const tempPoints = this.selectedPoints;
+
+    this.provenance.apply(addToCategoryAction());
+
+    state.brushes = {};
+    state.brushSelections = {};
+    state.pointSelection = {};
+    state.categories[name] = state.categories[name].concat(tempPoints);
+    state.prediction = null;
+
+    this.stateRecord[this.currentNode] = state;
+
+    this.rootStore.currentNodes.push(this.provenance.graph.current);
+  };
+
   label = (name: string) => {
     const { labelAction } = this.rootStore.actions;
 
@@ -566,12 +607,9 @@ export class ExploreStore {
     this.isLoadingPredictions = true;
 
     Object.values(this.state.plots).forEach((plt) => {
-      if(plt.type === "scatter")
-      {
+      if (plt.type === 'scatter') {
         dimensions.push(...[plt.x, plt.y]);
-      }
-      else
-      {
+      } else {
         dimensions.push(...plt.dimensions);
       }
     });
