@@ -14,6 +14,7 @@ import {
   DialogActions,
   Menu,
   MenuItem,
+  Chip,
 
 } from '@material-ui/core';
 import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
@@ -51,6 +52,7 @@ const Navbar: FC = () => {
   const menuButton = (
     <Button
       color="primary"
+      style={{ margin: 5 }}
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       variant="outlined"
       onClick={(event) => {
@@ -62,7 +64,7 @@ const Navbar: FC = () => {
   );
 
   const {
-    exploreStore: { brushType, switchBrush, filter, aggregate, label, createCategory, addToCategory, categories },
+    exploreStore: { brushType, switchBrush, activeTool, setTool, filter, aggregate, label, createCategory, addToCategory, categories },
   } = useContext(Store);
 
   console.log(categories);
@@ -74,7 +76,7 @@ const Navbar: FC = () => {
         <Toolbar>
           <AddPlot />
           <Divider orientation="vertical" flexItem />
-          {/* <FormControl className={classes.formControl}>
+          <FormControl className={classes.formControl}>
             <ToggleButtonGroup
               value={brushType}
               exclusive
@@ -95,7 +97,7 @@ const Navbar: FC = () => {
                 <RadioButtonUncheckedIcon fontSize="large" />
               </ToggleButton>
             </ToggleButtonGroup>
-          </FormControl> */}
+          </FormControl>
 
           {/* <Button
             color="primary"
@@ -143,19 +145,57 @@ const Navbar: FC = () => {
             Store prov
           </Button> */}
 
-          {/* <Button
+          {menuButton}
+
+          <Button
             color="primary"
+            style={{ margin: 5 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             variant="outlined"
             onClick={() => {
-              setOpen(true);
+              setTool('Label');
             }}
           >
-            Bundle
-          </Button> */}
+            Filter In
+          </Button>
+
+          <Button
+            color="primary"
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            style={{ margin: 5 }}
+            variant="outlined"
+            onClick={() => {
+              setTool('Label');
+            }}
+          >
+            Filter Out
+          </Button>
+
+          <Divider orientation="vertical" flexItem />
+
+          <Chip
+            color={activeTool === 'Label' ? 'primary' : 'default'}
+            label="Labels"
+            style={{ width: 100, margin: 5 }}
+            onClick={() => (activeTool === 'Label' ? setTool('None') : setTool('Label'))}
+          />
+
+          <Chip
+            color={activeTool === 'Category' ? 'primary' : 'default'}
+            label="Example Category 1"
+            style={{ width: 100, margin: 5 }}
+            onClick={() => (activeTool === 'Category' ? setTool('None') : setTool('Category'))}
+          />
+
+          <Chip
+            color="default"
+            label="Example Category 2"
+            style={{ width: 100, margin: 5 }}
+            // onClick={() => (activeTool === 'Label' ? setTool('None') : setTool('Label'))}
+          />
+
           <Divider />
 
-          {menuButton}
           <Menu
             anchorEl={menuDrop}
             id="simple-menu"
@@ -206,9 +246,13 @@ const Navbar: FC = () => {
               onClick={() => console.log('Hello')}
             >
               {Object.keys(categories).map((a: string) => {
-                console.log(a)
+                console.log(a);
 
-                return (<MenuItem key={a} onClick={() => addToCategory(a)}>{a}</MenuItem>);
+                return (
+                  <MenuItem key={a} onClick={() => addToCategory(a)}>
+                    {a}
+                  </MenuItem>
+                );
               })}
             </NestedMenuItem>
           </Menu>
@@ -242,7 +286,11 @@ const Navbar: FC = () => {
             </DialogActions>
           </Dialog>
 
-          <Dialog aria-labelledby="form-dialog-title" open={openCategoryCreate} onClose={() => setOpenCategoryCreate(false)}>
+          <Dialog
+            aria-labelledby="form-dialog-title"
+            open={openCategoryCreate}
+            onClose={() => setOpenCategoryCreate(false)}
+          >
             <DialogContent>
               <TextField
                 autoComplete="off"

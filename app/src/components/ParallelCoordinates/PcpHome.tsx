@@ -2,7 +2,7 @@
 import { CssBaseline, makeStyles } from '@material-ui/core';
 import { isChildNode } from '@visdesignlab/trrack';
 import { observer } from 'mobx-react';
-import React, { FC, useContext, useEffect } from 'react';
+import React, { FC, useContext, useEffect, useCallback } from 'react';
 import { Redirect, RouteComponentProps } from 'react-router-dom';
 
 import Store from '../../Store/Store';
@@ -14,6 +14,9 @@ import PredictionTable from '../Predictions/PredictionTable';
 import { ProvVis } from '../../trrack-vis';
 import { eventConfig } from '../Explore/ExploreHome';
 import Workflows from '../Workflow/Workflows';
+import BrushComponent, { BrushSelections } from '../Brush/Components/BrushComponent';
+import { BrushCollection, BrushAffectType } from '../Brush/Types/Brush';
+import { ExtendedBrushCollection } from '../../Store/IntentState';
 
 import PcpVis from './PcpVis';
 
@@ -41,11 +44,15 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const PcpHome = () => {
+type Props = {
+  plot: Plot;
+};
+
+const PcpHome: FC<Props> = ({plot} : Props) => {
   const classes = useStyles();
 
   const {
-    exploreStore,
+    exploreStore: {addToWorkflow, setBrushSelection, n_plots, addPlot},
     projectStore: { loadedDataset, nodeCreationMap, approveNode, rejectNode },
     provenance,
     bundledNodes,
@@ -54,8 +61,6 @@ const PcpHome = () => {
     dims,
   } = useContext(Store);
 
-  const { addToWorkflow } = exploreStore;
-
   useEffect(() => {
     const current = provenance.current;
 
@@ -63,7 +68,7 @@ const PcpHome = () => {
       if (current.children.length > 0) return;
     }
 
-    if (!loadedDataset || exploreStore.n_plots > 0 || loadedWorkflowId || loadSavedProject) return;
+    if (!loadedDataset || n_plots > 0 || loadedWorkflowId || loadSavedProject) return;
 
     const { numericColumns } = loadedDataset;
 
@@ -83,14 +88,30 @@ const PcpHome = () => {
           : y_index;
     }
 
-    const plot: Plot = {
-      type: "scatter",
-      id: getPlotId(),
-      x: numericColumns[x_index],
-      y: numericColumns[y_index],
-    };
-    exploreStore.addPlot(plot);
+
+
+    addPlot(plot);
   });
+
+  const rectBrushHandler = useCallback(
+    (
+      selection: BrushSelections,
+      brushes: BrushCollection,
+      type: BrushAffectType,
+      affectedId: string,
+    ) => {
+      const brs: ExtendedBrushCollection = {};
+
+      Object.entries(brushes).forEach((entry) => {
+        const [id, val] = entry;
+
+        brs[id] = { ...val, points: selection[id] };
+      });
+
+      setBrushSelection(plot, brs, type, affectedId);
+    },
+    [plot, setBrushSelection],
+  );
 
   // function brushedNodes(selected: string[])
   // {
@@ -103,8 +124,9 @@ const PcpHome = () => {
       <CssBaseline />
       <Navbar />
       <div className={classes.layout}>
-        <PcpVis size={800} />
+        <PcpVis plot={plot} size={800} />
         <PredictionTable />
+
         <ProvVis
           key={provenance.graph.root}
           addToWorkflow={addToWorkflow}

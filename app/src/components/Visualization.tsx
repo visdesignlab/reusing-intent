@@ -22,7 +22,6 @@ import { SPlot } from '../Store/Types/Plot';
 import Scatterplot from './Scatterplot/Scatterplot';
 import { DataDisplay } from './Comparison/ComparisonScatterplot';
 import ComparisonLegend from './Comparison/ComparisonLegend';
-import LabelLegend from './Label/LabelLegend';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -77,8 +76,7 @@ const Visualization: FC = () => {
         />
       ) : null}
 
-      <LabelLegend offset={spContainerDimension - 2 * theme.spacing(1) - 110} />
-
+    
       <Paper elevation={3}>
         {n_plots > 1 && (
           <IconButton

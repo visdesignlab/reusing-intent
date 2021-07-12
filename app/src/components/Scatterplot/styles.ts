@@ -51,6 +51,10 @@ const useScatterplotStyle = makeStyles({
     fill: `${MATCHES} !important`,
     opacity: 1,
   },
+  hoveredLabel: {
+    opacity: .1
+
+  },
   isnp: {
     fill: `${ISNP} !important`,
     opacity: 1,

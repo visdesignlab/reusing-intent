@@ -33,6 +33,8 @@ type Filter = {
   points: string[];
 };
 
+type ToolChoices = "Label" | "None" | "Category"
+
 type Record = {
   plots: Plots;
   brushes: { [key: string]: BrushCollection };
@@ -61,6 +63,7 @@ export class ExploreStore {
   hoveredPrediction: Prediction | null = null;
   multiBrushBehaviour: MultiBrushBehaviour = 'Union';
   showCategories = false;
+  activeTool: ToolChoices = "None";
   brushType: BrushType = 'Rectangular';
   stateRecord: { [key: string]: Record } = {};
   isComparison = false;
@@ -476,12 +479,12 @@ export class ExploreStore {
     this.rootStore.currentNodes.push(this.provenance.graph.current);
   };
 
-  label = (name: string) => {
+  label = (name: string, selectedPoints: string[] | null = null) => {
     const { labelAction } = this.rootStore.actions;
 
     labelAction.setLabel(`Label Nodes ${name}`);
     const { state } = this;
-    const tempPoints = this.selectedPoints;
+    const tempPoints: string[] = selectedPoints !== null ? selectedPoints : this.selectedPoints;
 
     this.provenance.apply(labelAction());
 
@@ -592,6 +595,10 @@ export class ExploreStore {
 
   setComparison = (comp: boolean) => {
     this.isComparison = comp;
+  };
+
+  setTool = (comp: ToolChoices) => {
+    this.activeTool = comp;
   };
 
   // ##################################################################### //

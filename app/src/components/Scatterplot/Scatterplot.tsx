@@ -1,7 +1,8 @@
-import { createStyles, makeStyles, useTheme } from '@material-ui/core';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { createStyles, makeStyles, useTheme, Fade, Paper, Popper, Typography, Dialog, DialogContent, TextField, DialogActions, Button } from '@material-ui/core';
 import { select } from 'd3';
 import { observer } from 'mobx-react';
-import React, { FC, useCallback, useContext } from 'react';
+import React, { FC, useCallback, useContext, useState } from 'react';
 
 import { ExtendedBrushCollection } from '../../Store/IntentState';
 import Store from '../../Store/Store';
@@ -25,6 +26,7 @@ import Marks from './Marks';
 import Overlay from './Overlay/Overlay';
 import SkylineLegend from './Overlay/SkylineLegend';
 import useScatterplotStyle from './styles';
+import LabelMarks from './LabelMarks';
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -34,6 +36,13 @@ const useStyles = makeStyles(() =>
     }),
   }),
 );
+
+type ReferenceObject = {
+  clientHeight: number;
+  clientWidth: number;
+
+  getBoundingClientRect(): ClientRect;
+}
 
 type Props = {
   plot: Plot;
@@ -51,6 +60,10 @@ const Scatterplot: FC<Props> = ({
   dataDisplay = 'Original',
 }: Props) => {
   const theme = useTheme();
+  const [labelPopupOpen, setLabelPopupOpen] = useState(false)
+  const [labelName, setLabelName] = useState("");
+  const [currentPoints, setCurrentPoints] = useState<string[]>([]);
+  const [anchorEl, setAnchorEl] = useState<ReferenceObject | null>(null);
   const dimension = size - 2 * theme.spacing(1);
   const { root } = useStyles({ dimension });
   const {
@@ -60,10 +73,12 @@ const Scatterplot: FC<Props> = ({
     selectedPoints,
     showMatchesLegend,
     setBrushSelection,
+    label,
     brushType,
     hoveredPrediction,
     showSkylineLegend,
     state,
+    activeTool,
   } = useContext(Store).exploreStore;
 
   const { selectedPointsComparison } = useContext(Store).compareStore;
@@ -82,11 +97,13 @@ const Scatterplot: FC<Props> = ({
   const yScale = useScale(y_extents, [sp_dimension, 0]);
 
   const freeFormBrushHandler = useCallback(
-    (points: string[], event: FreeformBrushEvent, _: FreeformBrushAction) => {
+    (points: string[], eve: FreeformBrushEvent, _: FreeformBrushAction) => {
       if (points.length === 0) return;
       const selectorString = points.map((p) => `#mark${p}`).join(',');
 
-      switch (event) {
+      setCurrentPoints(points)
+
+      switch (eve) {
         case 'Start':
         case 'Brushing':
           select(`#${plot.id}`)
@@ -97,12 +114,22 @@ const Scatterplot: FC<Props> = ({
             .classed(classes.intermittentHighlight, true);
           break;
         case 'End':
-          select(`#${plot.id}`).selectAll('.marks').classed(classes.intermittentHighlight, false);
-          setFreeformSelection(plot, points);
+
+          if(activeTool === "Label")
+          {
+            setLabelPopupOpen(true)
+          }
+          else{
+            select(`#${plot.id}`)
+              .selectAll('.marks')
+              .classed(classes.intermittentHighlight, false);
+
+            setFreeformSelection(plot, points);
+          }
           break;
       }
     },
-    [plot, setFreeformSelection, classes],
+    [plot, setFreeformSelection, classes, activeTool],
   );
 
   const rectBrushHandler = useCallback(
@@ -142,66 +169,152 @@ const Scatterplot: FC<Props> = ({
   }
 
   return (
-    <svg className={root} id={plot.id}>
-      <defs>
-        <clipPath id="clip" width={sp_dimension}>
-          <rect fill="none" height={sp_dimension} width={sp_dimension} />
-        </clipPath>
-      </defs>
-      <g transform={translate(margin)}>
-        <Axis columnName={x} scale={xScale} transform={translate(0, sp_dimension)} type="bottom" />
-        <Axis columnName={y} scale={yScale} type="left" />
-        {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
-        
+    <div>
+      <Popper
+        anchorEl={anchorEl}
+        open={labelPopupOpen}
+        placement="right"
+        style={{ maxWidth: 225, margin: 15 }}
+        transition
+      >
+        <Paper variant="outlined">
+          <TextField
+            autoComplete="off"
+            id="name"
+            label="Label Name"
+            margin="dense"
+            type="email"
+            autoFocus
+            fullWidth
+            onChange={(e) => setLabelName(e.target.value)}
+          />
+          <Button
+            color="primary"
+            onClick={() => {
+              setLabelPopupOpen(false);
 
-        {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
-        <BrushComponent
-          bottom={sp_dimension}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          brushes={state.brushes[plot.id] || {}}
-          data={points}
-          disableBrush={brushType !== 'Rectangular' || !originalMarks}
-          left={0}
-          right={sp_dimension}
-          top={0}
-          xScale={xScale}
-          yScale={yScale}
-          onBrushHandler={rectBrushHandler}
-        />
-        {brushSize && originalMarks && (
-          <FreeFormBrush
+              select(`#${plot.id}`)
+                .selectAll('.marks')
+                .classed(classes.intermittentHighlight, false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            color="primary"
+            onClick={() => {
+              label(labelName, currentPoints);
+
+              setLabelPopupOpen(false);
+
+              select(`#${plot.id}`)
+                .selectAll('.marks')
+                .classed(classes.intermittentHighlight, false);
+            }}
+          >
+            Add Label to Nodes
+          </Button>
+        </Paper>
+      </Popper>
+      <svg className={root} id={plot.id}>
+        <defs>
+          <clipPath id="clip" width={sp_dimension}>
+            <rect fill="none" height={sp_dimension} width={sp_dimension} />
+          </clipPath>
+        </defs>
+        <g
+          transform={translate(margin)}
+          onMouseUp={(event: React.MouseEvent<SVGElement, MouseEvent>) => {
+            console.log(event.target);
+            console.log(event.clientX, event.clientY);
+            setAnchorEl({
+              clientWidth: 5,
+              clientHeight: 5,
+              getBoundingClientRect: () => {
+                return {
+                  bottom: 30 + event.clientY + 5,
+                  left: 20 + event.clientX,
+                  top: 30 + event.clientY,
+                  height: 5,
+                  right: 20 + event.clientX + 5,
+                  width: 5,
+                };
+              },
+            });
+          }}
+        >
+          <Axis
+            columnName={x}
+            scale={xScale}
+            transform={translate(0, sp_dimension)}
+            type="bottom"
+          />
+          <Axis columnName={y} scale={yScale} type="left" />
+          {showMatchesLegend && <Legend offset={sp_dimension - 110} />}
+
+          {showSkylineLegend && <SkylineLegend transform={translate(sp_dimension - 150, 100)} />}
+          <BrushComponent
             bottom={sp_dimension}
-            brushSize={brushSize}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            brushes={state.brushes[plot.id] || {}}
             data={points}
+            disableBrush={brushType !== 'Rectangular' || !originalMarks}
             left={0}
             right={sp_dimension}
             top={0}
             xScale={xScale}
             yScale={yScale}
-            onBrush={freeFormBrushHandler}
+            onBrushHandler={rectBrushHandler}
           />
-        )}
+          {brushSize && originalMarks && (
+            <FreeFormBrush
+              bottom={sp_dimension}
+              brushSize={brushSize}
+              data={points}
+              left={0}
+              right={sp_dimension}
+              top={0}
+              xScale={xScale}
+              yScale={yScale}
+              onBrush={freeFormBrushHandler}
+            />
+          )}
 
-        {originalMarks ? (
-          <Marks points={points} selectedPoints={selectedPoints} xScale={xScale} yScale={yScale} />
-        ) : (
-          <ComparisonMarks
-            compPoints={compPoints}
-            dataDisplay={dataDisplay}
-            points={points}
-            selectedPoints={selectedPointsComparison}
-            xScale={xScale}
-            yScale={yScale}
-          />
-        )}
-        {hoveredPrediction && (
-          <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
-        )}
-        {state.prediction && (
-          <Overlay prediction={state.prediction} xScale={xScale} yScale={yScale} />
-        )}
-      </g>
-    </svg>
+          {originalMarks ? (
+            activeTool === 'Label' ? (
+              <LabelMarks
+                points={points}
+                selectedPoints={selectedPoints}
+                xScale={xScale}
+                yScale={yScale}
+              />
+            ) : (
+              <Marks
+                points={points}
+                selectedPoints={selectedPoints}
+                xScale={xScale}
+                yScale={yScale}
+              />
+            )
+          ) : (
+            <ComparisonMarks
+              compPoints={compPoints}
+              dataDisplay={dataDisplay}
+              points={points}
+              selectedPoints={selectedPointsComparison}
+              xScale={xScale}
+              yScale={yScale}
+            />
+          )}
+          {hoveredPrediction && (
+            <Overlay prediction={hoveredPrediction} xScale={xScale} yScale={yScale} />
+          )}
+          {state.prediction && (
+            <Overlay prediction={state.prediction} xScale={xScale} yScale={yScale} />
+          )}
+        </g>
+      </svg>
+    </div>
   );
 };
 
