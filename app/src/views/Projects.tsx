@@ -4,6 +4,7 @@ import { observer } from 'mobx-react';
 
 import DataView from '../components/DataView';
 import Sidebar from '../components/Sidebar';
+import If from '../components/utils/If';
 import { useStore } from '../stores/RootStore';
 import { ProjectResult } from '../stores/types/Project';
 
@@ -56,12 +57,12 @@ const Projects = () => {
 
   if (!success) throw new Error(errors[0]);
 
-  console.log({ project, dataset_id });
-
   return (
     <div className={styles.root}>
       <Sidebar projects={projects} />
-      {project && dataset_id && <DataView />}
+      <If condition={Boolean(project && dataset_id)}>
+        <DataView />
+      </If>
     </div>
   );
 };

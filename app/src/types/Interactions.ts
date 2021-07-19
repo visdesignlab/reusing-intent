@@ -2,24 +2,28 @@ import { Prediction } from './Prediction';
 
 // View Specifications
 type BaseSpec = {
+  i_type: 'ViewSpec';
   id: string;
 };
 
-type ScatterplotSpec = BaseSpec & {
+export type ScatterplotSpec = BaseSpec & {
   x: string;
   y: string;
   type: 'Scatterplot';
 };
 
-type PCPSpec = BaseSpec & {
-  dimensions: string[];
+export type PCPSpec = BaseSpec & {
+  dimension: string;
   type: 'PCP';
 };
 
 export type ViewSpec = ScatterplotSpec | PCPSpec;
 
 // Selections
-type PointSelection = {
+export type PointSelection = {
+  i_type: 'PointSelection';
+  type: 'Selection' | 'Deselection';
+  view: ViewSpec;
   ids: string[];
 };
 
@@ -29,42 +33,55 @@ type Extent = {
 };
 
 type AddBrushSelection = {
+  type: 'Add';
   view: ViewSpec;
   id: string;
   extents: { [key: string]: Extent };
 };
 
 type UpdateBrushSelection = {
+  type: 'Update';
+  view: ViewSpec;
   id: string;
   extents: { [key: string]: Extent };
 };
 
 type RemoveBrushSelection = {
+  type: 'Remove';
   id: string;
+  view: ViewSpec;
   extents: { [key: string]: Extent };
 };
 
-type BrushActions = AddBrushSelection | RemoveBrushSelection | UpdateBrushSelection;
+export type BrushAction = { i_type: 'BrushSelection' } & (
+  | AddBrushSelection
+  | RemoveBrushSelection
+  | UpdateBrushSelection
+);
 
 type PredictionSelection = {
+  i_type: 'PredictionSelection';
   apply: Prediction;
 };
 
-export type Selections = PointSelection | BrushActions | PredictionSelection;
+export type Selections = PointSelection | BrushAction | PredictionSelection;
 
 // Filters
 export type Filter = {
+  i_type: 'Filter';
   in: boolean;
 };
 
 // Labels
 export type Label = {
+  i_type: 'Label';
   as: string;
   ids?: string[];
 };
 
 // Categorize
 export type Categorize = {
+  i_type: 'Categorize';
   in: string;
   as: string;
   ids?: string[];
@@ -72,11 +89,13 @@ export type Categorize = {
 
 // Aggregate
 export type Aggregate = {
+  i_type: 'Aggregate';
   by: 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max';
 };
 
 // Replace Aggregate
 export type ReplaceAggregate = {
+  i_type: 'ReplaceAggregate';
   drop: boolean;
 };
 

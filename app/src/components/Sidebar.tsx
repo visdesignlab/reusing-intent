@@ -14,6 +14,7 @@ import FolderIcon from '@material-ui/icons/Folder';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { TreeItem, TreeView } from '@material-ui/lab';
 import { observer } from 'mobx-react';
+import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { useStore } from '../stores/RootStore';
@@ -56,9 +57,24 @@ const Sidebar = ({ projects }: Props) => {
   const styles = useStyles(drawerWidth);
   const {
     projectStore: { setCurrentProject, setDatasetId, project, dataset_id },
+    opts: { debug, goToExplore },
   } = useStore();
 
   const history = useHistory();
+
+  useEffect(() => {
+    if (debug === 'off') return;
+
+    if (!project) {
+      setCurrentProject(projects[0]);
+    }
+
+    if (!dataset_id) {
+      setDatasetId(projects[0].datasets[0].id);
+    }
+
+    if (goToExplore) history.push('/explore');
+  }, [project, projects, setCurrentProject, dataset_id, setDatasetId, debug, goToExplore, history]);
 
   return (
     <Drawer

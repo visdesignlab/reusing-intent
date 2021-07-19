@@ -6,12 +6,13 @@ export type Dataset = {
   project_id: string;
 };
 
-type DataPoint = { id: string; iid: string; [key: string]: string | number };
+export type DataPoint = { id: string; iid: string; [key: string]: string | number };
 
 type BaseColumn = {
   fullname: string;
   short: string;
   unit: string | null;
+  options?: string[];
 };
 
 type NumericColumn = BaseColumn & {
@@ -20,7 +21,6 @@ type NumericColumn = BaseColumn & {
 
 type CategoricalColumn = BaseColumn & {
   data_type: 'categorical';
-  options: string[];
 };
 
 type LabelColumn = BaseColumn & {

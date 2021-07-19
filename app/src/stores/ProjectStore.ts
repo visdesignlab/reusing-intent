@@ -1,4 +1,4 @@
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { queryData } from './queries/queryData';
 import RootStore from './RootStore';
@@ -31,12 +31,16 @@ export default class ProjectStore {
 
   getData = async (record_id: string | null) => {
     if (!record_id) {
-      this.data = null;
+      runInAction(() => {
+        this.data = null;
+      });
 
       return;
     }
 
     const { data } = await queryData(record_id);
-    this.data = data.data;
+    runInAction(() => {
+      this.data = data.data;
+    });
   };
 }

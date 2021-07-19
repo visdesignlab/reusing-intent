@@ -1,4 +1,4 @@
-import { FormControlLabel, FormGroup, Switch, TextField } from '@material-ui/core';
+import { FormControlLabel, FormGroup, Switch } from '@material-ui/core';
 import { observer } from 'mobx-react';
 
 import { useStore } from '../stores/RootStore';
@@ -18,10 +18,23 @@ const DebugDialog = () => {
           }
           label="Debug Mode"
         />
-        <TextField
-          label="Default Route"
-          value={opts.defaultRoute ? opts.defaultRoute : ''}
-          onChange={(e) => setDebugOpts({ defaultRoute: e.target.value })}
+        <FormControlLabel
+          control={
+            <Switch
+              checked={opts.goToExplore}
+              onChange={() => setDebugOpts({ goToExplore: !opts.goToExplore })}
+            />
+          }
+          label="Redirect To Explore"
+        />
+        <FormControlLabel
+          control={
+            <Switch
+              checked={opts.showCategories}
+              onChange={() => setDebugOpts({ showCategories: !opts.showCategories })}
+            />
+          }
+          label="Show Categories"
         />
       </FormGroup>
       <pre>{JSON.stringify(opts, null, 4)}</pre>

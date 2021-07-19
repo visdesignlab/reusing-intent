@@ -9,7 +9,7 @@ const useStyles = makeStyles((theme: Theme) => {
   return {
     fab: {
       position: 'absolute',
-      left: theme.spacing(2),
+      right: theme.spacing(2),
       bottom: theme.spacing(2),
       'z-index': 100000,
     },

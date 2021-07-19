@@ -16,7 +16,8 @@
     "noEmit": true,
     "importHelpers": true,
     "jsx": "react-jsx",
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "experimentalDecorators": true
   },
   "include": ["src", "src_bak/components/Hooks/useScale.ts"]
 }

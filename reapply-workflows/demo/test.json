@@ -1,0 +1,11 @@
+{
+  "name": "Test Workflow",
+  "graph": "Hello, World",
+  "project": {
+    "name": "Gapminder, World",
+    "status_record": {
+      "gapminder_1990": "accepted",
+      "gapminder_2010": "unknown"
+    }
+  }
+}
