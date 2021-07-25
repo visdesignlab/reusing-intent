@@ -8,6 +8,13 @@ export type ProjectResult = {
   };
 };
 
+export type CategoryResult = {
+  addCategoryColumn: {
+    success: boolean;
+    errors: string[];
+  };
+};
+
 export type Projects = Project[];
 
 export type Project = {

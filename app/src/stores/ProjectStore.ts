@@ -1,6 +1,7 @@
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
 
-import { queryData } from './queries/queryData';
+import { addCategory } from './queries/mutateCategoryColumn';
+import { queryColumns, queryData } from './queries/queryData';
 import RootStore from './RootStore';
 import { Data } from './types/Dataset';
 import { Project, Projects } from './types/Project';
@@ -27,6 +28,23 @@ export default class ProjectStore {
 
   setDatasetId = (id: string) => {
     this.dataset_id = id;
+  };
+
+  addCategoryColumn = async (columnName: string, options: string) => {
+    if (!this.project) return;
+
+    const { data: d } = await addCategory(this.project.id, columnName, options);
+
+    if (d && d.addCategoryColumn.success && this.dataset_id) {
+      const {
+        data: { data },
+      } = await queryColumns(this.dataset_id);
+
+      runInAction(() => {
+        console.log(data)
+        if (this.data) this.data = { ...this.data, ...data };
+      });
+    }
   };
 
   getData = async (record_id: string | null) => {

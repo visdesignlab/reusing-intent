@@ -12,4 +12,9 @@ type Query {
 
 type Mutation {
   createProject(projectName: String!): ProjectResult!
+  addCategoryColumn(
+    projectId: ID!
+    columnName: String!
+    options: String!
+  ): CategoryResult!
 }

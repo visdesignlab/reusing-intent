@@ -39,11 +39,10 @@ type Column = NumericColumn | CategoricalColumn | LabelColumn | IdColumn | IidCo
 
 type ColumnInfo = { [key: string]: Column };
 
-export type Data = {
+type Cols = {
   success: boolean;
   errors: string[];
   id: string;
-  values: DataPoint[];
   columnInfo: ColumnInfo;
   numericColumns: string[];
   categoricalColumns: string[];
@@ -51,6 +50,14 @@ export type Data = {
   columns: string[];
 };
 
+export type Data = Cols & {
+  values: DataPoint[];
+};
+
 export type DataResult = {
   data: Data;
+};
+
+export type ColumnResult = {
+  data: Cols;
 };

@@ -55,6 +55,7 @@ const CategoriesCard = () => {
   const styles = useStyles();
   const {
     exploreStore: { toggleShowCategories, doesHaveCategories, data, changeCategoryColumn },
+    projectStore: { addCategoryColumn },
   } = useStore();
 
   const { showCategory = false, selectedCategoryColumn = null, categoryMap = {} } =
@@ -78,6 +79,8 @@ const CategoriesCard = () => {
     }));
   }, [data]);
 
+  console.log(categoryOptions);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogValue, setDialogValue] = useState<NewCategory>({ name: '', options: [] });
 
@@ -88,7 +91,8 @@ const CategoriesCard = () => {
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log(dialogValue);
+    addCategoryColumn(dialogValue.name, dialogValue.options.join(','));
+    setOpenDialog(false);
   };
 
   if (!data) return <div>Loading</div>;
@@ -186,7 +190,7 @@ const CategoriesCard = () => {
               autoFocus
               onChange={(event) => setDialogValue({ ...dialogValue, name: event.target.value })}
             />
-            <FormControl fullWidth>
+          <FormControl fullWidth>
               <TextField
                 id="category-options"
                 label="Options"

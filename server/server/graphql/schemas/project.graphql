@@ -15,3 +15,8 @@ type Project {
   name: String!
   datasets: [Dataset]!
 }
+
+type CategoryResult {
+  success: Boolean!
+  errors: [String]
+}
