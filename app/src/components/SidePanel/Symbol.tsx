@@ -14,9 +14,10 @@ type Props = {
   disabled?: boolean;
   label: string;
   path: string | null;
+  onHover?: (cat: string | null) => void;
 };
 
-const Symbol: FC<Props> = ({ disabled = false, path, label }) => {
+const Symbol: FC<Props> = ({ disabled = false, path, label, onHover }) => {
   const styles = useStyles();
 
   return (
@@ -28,6 +29,12 @@ const Symbol: FC<Props> = ({ disabled = false, path, label }) => {
             {path && <path d={path} opacity="0.5" transform={translate(25 / 2)} />}
           </svg>
         }
+        onMouseEnter={() => {
+          if (onHover) onHover(label);
+        }}
+        onMouseLeave={() => {
+          if (onHover) onHover(null);
+        }}
       >
         {label}
       </Button>

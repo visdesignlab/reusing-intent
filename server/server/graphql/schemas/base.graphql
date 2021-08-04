@@ -3,11 +3,13 @@ schema {
   mutation: Mutation
 }
 
+scalar Interaction
+
 type Query {
   hello: String!
   projects: ProjectsResult!
   data(record_id: ID!): DataResult!
-  predictions(record_id: ID!): PredictionsResult!
+  predictions(record_id: ID!, interactions: [Interaction]): PredictionsResult!
 }
 
 type Mutation {

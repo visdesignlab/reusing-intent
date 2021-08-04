@@ -59,6 +59,9 @@ const useScatterplotStyle = makeStyles({
     fill: `${IPNS} !important`,
     opacity: 1,
   },
+  dullMark: {
+    opacity: 0.2,
+  },
 });
 
 export default useScatterplotStyle;

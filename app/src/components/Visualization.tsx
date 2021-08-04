@@ -14,10 +14,10 @@ import { observer } from 'mobx-react';
 import { useCallback, useContext, useState } from 'react';
 
 import { CategoryContext } from '../contexts/CategoryContext';
+import { CUSTOM_CATEGORY_ASSIGNMENT, CUSTOM_LABEL } from '../stores/ExploreStore';
 import { useStore } from '../stores/RootStore';
-import { ScatterplotSpec } from '../types/Interactions';
 
-import Scatterplot, { ScatterplotPoint, SPView } from './Scatterplot/Scatterplot';
+import Scatterplot, { ScatterplotPoint } from './Scatterplot/Scatterplot';
 import SidePanel from './SidePanel/';
 
 // type StyleProps = { dimension: number; showCategories: boolean };
@@ -84,17 +84,20 @@ const Visualization = () => {
   const {
     projectStore: { project, dataset_id },
     exploreStore: {
-      state: { views },
+      state: { scatterplots },
       addScatterplot,
       selectPointsFreeform,
+      brushType,
+      dataPoints,
       unselectPointsFreeform,
       handleBrushSelection,
       data,
+      rangeMap,
     },
   } = useStore();
   const theme = useTheme();
 
-  const n_plots = Object.values(views).length + 1;
+  const n_plots = scatterplots.length + 1;
 
   const spContainerDimension = 500;
 
@@ -123,21 +126,26 @@ const Visualization = () => {
 
   if (!project) return <div>Something went wrong!</div>;
 
-  const sps = Object.values(views).map((view) => {
-    const { x, y } = view as ScatterplotSpec;
+  const sps = scatterplots.map((view) => {
+    const { x, y } = view;
 
     let points: ScatterplotPoint[] = [];
 
     if (data) {
-      points = data.values.map((d) => ({
+      points = dataPoints.map((d) => ({
         id: d.id as string,
         x: d[x] as number,
         y: d[y] as number,
         label: d[data.labelColumn] as string,
         category:
           showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-',
+        [CUSTOM_LABEL]: d[CUSTOM_LABEL],
+        [CUSTOM_CATEGORY_ASSIGNMENT]: d[CUSTOM_CATEGORY_ASSIGNMENT],
       }));
     }
+
+    const x_range = rangeMap[x];
+    const y_range = rangeMap[y];
 
     return (
       <div key={view.id} className={styles.paperContainer}>
@@ -148,6 +156,9 @@ const Visualization = () => {
             </IconButton>
           )}
           <Scatterplot
+            _x_extents={[x_range.min, x_range.max]}
+            _y_extents={[y_range.min, y_range.max]}
+            brushType={brushType}
             categoryMap={categoryMap}
             freeformBrushHandler={(points, view, action) => {
               if (action === 'Selection') selectPointsFreeform(points, view);
@@ -159,7 +170,7 @@ const Visualization = () => {
             selections={view.freeformSelections}
             showCategories={showCategory}
             size={spContainerDimension - 2 * theme.spacing(1)}
-            view={view as SPView}
+            view={view}
             xAxisLabel={labelMaker}
             yAxisLabel={labelMaker}
           />

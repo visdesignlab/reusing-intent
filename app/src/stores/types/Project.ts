@@ -1,4 +1,4 @@
-import { Datasets } from './Dataset';
+import { ColumnInfo, Datasets } from './Dataset';
 
 export type ProjectResult = {
   projects: {
@@ -12,6 +12,12 @@ export type CategoryResult = {
   addCategoryColumn: {
     success: boolean;
     errors: string[];
+    id: string;
+    columnInfo: ColumnInfo;
+    numericColumns: string[];
+    categoricalColumns: string[];
+    labelColumn: string;
+    columns: string[];
   };
 };
 

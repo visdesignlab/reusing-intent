@@ -62,7 +62,38 @@ def resolve_add_category_column(*_, project_id, column_name, options):
         db.session.add(meta)
         db.session.commit()
 
-        payload = {"success": True}
+        ci = DatasetMeta.query.filter_by(project_id=project_id).all()
+
+        column_info = {}
+
+        for c in ci:
+            col = c.to_dict()
+            column_info[col["key"]] = col
+
+        columns = []
+        categorical_columns = []
+        numeric_columns = []
+        label_column = None
+
+        for col_name, col_info in column_info.items():
+            data_type = col_info["data_type"]
+            columns.append(col_name)
+            if data_type == "label":
+                label_column = col_name
+            elif data_type == "numeric":
+                numeric_columns.append(col_name)
+            elif data_type == "categorical":
+                categorical_columns.append(col_name)
+
+        payload = {
+            "success": True,
+            "column_info": column_info,
+            "numeric_columns": numeric_columns,
+            "categorical_columns": categorical_columns,
+            "label_column": label_column,
+            "columns": columns,
+        }
+
     except Exception as errors:
         payload = {"success": False, errors: [errors]}
 

@@ -1,4 +1,4 @@
-import { initProvenance } from '@visdesignlab/trrack';
+import { initProvenance, isChildNode } from '@visdesignlab/trrack';
 import { makeAutoObservable, toJS, when } from 'mobx';
 import { createContext, useContext } from 'react';
 
@@ -43,15 +43,39 @@ export default class RootStore {
       // eslint-disable-next-line no-console
       console.table(Object.values(toJS(this.provenance.graph.nodes)), keysToShow);
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).printProvenance = () => {
+      // eslint-disable-next-line no-console
+      console.log(this.provenance.state);
+    };
 
     makeAutoObservable(this);
 
     when(
       () => this.opts.showCategories,
       () => {
-        this.exploreStore.showCategories = this.opts.showCategories;
+        this.exploreStore.toggleShowCategories(this.opts.showCategories);
       },
     );
+  }
+
+  get isAtRoot() {
+    const {
+      current,
+      graph: { root },
+    } = this.provenance;
+
+    if (isChildNode(current)) {
+      return current.parent === root;
+    }
+
+    return true;
+  }
+
+  get isAtLatest() {
+    const { current } = this.provenance;
+
+    return current.children.length === 0;
   }
 
   setDebugOpts = (opts: Partial<DebugOpts>) => {

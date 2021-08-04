@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@material-ui/core';
 import { Autocomplete, createFilterOptions } from '@material-ui/lab';
-import { symbol } from 'd3';
+import { symbol, symbols } from 'd3';
 import { observer } from 'mobx-react';
 import { FormEvent, useContext, useMemo, useState } from 'react';
 
@@ -33,7 +33,7 @@ type CategoryOption = {
 
 type NewCategory = {
   name: string;
-  options: string[];
+  options: string;
 };
 
 const filter = createFilterOptions<CategoryOption>();
@@ -58,18 +58,12 @@ const CategoriesCard = () => {
     projectStore: { addCategoryColumn },
   } = useStore();
 
-  const { showCategory = false, selectedCategoryColumn = null, categoryMap = {} } =
-    useContext(CategoryContext) || {};
-
-  const options = useMemo(() => {
-    const opts: string[] = [];
-
-    if (!data || selectedCategoryColumn === null) return opts;
-
-    opts.push(...(data.columnInfo[selectedCategoryColumn].options || []));
-
-    return opts;
-  }, [data, selectedCategoryColumn]);
+  const {
+    showCategory = false,
+    selectedCategoryColumn = null,
+    categoryMap = {},
+    setHoveredCategory,
+  } = useContext(CategoryContext) || {};
 
   const categoryOptions: CategoryOption[] = useMemo(() => {
     if (!data) return [];
@@ -79,19 +73,17 @@ const CategoriesCard = () => {
     }));
   }, [data]);
 
-  console.log(categoryOptions);
-
   const [openDialog, setOpenDialog] = useState(false);
-  const [dialogValue, setDialogValue] = useState<NewCategory>({ name: '', options: [] });
+  const [dialogValue, setDialogValue] = useState<NewCategory>({ name: '', options: '' });
 
   const handleDialogClose = () => {
-    setDialogValue({ name: '', options: [] });
+    setDialogValue({ name: '', options: '' });
     setOpenDialog(false);
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    addCategoryColumn(dialogValue.name, dialogValue.options.join(','));
+    addCategoryColumn(dialogValue.name, dialogValue.options);
     setOpenDialog(false);
   };
 
@@ -119,6 +111,7 @@ const CategoriesCard = () => {
         ) : (
           <CardContent>
             <Autocomplete
+              disabled={!showCategory}
               filterOptions={(options, params) => {
                 const filtered = filter(options, params);
 
@@ -154,22 +147,23 @@ const CategoriesCard = () => {
                 if (typeof newValue === 'string') {
                   setTimeout(() => {
                     setOpenDialog(true);
-                    setDialogValue({ name: newValue, options: [] });
+                    setDialogValue({ name: newValue, options: '' });
                   });
                 } else if (newValue && newValue.inputValue) {
                   setOpenDialog(true);
-                  setDialogValue({ name: newValue.inputValue, options: [] });
+                  setDialogValue({ name: newValue.inputValue, options: '' });
                 } else {
                   changeCategoryColumn(newValue?.title || null);
                 }
               }}
             />
-            {options.map((o) => (
+            {Object.entries(categoryMap).map(([col, sym]) => (
               <Symbol
-                key={o}
+                key={col}
                 disabled={!showCategory}
-                label={o}
-                path={symbol(categoryMap[o]).size(100)()}
+                label={col}
+                path={symbol(sym).size(100)()}
+                onHover={setHoveredCategory}
               />
             ))}
           </CardContent>
@@ -190,19 +184,20 @@ const CategoriesCard = () => {
               autoFocus
               onChange={(event) => setDialogValue({ ...dialogValue, name: event.target.value })}
             />
-          <FormControl fullWidth>
+            <FormControl fullWidth>
               <TextField
+                helperText={`Max ${symbols.length - 1} options supported.`}
                 id="category-options"
                 label="Options"
                 type="text"
-                value={dialogValue.options.join(', ')}
+                value={dialogValue.options}
                 autoFocus
                 fullWidth
                 multiline
                 onChange={(event) =>
                   setDialogValue({
                     ...dialogValue,
-                    options: event.target.value.split(',').map((d) => d.trim()),
+                    options: event.target.value,
                   })
                 }
               />
@@ -210,7 +205,15 @@ const CategoriesCard = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleDialogClose}>Cancel</Button>
-            <Button type="submit">Add</Button>
+            <Button
+              disabled={
+                dialogValue.options.length === 0 ||
+                dialogValue.options.split(',').length >= symbols.length
+              }
+              type="submit"
+            >
+              Add
+            </Button>
           </DialogActions>
         </form>
       </Dialog>

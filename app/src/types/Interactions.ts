@@ -1,87 +1,124 @@
-import { Prediction } from './Prediction';
+import { DataPoint } from '../stores/types/Dataset';
+
+import { Intent } from './Prediction';
+
+type BaseInteraction = {
+  i_type:
+    | 'ViewSpec'
+    | 'Selection'
+    | 'Filter'
+    | 'Label'
+    | 'Categorize'
+    | 'Aggregate'
+    | 'ReplaceAggregate';
+};
 
 // View Specifications
-type BaseSpec = {
+type BaseSpec = BaseInteraction & {
   i_type: 'ViewSpec';
   id: string;
+  type: 'Scatterplot' | 'PCP';
 };
 
 export type ScatterplotSpec = BaseSpec & {
+  type: 'Scatterplot';
+  action: 'Add' | 'Remove';
   x: string;
   y: string;
-  type: 'Scatterplot';
 };
 
 export type PCPSpec = BaseSpec & {
-  dimension: string;
+  dimensions: string[];
+  id: string;
   type: 'PCP';
+  action: 'Create' | 'Add' | 'Remove';
 };
 
 export type ViewSpec = ScatterplotSpec | PCPSpec;
 
+export function getDimensionsFromViewSpec(spec: ViewSpec): string[] {
+  if (spec.type === 'Scatterplot') return [spec.x, spec.y];
+
+  return spec.dimensions;
+}
+
 // Selections
-export type PointSelection = {
-  i_type: 'PointSelection';
-  type: 'Selection' | 'Deselection';
-  view: ViewSpec;
+type BaseSelection = BaseInteraction & {
+  i_type: 'Selection';
+  type: 'Point' | 'Brush' | 'Intent' | 'Category';
+  spec: ViewSpec;
+  dimensions: string[];
+};
+
+export type PointSelection = BaseSelection & {
+  type: 'Point';
+  action: 'Selection' | 'Deselection';
   ids: string[];
 };
 
-type Extent = {
-  min: number;
-  max: number;
+type Extents = { [key: string]: [number, number] };
+
+type BrushSelection = BaseSelection & {
+  type: 'Brush';
+  brushId: string;
+  action: 'Add' | 'Remove' | 'Update';
+  extents: Extents;
 };
 
-type AddBrushSelection = {
-  type: 'Add';
-  view: ViewSpec;
-  id: string;
-  extents: { [key: string]: Extent };
+type IntentSelection = BaseSelection & {
+  type: 'Prediction';
+  apply: Intent;
 };
 
-type UpdateBrushSelection = {
-  type: 'Update';
-  view: ViewSpec;
-  id: string;
-  extents: { [key: string]: Extent };
-};
+export type Selection = PointSelection | BrushSelection | IntentSelection;
 
-type RemoveBrushSelection = {
-  type: 'Remove';
-  id: string;
-  view: ViewSpec;
-  extents: { [key: string]: Extent };
-};
+export function getSelectedPoints(
+  extents: Extents,
+  data: DataPoint[],
+  x_col: string,
+  y_col: string,
+): string[] {
+  return data
+    .filter((point) => {
+      const [x, y] = [point[x_col] as number, point[y_col] as number];
 
-export type BrushAction = { i_type: 'BrushSelection' } & (
-  | AddBrushSelection
-  | RemoveBrushSelection
-  | UpdateBrushSelection
-);
+      if (
+        x >= extents[x_col][0] &&
+        x <= extents[x_col][1] &&
+        y >= extents[y_col][0] &&
+        y <= extents[y_col][1]
+      )
+        return true;
 
-type PredictionSelection = {
-  i_type: 'PredictionSelection';
-  apply: Prediction;
-};
+      return false;
+    })
+    .map((d) => d.id);
+}
 
-export type Selections = PointSelection | BrushAction | PredictionSelection;
+export function extentToBrushExtent(extents: Extents, x: string, y: string) {
+  const [x1, x2, y1, y2] = [extents[x][0], extents[x][1], extents[y][0], extents[y][1]];
+
+  return { x1, x2, y1, y2 };
+}
 
 // Filters
-export type Filter = {
+export type Filter = BaseInteraction & {
   i_type: 'Filter';
-  in: boolean;
+  action: 'In' | 'Out';
 };
 
 // Labels
-export type Label = {
+export type Label = BaseInteraction & {
   i_type: 'Label';
+  // action: 'Assign' | 'Unassign';
   as: string;
   ids?: string[];
 };
 
 // Categorize
-export type Categorize = {
+export type Categorize = BaseInteraction & {
   i_type: 'Categorize';
+  // action: 'Assign' | 'Unassign';
   in: string;
   as: string;
   ids?: string[];
@@ -89,20 +126,23 @@ export type Categorize = {
 
 // Aggregate
 export type Aggregate = {
-  i_type: 'Aggregate';
+  i_type: 'Aggregation';
+  // action: 'Aggregate' | 'Unaggregate';
+  id: string;
   by: 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max';
 };
 
 // Replace Aggregate
 export type ReplaceAggregate = {
   i_type: 'ReplaceAggregate';
+  id: string;
   drop: boolean;
 };
 
 // Interactions Type
 export type Interaction =
   | ViewSpec
-  | Selections
+  | Selection
   | Filter
   | Label
   | Categorize

@@ -5,7 +5,8 @@ import { observer } from 'mobx-react';
 import { useCallback, useMemo } from 'react';
 
 import useScale from '../../hooks/useScale';
-import { ScatterplotSpec } from '../../types/Interactions';
+import { BrushSizeMap, BrushType } from '../../stores/ExploreStore';
+import { ScatterplotView } from '../../stores/ViewState';
 import translate from '../../utils/transform';
 import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Brushes/FreeFormBrush';
 import BrushComponent, {
@@ -33,30 +34,29 @@ export type ScatterplotPoint = {
   y: number;
   category?: string;
   tooltip?: string | JSX.Element;
-};
-
-export type SPView = ScatterplotSpec & {
-  freeformSelections: string[];
-  brushes: BrushCollection;
-  brushSelections: { [key: string]: string[] };
+  customlabel?: string[];
+  customCategoryAssignment?: { [categoryName: string]: string };
 };
 
 type Props = {
-  view: SPView;
+  view: ScatterplotView;
   points: ScatterplotPoint[];
   size: number;
   xAxisLabel: string | JSX.Element | ((x_col: string) => string | JSX.Element);
   yAxisLabel: string | JSX.Element | ((y_col: string) => string | JSX.Element);
   margin?: number;
+  brushType: BrushType;
   showCategories: boolean;
   categoryMap?: { [key: string]: SymbolType } | null;
+  _x_extents?: [number, number] | null;
+  _y_extents?: [number, number] | null;
   freeformBrushHandler: (
     points: string[],
-    spec: ScatterplotSpec,
+    spec: ScatterplotView,
     action: FreeformBrushAction,
   ) => void;
   rectangularBrushHandler: (
-    spec: ScatterplotSpec,
+    spec: ScatterplotView,
     brushes: BrushCollection,
     type: BrushAffectType,
     affectedBrushId: string,
@@ -70,11 +70,14 @@ const Scatterplot = ({
   margin = 0,
   xAxisLabel,
   yAxisLabel,
+  brushType,
   points,
   freeformBrushHandler,
   showCategories,
   categoryMap = null,
   rectangularBrushHandler,
+  _x_extents = null,
+  _y_extents = null,
 }: Props) => {
   // Calculate Dimensions
   const theme = useTheme();
@@ -86,13 +89,17 @@ const Scatterplot = ({
 
   // Get Scales
   const { x_extents, y_extents } = useMemo(() => {
+    if (_x_extents !== null && _y_extents !== null) {
+      return { x_extents: _x_extents, y_extents: _y_extents };
+    }
+
     if (points.length === 0)
       return { x_extents: [0, 0] as [number, number], y_extents: [0, 0] as [number, number] };
     const x_extents = extent(points.map((d) => d.x)) as [number, number];
     const y_extents = extent(points.map((d) => d.y)) as [number, number];
 
     return { x_extents, y_extents };
-  }, [points]);
+  }, [points, _x_extents, _y_extents]);
 
   const xScale = useScale(x_extents, [0, dimension]);
   const yScale = useScale(y_extents, [dimension, 0]);
@@ -154,28 +161,32 @@ const Scatterplot = ({
         </clipPath>
       </defs>
       <g transform={translate(margin)}>
-        <FreeFormBrush
-          bottom={dimension}
-          brushSize={20}
-          data={points}
-          left={0}
-          right={dimension}
-          top={0}
-          xScale={xScale}
-          yScale={yScale}
-          onBrush={_freeformBrushHandler}
-        />
-        <BrushComponent
-          bottom={dimension}
-          brushes={view.brushes}
-          data={points}
-          left={0}
-          right={dimension}
-          top={0}
-          xScale={xScale}
-          yScale={yScale}
-          onBrushHandler={_rectBrushHandler}
-        />
+        {brushType !== 'Rectangular' && brushType !== 'None' && (
+          <FreeFormBrush
+            bottom={dimension}
+            brushSize={BrushSizeMap[brushType]}
+            data={points}
+            left={0}
+            right={dimension}
+            top={0}
+            xScale={xScale}
+            yScale={yScale}
+            onBrush={_freeformBrushHandler}
+          />
+        )}
+        {brushType === 'Rectangular' && (
+          <BrushComponent
+            bottom={dimension}
+            brushes={view.brushes}
+            data={points}
+            left={0}
+            right={dimension}
+            top={0}
+            xScale={xScale}
+            yScale={yScale}
+            onBrushHandler={_rectBrushHandler}
+          />
+        )}
         <Axis
           label={typeof xAxisLabel === 'function' ? xAxisLabel(view.x) : xAxisLabel}
           margin={margin}

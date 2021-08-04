@@ -1,53 +1,69 @@
+/* eslint-disable @typescript-eslint/no-empty-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
+import { extent } from 'd3';
 import { action, makeAutoObservable, reaction, when } from 'mobx';
 
+import { BrushSize } from '../components/Brushes/FreeFormBrush';
 import {
   BrushAffectType,
   BrushCollection,
 } from '../components/Brushes/Rectangular Brush/Types/Brush';
-import { SPView } from '../components/Scatterplot/Scatterplot';
-import { Interactions, PCPSpec, ScatterplotSpec, ViewSpec } from '../types/Interactions';
+import {
+  extentToBrushExtent,
+  getDimensionsFromViewSpec,
+  getSelectedPoints,
+  Interactions,
+  ScatterplotSpec,
+  Selection,
+} from '../types/Interactions';
+import { Prediction } from '../types/Prediction';
 import deepCopy from '../utils/DeepCopy';
 import { getPlotId } from '../utils/IDGens';
 
-import { PointSelection } from './../types/Interactions';
 import {
   addBrush,
+  addFilter,
   addPointSelection,
   addScatterplot,
   removeBrush,
   updateBrush,
 } from './provenance/actions';
 import RootStore from './RootStore';
+import { DataPoint } from './types/Dataset';
+import {
+  clearSelections,
+  defaultViewState,
+  getSelections,
+  PCPView,
+  ScatterplotView,
+  View,
+  ViewState,
+} from './ViewState';
 
-// Temp
-type PCPView = PCPSpec & {
-  freeformSelections: string[];
-  brushes: BrushCollection;
-  brushSelections: { [key: string]: string[] };
-};
-
-type View = SPView | PCPView;
-
-type VisState = {
-  views: {
-    [key: string]: View;
-  };
-};
-
-const defaultVisState: VisState = {
-  views: {},
-};
+export const CUSTOM_LABEL = 'customlabel';
+export const CUSTOM_CATEGORY_ASSIGNMENT = 'customCategoryAssignment';
 
 type DatasetRecord = Record<string, StateRecord>;
 
-type StateRecord = Record<NodeID, VisState>;
+type StateRecord = Record<NodeID, ViewState>;
+
+export type FreeFormBrushType = 'Freeform Small' | 'Freeform Medium' | 'Freeform Large';
+
+export type BrushType = FreeFormBrushType | 'Rectangular' | 'None';
+
+export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
+  'Freeform Small': 20,
+  'Freeform Medium': 35,
+  'Freeform Large': 50,
+};
 
 export default class ExploreStore {
   root: RootStore;
   plotType: 'scatterplot' | 'pcp' | 'none' = 'none';
   showCategories = false;
   selectedCategoryColumn: string | null = null;
+  brushType: BrushType = 'Freeform Medium';
 
   // Vis state
   record: DatasetRecord = {};
@@ -59,6 +75,7 @@ export default class ExploreStore {
       getState: action,
       updateVisState: action,
       toggleShowCategories: action,
+      switchBrush: action,
     });
 
     // If category is toggled on first time, load the default category column and dispose self
@@ -84,8 +101,10 @@ export default class ExploreStore {
       },
     );
 
-    if (root.opts.debug) {
-      this.showCategories = root.opts.showCategories;
+    if (root.opts.debug === 'on') {
+      this.toggleShowCategories(root.opts.showCategories);
+      const btype = localStorage.getItem('btype');
+      this.switchBrush(((btype as unknown) || this.brushType) as BrushType);
     }
   }
 
@@ -98,6 +117,65 @@ export default class ExploreStore {
     return this.root.projectStore.data;
   }
 
+  get rawDataPoints() {
+    return this.data?.values || [];
+  }
+
+  get rangeMap() {
+    if (!this.data) return {};
+
+    const { columnInfo, values = [] } = this.data;
+
+    const m: { [k: string]: { min: number; max: number } } = {};
+
+    Object.keys(columnInfo).forEach((col) => {
+      const [min = -1, max = -1] = extent(values.map((v) => v[col]) as number[]);
+
+      m[col] = { min, max };
+    });
+
+    return m;
+  }
+
+  get dataPoints() {
+    return this.computeDataPoints(this.state, this.rawDataPoints);
+  }
+
+  computeDataPoints(state: ViewState, rawDataPoints: DataPoint[]) {
+    if (rawDataPoints.length === 0) return rawDataPoints;
+
+    const data: { [k: string]: DataPoint } = {};
+
+    rawDataPoints
+      .filter((d) => !state.filteredPoints.includes(d.id))
+      .forEach((d) => (data[d.id] = d));
+
+    const { labels, categoryAssignments } = state;
+
+    Object.entries(labels).forEach(([label, points]) => {
+      points.forEach((p) => {
+        if (!data[p][CUSTOM_LABEL]) data[p] = { ...data[p], [CUSTOM_LABEL]: [label] };
+        else data[p][CUSTOM_LABEL].push(label);
+      });
+    });
+
+    Object.entries(categoryAssignments).forEach(([category, valueMap]) => {
+      Object.entries(valueMap).forEach(([value, points]) => {
+        points.forEach((p) => {
+          const d = data[p];
+
+          if (!d[CUSTOM_CATEGORY_ASSIGNMENT]) d[CUSTOM_CATEGORY_ASSIGNMENT] = {};
+
+          d[CUSTOM_CATEGORY_ASSIGNMENT][category] = value;
+
+          data[p] = d;
+        });
+      });
+    });
+
+    return Object.values(data);
+  }
+
   get doesHaveCategories() {
     if (!this.data) return false;
 
@@ -105,7 +183,15 @@ export default class ExploreStore {
   }
 
   get state() {
-    return this.getState(this.provenance.current.id);
+    const id = this.provenance.current.id;
+    const st = this.getState(id);
+
+    const scatterplots = Object.values(st.views).filter(
+      (c) => c.type === 'Scatterplot',
+    ) as ScatterplotView[];
+    const pcps = Object.values(st.views).filter((c) => c.type === 'PCP') as PCPView[];
+
+    return { ...st, scatterplots, pcps };
   }
 
   get provenance() {
@@ -125,6 +211,7 @@ export default class ExploreStore {
         i_type: 'ViewSpec',
         id: getPlotId(),
         type: 'Scatterplot',
+        action: 'Add',
         x: this.data.numericColumns[0],
         y: this.data.numericColumns[1],
       };
@@ -134,6 +221,7 @@ export default class ExploreStore {
       const spec: ScatterplotSpec = {
         i_type: 'ViewSpec',
         id: getPlotId(),
+        action: 'Add',
         type: 'Scatterplot',
         x,
         y,
@@ -143,30 +231,37 @@ export default class ExploreStore {
     }
   };
 
-  selectPointsFreeform = (points: string[], view: ViewSpec) => {
+  selectPointsFreeform = (points: string[], view: View) => {
     if (!this.data) return;
 
-    const pointSelection: PointSelection = {
-      i_type: 'PointSelection',
-      type: 'Selection',
-      view,
+    const spec = view.spec;
+
+    const pointSelection: Selection = {
+      i_type: 'Selection',
+      type: 'Point',
+      action: 'Selection',
+      spec,
+      dimensions: getDimensionsFromViewSpec(spec),
       ids: points,
     };
 
     this.provenance.apply(addPointSelection(pointSelection), `Select ${points.length} points`);
   };
 
-  unselectPointsFreeform = (points: string[], view: ViewSpec) => {
+  unselectPointsFreeform = (points: string[], view: View) => {
     if (!this.data) return;
+    const spec = view.spec;
 
-    const currentViewSelections = this.state.views[view.id].freeformSelections;
+    const currentViewSelections = this.state.views[spec.id].freeformSelections;
 
     const ids = points.filter((p) => currentViewSelections.includes(p));
 
-    const pointSelection: PointSelection = {
-      i_type: 'PointSelection',
-      type: 'Deselection',
-      view,
+    const pointSelection: Selection = {
+      i_type: 'Selection',
+      type: 'Point',
+      action: 'Deselection',
+      spec,
+      dimensions: getDimensionsFromViewSpec(spec),
       ids,
     };
 
@@ -174,80 +269,77 @@ export default class ExploreStore {
   };
 
   handleBrushSelection = (
-    view: ViewSpec,
+    _spec: View,
     brushes: BrushCollection,
     type: BrushAffectType,
     affectedId: string,
   ) => {
     const currentBrush = brushes[affectedId];
 
+    const spec = _spec.spec;
+
     switch (type) {
       case 'Add': {
         const { x1, x2, y1, y2 } = currentBrush.extents;
 
-        const v = view as ScatterplotSpec;
+        if (spec.type === 'Scatterplot') {
+          const extents = {
+            [spec.x]: [x1, x2] as [number, number],
+            [spec.y]: [y1, y2] as [number, number],
+          };
 
-        const extent = {
-          [v.x]: {
-            min: x1,
-            max: x2,
-          },
-          [v.y]: {
-            min: y1,
-            max: y2,
-          },
-        };
-        this.provenance.apply(
-          addBrush({
-            i_type: 'BrushSelection',
-            view,
-            id: currentBrush.id,
-            extents: extent,
-            type: 'Add',
-          }),
-          'Add Brush',
-        );
+          this.provenance.apply(
+            addBrush({
+              i_type: 'Selection',
+              type: 'Brush',
+              brushId: currentBrush.id,
+              action: 'Add',
+              spec,
+              dimensions: getDimensionsFromViewSpec(spec),
+              extents,
+            }),
+            'Add Brush',
+          );
+        }
         break;
       }
       case 'Update': {
         const { x1, x2, y1, y2 } = currentBrush.extents;
 
-        const v = view as ScatterplotSpec;
+        if (spec.type === 'Scatterplot') {
+          const extents = {
+            [spec.x]: [x1, x2] as [number, number],
+            [spec.y]: [y1, y2] as [number, number],
+          };
 
-        const extent = {
-          [v.x]: {
-            min: x1,
-            max: x2,
-          },
-          [v.y]: {
-            min: y1,
-            max: y2,
-          },
-        };
-        this.provenance.apply(
-          updateBrush({
-            i_type: 'BrushSelection',
-            id: currentBrush.id,
-            extents: extent,
-            type: 'Update',
-            view,
-          }),
-          'Update Brush',
-        );
+          this.provenance.apply(
+            updateBrush({
+              i_type: 'Selection',
+              type: 'Brush',
+              brushId: currentBrush.id,
+              action: 'Update',
+              spec,
+              dimensions: getDimensionsFromViewSpec(spec),
+              extents,
+            }),
+            'Update Brush',
+          );
+        }
         break;
       }
       case 'Remove':
         this.provenance.apply(
           removeBrush({
-            i_type: 'BrushSelection',
-            id: affectedId,
-            view,
-            type: 'Remove',
+            i_type: 'Selection',
+            type: 'Brush',
+            brushId: affectedId,
+            action: 'Remove',
+            spec,
+            dimensions: getDimensionsFromViewSpec(spec),
             extents: {},
           }),
           'Remove Brush',
         );
-
         break;
       case 'Clear':
       default:
@@ -255,9 +347,41 @@ export default class ExploreStore {
     }
   };
 
+  handleIntentSelection = (prediction: Prediction) => {};
+
+  handleFilter = (filterType: 'In' | 'Out') => {
+    this.provenance.apply(
+      addFilter({
+        i_type: 'Filter',
+        action: filterType,
+      }),
+      `Filter ${filterType}`,
+    );
+  };
+
+  handleLabelling = (label: string) => {};
+
+  handleCategorization = (category: string, value: string) => {};
+
+  handleAggregate = (by: 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max') => {};
+
+  handleReplace = (id: string, drop: true) => {};
+
   // Mobx Actions
-  toggleShowCategories = () => {
-    this.showCategories = !this.showCategories;
+  switchBrush = (btype: BrushType) => {
+    if (this.root.opts.debug === 'on') {
+      localStorage.setItem('btype', btype);
+    }
+
+    this.brushType = btype;
+  };
+
+  toggleShowCategories = (show: unknown | null = null) => {
+    if (typeof show === 'boolean') {
+      this.showCategories = show;
+    } else {
+      this.showCategories = !this.showCategories;
+    }
   };
 
   changeCategoryColumn = (col: string | null) => {
@@ -267,91 +391,124 @@ export default class ExploreStore {
     else throw new Error('Undefined column');
   };
 
-  updateVisState = (state: VisState, interactions: Interactions): VisState => {
+  updateVisState = (_state: ViewState, interactions: Interactions): ViewState => {
+    let state = deepCopy(_state);
     const latest = interactions[interactions.length - 1];
+    const currState = JSON.parse(JSON.stringify(state));
 
     switch (latest.i_type) {
       case 'ViewSpec':
-        state.views[latest.id] = {
-          ...latest,
-          freeformSelections: [],
-          brushes: {},
-          brushSelections: {},
-        };
-        break;
-      case 'PointSelection': {
-        const view_id = latest.view.id;
-        const priorSels = state.views[view_id].freeformSelections;
-
-        if (latest.type === 'Selection') {
-          priorSels.push(...latest.ids);
-          state.views[view_id].freeformSelections = [...new Set(priorSels)];
+        if (latest.type === 'Scatterplot') {
+          state.views[latest.id] = {
+            id: latest.id,
+            type: 'Scatterplot',
+            x: latest.x,
+            y: latest.y,
+            spec: latest,
+            freeformSelections: [],
+            brushes: {},
+            brushSelections: {},
+          };
         } else {
-          const newSels = priorSels.filter((p) => !latest.ids.includes(p));
-          state.views[view_id].freeformSelections = [...new Set(newSels)];
+          state.views[latest.id] = {
+            id: latest.id,
+            type: 'PCP',
+            spec: latest,
+            dimensions: latest.dimensions,
+            freeformSelections: [],
+            brushes: {},
+            brushSelections: {},
+          };
         }
         break;
-      }
-      case 'BrushSelection': {
-        const {
-          view: { id: view_id },
-          type,
-          id: brush_id,
-        } = latest;
+      // View Spec Ends
+      case 'Selection': {
+        const view_id = latest.spec.id;
+        const view = state.views[view_id];
 
-        switch (type) {
-          case 'Add':
-          case 'Update': {
-            const { view, extents } = latest;
+        switch (latest.type) {
+          case 'Point': {
+            let currSels = view.freeformSelections;
 
-            const v = view as ScatterplotSpec;
+            switch (latest.action) {
+              case 'Selection': {
+                currSels.push(...latest.ids);
 
-            const [x1, x2, y1, y2] = [
-              extents[v.x].min,
-              extents[v.x].max,
-              extents[v.y].min,
-              extents[v.y].max,
-            ];
-            state.views[view_id].brushes[brush_id] = {
-              id: brush_id,
-              extents: {
-                x1,
-                x2,
-                y1,
-                y2,
-              },
-            };
+                break;
+              }
+              case 'Deselection': {
+                currSels = [...new Set(currSels.filter((p) => !latest.ids.includes(p)))];
 
-            const dataPoints = this.data?.values || [];
+                break;
+              }
+            }
 
-            const selected_ids: string[] = dataPoints
-              .filter((point) => {
-                const { x: x_col, y: y_col } = v;
-                const [x, y] = [point[x_col] as number, point[y_col] as number];
+            state.views[view_id].freeformSelections = [...new Set(currSels)];
 
-                if (
-                  x >= extents[x_col].min &&
-                  x <= extents[x_col].max &&
-                  y >= extents[y_col].min &&
-                  y <= extents[y_col].max
-                )
-                  return true;
-
-                return false;
-              })
-              .map((d) => d.id);
-
-            state.views[view_id].brushSelections[brush_id] = selected_ids;
             break;
           }
-          case 'Remove':
-            if (state.views[view_id].brushes[brush_id])
-              delete state.views[view_id].brushes[brush_id];
+          case 'Brush': {
+            const brush_id = latest.brushId;
 
-            if (state.views[view_id].brushSelections[brush_id])
-              delete state.views[view_id].brushSelections[brush_id];
+            switch (latest.action) {
+              case 'Add':
+              case 'Update': {
+                const { extents } = latest;
+
+                if (latest.spec.type === 'Scatterplot') {
+                  const { x1, x2, y1, y2 } = extentToBrushExtent(
+                    extents,
+                    latest.spec.x,
+                    latest.spec.y,
+                  );
+
+                  const selectedIds = getSelectedPoints(
+                    extents,
+                    this.computeDataPoints(currState, this.rawDataPoints),
+                    latest.spec.x,
+                    latest.spec.y,
+                  );
+
+                  state.views[view_id].brushes[brush_id] = {
+                    id: brush_id,
+                    extents: { x1, x2, y1, y2 },
+                  };
+
+                  state.views[view_id].brushSelections[brush_id] = selectedIds;
+                } else {
+                  // ! Implement PCP Brush
+                }
+
+                break;
+              }
+              case 'Remove': {
+                delete state.views[view_id].brushes[brush_id];
+                delete state.views[view_id].brushSelections[brush_id];
+
+                break;
+              }
+            }
+
             break;
+          }
         }
+
+        break;
+      }
+      case 'Filter': {
+        const { action } = latest;
+        const filteredPoints = state.filteredPoints;
+        const sels = getSelections(state);
+
+        if (action === 'In') {
+          const filterOut = this.rawDataPoints.filter((d) => !sels.includes(d.id)).map((d) => d.id);
+          state.filteredPoints.push(...filterOut);
+        } else {
+          state.filteredPoints.push(...sels);
+        }
+
+        state.filteredPoints = filteredPoints;
+        state = clearSelections(state);
 
         break;
       }
@@ -362,8 +519,8 @@ export default class ExploreStore {
     return state;
   };
 
-  getState = (nodeid: NodeID): VisState => {
-    if (!this.datasetId) return defaultVisState;
+  getState = (nodeid: NodeID): ViewState => {
+    if (!this.datasetId) return defaultViewState;
 
     let stateRecord = this.record[this.datasetId];
 
@@ -382,7 +539,7 @@ export default class ExploreStore {
         const { interactions } = this.provenance.getState(current);
         visState = this.updateVisState(parentVisState, interactions);
       } else {
-        visState = deepCopy(defaultVisState);
+        visState = deepCopy(defaultViewState);
       }
 
       this.record[this.datasetId][current.id] = visState;

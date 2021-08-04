@@ -1,9 +1,10 @@
-import { Tooltip } from '@material-ui/core';
+import { Box, Tooltip } from '@material-ui/core';
 import clsx from 'clsx';
 import { ScaleLinear, symbol, SymbolType } from 'd3';
 import { observer } from 'mobx-react';
-import { FC, useMemo } from 'react';
+import { FC, useContext, useMemo } from 'react';
 
+import { CategoryContext } from '../../contexts/CategoryContext';
 import translate from '../../utils/transform';
 import { BrushSelections } from '../Brushes/Rectangular Brush/Components/BrushComponent';
 
@@ -29,6 +30,9 @@ const Marks: FC<Props> = ({
 }) => {
   const classes = useScatterplotStyle();
 
+  // Maybe get as prop
+  const { hoveredCategory = null } = useContext(CategoryContext) || {};
+
   // Hack behaviour to combine
   const selectedPoints: string[] = useMemo(() => {
     const sels: string[] = [...freeformSelections];
@@ -38,23 +42,26 @@ const Marks: FC<Props> = ({
     return [...new Set(sels)];
   }, [freeformSelections, brushSelections]);
 
+  const cls = (point: ScatterplotPoint) => {
+    return clsx('marks', {
+      [classes.unionMark]: selectedPoints.includes(point.id),
+      [classes.regularMark]: !selectedPoints.includes(point.id),
+      [classes.dullMark]: hoveredCategory !== null && hoveredCategory !== point.category,
+    });
+  };
+
   const mark = (point: ScatterplotPoint) =>
     symbolMap ? (
       <path
-        className={clsx('marks', {
-          [classes.unionMark]: selectedPoints.includes(point.id),
-          [classes.regularMark]: !selectedPoints.includes(point.id),
-        })}
+        className={cls(point)}
         d={symbol(symbolMap[point.category || '-']).size(80)() || ''}
+        id={`mark${point.id}`}
         opacity="0.5"
         transform={translate(xScale(point.x), yScale(point.y))}
       />
     ) : (
       <circle
-        className={clsx('marks', {
-          [classes.unionMark]: selectedPoints.includes(point.id),
-          [classes.regularMark]: !selectedPoints.includes(point.id),
-        })}
+        className={cls(point)}
         cx={xScale(point.x)}
         cy={yScale(point.y)}
         id={`mark${point.id}`}
@@ -67,7 +74,15 @@ const Marks: FC<Props> = ({
     <>
       {datapoints.map((point) => {
         return (
-          <Tooltip key={point.id} title={point.tooltip ? point.tooltip : point.label}>
+          // <Tooltip key={point.id} title={point.tooltip ? point.tooltip : point.label}>
+          <Tooltip
+            key={point.id}
+            title={
+              <Box>
+                <pre>{JSON.stringify(point, null, 2)}</pre>
+              </Box>
+            }
+          >
             {mark(point)}
           </Tooltip>
         );

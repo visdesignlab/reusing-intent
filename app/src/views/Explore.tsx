@@ -1,7 +1,7 @@
-import { makeStyles } from '@material-ui/core';
+import { Button, ButtonGroup, makeStyles } from '@material-ui/core';
 import { symbols, SymbolType } from 'd3';
 import { observer } from 'mobx-react';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 
 import Visualization from '../components/Visualization';
@@ -21,6 +21,9 @@ const useStyles = makeStyles(() => ({
 const Explore = () => {
   const styles = useStyles();
   const {
+    provenance,
+    isAtRoot,
+    isAtLatest,
     projectStore: { dataset_id },
     exploreStore: {
       addScatterplot,
@@ -30,19 +33,22 @@ const Explore = () => {
       state: { views },
     },
   } = useStore();
+  const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
   const categories = useMemo(() => {
     return selectedCategoryColumn ? data?.columnInfo[selectedCategoryColumn].options || [] : [];
   }, [data, selectedCategoryColumn]);
 
   const categoryMap = useMemo(() => {
-    if (categories.length > symbols.length)
-      throw new Error(`Cannot support more categorical values than ${symbols.length}`);
+    if (categories.length > symbols.length - 1)
+      throw new Error(`Cannot support more categorical values than ${symbols.length - 1}`);
 
-    const catMap: { [key: string]: SymbolType } = {};
+    const catMap: { [key: string]: SymbolType } = {
+      Unassigned: symbols[0],
+    };
 
     categories.forEach((d, i) => {
-      catMap[d] = symbols[i];
+      catMap[d] = symbols[i + 1];
     });
 
     return catMap;
@@ -59,15 +65,41 @@ const Explore = () => {
   return (
     <>
       <div className={styles.root}>
-        <CategoryContext.Provider
-          value={{
-            showCategory: showCategories,
-            selectedCategoryColumn,
-            categoryMap,
-          }}
-        >
-          <Visualization />
-        </CategoryContext.Provider>
+        <div>
+          <CategoryContext.Provider
+            value={{
+              showCategory: showCategories,
+              selectedCategoryColumn,
+              categoryMap,
+              hoveredCategory,
+              setHoveredCategory,
+            }}
+          >
+            <Visualization />
+          </CategoryContext.Provider>
+        </div>
+        <div>Test</div>
+        <div>
+          <ButtonGroup>
+            <Button disabled={isAtRoot} onClick={() => provenance.undo()}>
+              Undo
+            </Button>
+            <Button disabled={isAtLatest} onClick={() => provenance.redo()}>
+              Redo
+            </Button>
+          </ButtonGroup>
+
+          {Object.values(provenance.graph.nodes)
+            .sort((a, b) => (a.metadata.createdOn || -1) - (b.metadata.createdOn || -1))
+            .map((d) => (
+              <div
+                key={d.id}
+                style={{ color: provenance.graph.current === d.id ? 'red' : 'black' }}
+              >
+                {d.label}
+              </div>
+            ))}
+        </div>
       </div>
     </>
   );

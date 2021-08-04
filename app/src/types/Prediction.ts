@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Modify reapply-workflows/reapply_workflows/inference/prediction.py in conjunction
 
-type Intent =
+type IntentType =
   | 'Cluster'
   | 'Outlier'
   | 'Linear Regression'
@@ -15,10 +16,6 @@ type Algorithm =
   | 'Isolation Forest'
   | 'BNL';
 
-type Info = { [key: string]: unknown };
-
-type Params = { [key: string]: unknown };
-
 type PredictionStats = {
   ipns: string[];
   isnp: string[];
@@ -26,10 +23,10 @@ type PredictionStats = {
 };
 
 export type Prediction = {
-  intent: Intent;
+  intent: IntentType;
   algorithm: Algorithm;
-  info: Info;
-  params: Params;
+  info: any;
+  params: any;
   rank_jaccard: number;
   rank_auto_complete: number;
   rank_nb: number;
@@ -37,3 +34,9 @@ export type Prediction = {
   members: string[];
   membership_stats: PredictionStats;
 };
+
+export type Intent = Pick<Prediction, 'intent' | 'algorithm' | 'params' | 'dimensions'>;
+
+export function predictionToIntent({ intent, algorithm, params, dimensions }: Prediction): Intent {
+  return { intent, algorithm, params, dimensions };
+}

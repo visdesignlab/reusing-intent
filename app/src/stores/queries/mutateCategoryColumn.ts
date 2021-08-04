@@ -9,6 +9,11 @@ const ADD_CATEGORY = gql`
     addCategoryColumn(projectId: $projectId, columnName: $columnName, options: $options) {
       errors
       success
+      columnInfo
+      numericColumns
+      categoricalColumns
+      labelColumn
+      columns
     }
   }
 `;

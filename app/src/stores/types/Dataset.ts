@@ -6,7 +6,8 @@ export type Dataset = {
   project_id: string;
 };
 
-export type DataPoint = { id: string; iid: string; [key: string]: string | number };
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type DataPoint = { id: string; iid: string; [key: string]: string | number | any };
 
 type BaseColumn = {
   fullname: string;
@@ -37,9 +38,9 @@ type IidColumn = BaseColumn & {
 
 type Column = NumericColumn | CategoricalColumn | LabelColumn | IdColumn | IidColumn;
 
-type ColumnInfo = { [key: string]: Column };
+export type ColumnInfo = { [key: string]: Column };
 
-type Cols = {
+export type Data = {
   success: boolean;
   errors: string[];
   id: string;
@@ -48,16 +49,9 @@ type Cols = {
   categoricalColumns: string[];
   labelColumn: string;
   columns: string[];
-};
-
-export type Data = Cols & {
   values: DataPoint[];
 };
 
 export type DataResult = {
   data: Data;
-};
-
-export type ColumnResult = {
-  data: Cols;
 };

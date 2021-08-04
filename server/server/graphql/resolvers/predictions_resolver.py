@@ -1,14 +1,15 @@
+import json
 from io import BytesIO
 
 import pandas as pd
 from reapply_workflows.inference.inference import Inference
-from reapply_workflows.inference.intent import Intent as IRW
+from reapply_workflows.inference.interaction import Interactions
 
 from ...db.models.dataset_record import DatasetRecord
 from ...db.models.intent import Intent
 
 
-def resolve_predictions(*_, record_id):
+def resolve_predictions(*_, record_id, interactions):
     try:
         record = DatasetRecord.query.filter_by(id=record_id).first()
 
@@ -29,6 +30,10 @@ def resolve_predictions(*_, record_id):
         inference = Inference(data, user_sel, dimensions, [])
 
         predictions = inference.predict()
+
+        interactions = Interactions(interactions)
+
+        print(interactions.inferSelectionsAndDimensions(data))
 
         payload = {
             "success": True,

@@ -19,4 +19,10 @@ type Project {
 type CategoryResult {
   success: Boolean!
   errors: [String]
+  id: ID!
+  columnInfo: ColumnInfo
+  numericColumns: [String]
+  categoricalColumns: [String]
+  labelColumn: String
+  columns: [String]
 }
