@@ -1,22 +1,35 @@
-import { Button, ButtonGroup, makeStyles } from '@material-ui/core';
-import { symbols, SymbolType } from 'd3';
+import { Button, ButtonGroup, createStyles, makeStyles } from '@material-ui/core';
+import { schemeSet1, symbols, SymbolType } from 'd3';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 
+import SidePanel from '../components/SidePanel';
 import Visualization from '../components/Visualization';
-import { CategoryContext } from '../contexts/CategoryContext';
+import { AggMap, GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import { useStore } from '../stores/RootStore';
 
-const useStyles = makeStyles(() => ({
-  root: {
-    display: 'grid',
-    gridTemplateColumns: '5fr 2fr 1fr',
-    height: '100vh',
-    width: '100vw',
-    overflow: 'hidden',
-  },
-}));
+const useStyles = makeStyles(() => {
+  const c: any = {};
+
+  schemeSet1.forEach((col) => {
+    c[col] = { fill: col };
+  });
+
+  return createStyles({
+    root: {
+      display: 'grid',
+      gridTemplateColumns: 'min-content 5fr 2fr 1fr',
+      height: '100vh',
+      width: '100vw',
+      overflow: 'hidden',
+    },
+    subroot: {
+      overflow: 'hidden',
+    },
+    ...c,
+  });
+});
 
 const Explore = () => {
   const styles = useStyles();
@@ -30,14 +43,35 @@ const Explore = () => {
       data,
       showCategories,
       selectedCategoryColumn,
-      state: { views },
+      state: { views, labels },
     },
   } = useStore();
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+  const [aggregateOptions, setAggregateOptions] = useState<AggMap | null>(null);
+
+  const aggOpt = localStorage.getItem('aggOpt');
+
+  useEffect(() => {
+    if (JSON.stringify(aggregateOptions) !== aggOpt) {
+      if (aggOpt) {
+        setAggregateOptions(JSON.parse(aggOpt));
+      }
+    }
+  }, [aggregateOptions, aggOpt]);
 
   const categories = useMemo(() => {
     return selectedCategoryColumn ? data?.columnInfo[selectedCategoryColumn].options || [] : [];
   }, [data, selectedCategoryColumn]);
+
+  const labelMap = useMemo(() => {
+    const m: { [key: string]: string } = {};
+
+    Object.keys(labels).forEach((l, i) => {
+      m[l] = styles[schemeSet1[i]];
+    });
+
+    return m;
+  }, [labels, styles]);
 
   const categoryMap = useMemo(() => {
     if (categories.length > symbols.length - 1)
@@ -65,41 +99,45 @@ const Explore = () => {
   return (
     <>
       <div className={styles.root}>
-        <div>
-          <CategoryContext.Provider
-            value={{
-              showCategory: showCategories,
-              selectedCategoryColumn,
-              categoryMap,
-              hoveredCategory,
-              setHoveredCategory,
-            }}
-          >
+        <GlobalPlotAttributeContext.Provider
+          value={{
+            showCategory: showCategories,
+            selectedCategoryColumn,
+            categoryMap,
+            labelMap,
+            hoveredCategory,
+            setHoveredCategory,
+            aggregateOptions,
+            setAggregateOptions,
+          }}
+        >
+          <SidePanel />
+          <div className={styles.subroot}>
             <Visualization />
-          </CategoryContext.Provider>
-        </div>
-        <div>Test</div>
-        <div>
-          <ButtonGroup>
-            <Button disabled={isAtRoot} onClick={() => provenance.undo()}>
-              Undo
-            </Button>
-            <Button disabled={isAtLatest} onClick={() => provenance.redo()}>
-              Redo
-            </Button>
-          </ButtonGroup>
+          </div>
+          <div>Test</div>
+          <div>
+            <ButtonGroup>
+              <Button disabled={isAtRoot} onClick={() => provenance.undo()}>
+                Undo
+              </Button>
+              <Button disabled={isAtLatest} onClick={() => provenance.redo()}>
+                Redo
+              </Button>
+            </ButtonGroup>
 
-          {Object.values(provenance.graph.nodes)
-            .sort((a, b) => (a.metadata.createdOn || -1) - (b.metadata.createdOn || -1))
-            .map((d) => (
-              <div
-                key={d.id}
-                style={{ color: provenance.graph.current === d.id ? 'red' : 'black' }}
-              >
-                {d.label}
-              </div>
-            ))}
-        </div>
+            {Object.values(provenance.graph.nodes)
+              .sort((a, b) => (a.metadata.createdOn || -1) - (b.metadata.createdOn || -1))
+              .map((d) => (
+                <div
+                  key={d.id}
+                  style={{ color: provenance.graph.current === d.id ? 'red' : 'black' }}
+                >
+                  {d.label}
+                </div>
+              ))}
+          </div>
+        </GlobalPlotAttributeContext.Provider>
       </div>
     </>
   );

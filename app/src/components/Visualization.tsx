@@ -13,12 +13,10 @@ import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@material-ui/lab';
 import { observer } from 'mobx-react';
 import { useCallback, useContext, useState } from 'react';
 
-import { CategoryContext } from '../contexts/CategoryContext';
-import { CUSTOM_CATEGORY_ASSIGNMENT, CUSTOM_LABEL } from '../stores/ExploreStore';
+import { GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import { useStore } from '../stores/RootStore';
 
 import Scatterplot, { ScatterplotPoint } from './Scatterplot/Scatterplot';
-import SidePanel from './SidePanel/';
 
 // type StyleProps = { dimension: number; showCategories: boolean };
 
@@ -29,9 +27,8 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       display: 'grid',
       overflow: 'hidden',
-      gridTemplateColumns: 'min-content auto',
       gridTemplateRows: 'min-content auto',
-      gridTemplateAreas: "'side version' 'side vis'",
+      gridTemplateAreas: "'version' 'vis'",
     }),
     chips: {
       gridArea: 'version',
@@ -89,6 +86,7 @@ const Visualization = () => {
       selectPointsFreeform,
       brushType,
       dataPoints,
+      aggregate,
       unselectPointsFreeform,
       handleBrushSelection,
       data,
@@ -102,7 +100,7 @@ const Visualization = () => {
   const spContainerDimension = 500;
 
   const { showCategory = false, selectedCategoryColumn = null, categoryMap = {} } =
-    useContext(CategoryContext) || {};
+    useContext(GlobalPlotAttributeContext) || {};
 
   const styles = useStyles({ dimension: spContainerDimension, showCategory });
 
@@ -130,17 +128,25 @@ const Visualization = () => {
     const { x, y } = view;
 
     let points: ScatterplotPoint[] = [];
+    let aggregatePoints: ScatterplotPoint[] = [];
 
     if (data) {
       points = dataPoints.map((d) => ({
-        id: d.id as string,
         x: d[x] as number,
         y: d[y] as number,
         label: d[data.labelColumn] as string,
         category:
           showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-',
-        [CUSTOM_LABEL]: d[CUSTOM_LABEL],
-        [CUSTOM_CATEGORY_ASSIGNMENT]: d[CUSTOM_CATEGORY_ASSIGNMENT],
+        ...d,
+      }));
+
+      aggregatePoints = aggregate.map((d) => ({
+        x: d[x] as number,
+        y: d[y] as number,
+        label: d[data.labelColumn] as string,
+        category:
+          showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-',
+        ...d,
       }));
     }
 
@@ -158,6 +164,7 @@ const Visualization = () => {
           <Scatterplot
             _x_extents={[x_range.min, x_range.max]}
             _y_extents={[y_range.min, y_range.max]}
+            aggregatePoints={aggregatePoints}
             brushType={brushType}
             categoryMap={categoryMap}
             freeformBrushHandler={(points, view, action) => {
@@ -182,7 +189,6 @@ const Visualization = () => {
   return (
     <>
       <div className={styles.root}>
-        <SidePanel classes={styles.sidePanel} />
         <div className={styles.chips}>
           {project.datasets.map((d) => (
             <Chip

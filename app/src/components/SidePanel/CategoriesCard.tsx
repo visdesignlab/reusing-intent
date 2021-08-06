@@ -21,7 +21,7 @@ import { symbol, symbols } from 'd3';
 import { observer } from 'mobx-react';
 import { FormEvent, useContext, useMemo, useState } from 'react';
 
-import { CategoryContext } from '../../contexts/CategoryContext';
+import { GlobalPlotAttributeContext } from '../../contexts/CategoryContext';
 import { useStore } from '../../stores/RootStore';
 
 import Symbol from './Symbol';
@@ -58,12 +58,8 @@ const CategoriesCard = () => {
     projectStore: { addCategoryColumn },
   } = useStore();
 
-  const {
-    showCategory = false,
-    selectedCategoryColumn = null,
-    categoryMap = {},
-    setHoveredCategory,
-  } = useContext(CategoryContext) || {};
+  const { showCategory = false, selectedCategoryColumn = null, categoryMap = {} } =
+    useContext(GlobalPlotAttributeContext) || {};
 
   const categoryOptions: CategoryOption[] = useMemo(() => {
     if (!data) return [];
@@ -163,7 +159,6 @@ const CategoriesCard = () => {
                 disabled={!showCategory}
                 label={col}
                 path={symbol(sym).size(100)()}
-                onHover={setHoveredCategory}
               />
             ))}
           </CardContent>

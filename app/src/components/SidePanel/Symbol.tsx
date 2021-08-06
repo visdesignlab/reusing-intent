@@ -2,6 +2,7 @@ import { Button, makeStyles } from '@material-ui/core';
 import { observer } from 'mobx-react';
 import { FC } from 'react';
 
+import { useStore } from '../../stores/RootStore';
 import translate from '../../utils/transform';
 
 const useStyles = makeStyles({
@@ -14,11 +15,13 @@ type Props = {
   disabled?: boolean;
   label: string;
   path: string | null;
-  onHover?: (cat: string | null) => void;
 };
 
-const Symbol: FC<Props> = ({ disabled = false, path, label, onHover }) => {
+const Symbol: FC<Props> = ({ disabled = false, path, label }) => {
   const styles = useStyles();
+  const {
+    exploreStore: { setHighlightMode, setHighlightPredicate },
+  } = useStore();
 
   return (
     <div className={styles.root}>
@@ -30,10 +33,12 @@ const Symbol: FC<Props> = ({ disabled = false, path, label, onHover }) => {
           </svg>
         }
         onMouseEnter={() => {
-          if (onHover) onHover(label);
+          setHighlightMode(true);
+          setHighlightPredicate((p) => p.category === label);
         }}
         onMouseLeave={() => {
-          if (onHover) onHover(null);
+          setHighlightMode(false);
+          setHighlightPredicate(null);
         }}
       >
         {label}

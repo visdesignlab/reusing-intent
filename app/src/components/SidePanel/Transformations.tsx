@@ -15,6 +15,9 @@ import { useState } from 'react';
 
 import { useStore } from '../../stores/RootStore';
 
+import AggregationPanel from './AggregationPanel';
+import Labels from './Labels';
+
 const useStyles = makeStyles(() =>
   createStyles({
     root: {
@@ -84,17 +87,8 @@ const Transformations = () => {
           </Menu>
         </Box>
 
-        <Box m={1}>
-          <Button color="primary" variant="outlined">
-            Label
-          </Button>
-        </Box>
-
-        <Box m={1}>
-          <Button color="primary" variant="outlined">
-            Aggregate
-          </Button>
-        </Box>
+        <Labels />
+        <AggregationPanel />
       </CardContent>
     </Card>
   );

@@ -6,6 +6,7 @@ import { useCallback, useMemo } from 'react';
 
 import useScale from '../../hooks/useScale';
 import { BrushSizeMap, BrushType } from '../../stores/ExploreStore';
+import { useStore } from '../../stores/RootStore';
 import { ScatterplotView } from '../../stores/ViewState';
 import translate from '../../utils/transform';
 import FreeFormBrush, { FreeformBrushAction, FreeformBrushEvent } from '../Brushes/FreeFormBrush';
@@ -41,6 +42,7 @@ export type ScatterplotPoint = {
 type Props = {
   view: ScatterplotView;
   points: ScatterplotPoint[];
+  aggregatePoints: ScatterplotPoint[];
   size: number;
   xAxisLabel: string | JSX.Element | ((x_col: string) => string | JSX.Element);
   yAxisLabel: string | JSX.Element | ((y_col: string) => string | JSX.Element);
@@ -73,6 +75,7 @@ const Scatterplot = ({
   brushType,
   points,
   freeformBrushHandler,
+  aggregatePoints,
   showCategories,
   categoryMap = null,
   rectangularBrushHandler,
@@ -86,6 +89,10 @@ const Scatterplot = ({
   const styles = useStyles({ dimension: plotSize });
   const scatterplotStyles = useScatterplotStyle();
   // Dimensions Calculated
+
+  const {
+    exploreStore: { highlightMode, highlightPredicate },
+  } = useStore();
 
   // Get Scales
   const { x_extents, y_extents } = useMemo(() => {
@@ -202,9 +209,22 @@ const Scatterplot = ({
           type="left"
         />
         <Marks
+          brushSelections={{}}
+          datapoints={aggregatePoints}
+          freeformSelections={[]}
+          highlightMode={highlightMode}
+          highlightPredicate={() => false}
+          symbolMap={null}
+          type="Aggregate"
+          xScale={xScale}
+          yScale={yScale}
+        />
+        <Marks
           brushSelections={view.brushSelections}
           datapoints={points}
           freeformSelections={view.freeformSelections}
+          highlightMode={highlightMode}
+          highlightPredicate={highlightPredicate}
           symbolMap={showCategories ? categoryMap : null}
           xScale={xScale}
           yScale={yScale}

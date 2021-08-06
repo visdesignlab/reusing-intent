@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
-import { extent } from 'd3';
+import { extent, max, mean, median, min, sum } from 'd3';
 import { action, makeAutoObservable, reaction, when } from 'mobx';
 
 import { BrushSize } from '../components/Brushes/FreeFormBrush';
@@ -9,6 +9,7 @@ import {
   BrushAffectType,
   BrushCollection,
 } from '../components/Brushes/Rectangular Brush/Types/Brush';
+import { ScatterplotPoint } from '../components/Scatterplot/Scatterplot';
 import {
   extentToBrushExtent,
   getDimensionsFromViewSpec,
@@ -19,13 +20,16 @@ import {
 } from '../types/Interactions';
 import { Prediction } from '../types/Prediction';
 import deepCopy from '../utils/DeepCopy';
-import { getPlotId } from '../utils/IDGens';
+import { getAggregateID, getPlotId } from '../utils/IDGens';
 
+import { AggMap } from './../contexts/CategoryContext';
 import {
+  addAggregate,
   addBrush,
   addFilter,
   addPointSelection,
   addScatterplot,
+  assignLabel,
   removeBrush,
   updateBrush,
 } from './provenance/actions';
@@ -58,12 +62,18 @@ export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
   'Freeform Large': 50,
 };
 
+export type HighlightPredicate = (point: ScatterplotPoint) => boolean;
+
 export default class ExploreStore {
   root: RootStore;
   plotType: 'scatterplot' | 'pcp' | 'none' = 'none';
   showCategories = false;
   selectedCategoryColumn: string | null = null;
   brushType: BrushType = 'Freeform Medium';
+  showLabelLayer = true;
+  highlightMode = false;
+  highlightPredicate: HighlightPredicate | null = null;
+  hideAggregateMembers = false;
 
   // Vis state
   record: DatasetRecord = {};
@@ -76,6 +86,8 @@ export default class ExploreStore {
       updateVisState: action,
       toggleShowCategories: action,
       switchBrush: action,
+      toggleLabelLayer: action,
+      toggleHideAggregateMembers: action,
     });
 
     // If category is toggled on first time, load the default category column and dispose self
@@ -141,7 +153,7 @@ export default class ExploreStore {
     return this.computeDataPoints(this.state, this.rawDataPoints);
   }
 
-  computeDataPoints(state: ViewState, rawDataPoints: DataPoint[]) {
+  computeDataPoints(state: ViewState, rawDataPoints: DataPoint[], applyTransforms = true) {
     if (rawDataPoints.length === 0) return rawDataPoints;
 
     const data: { [k: string]: DataPoint } = {};
@@ -150,30 +162,78 @@ export default class ExploreStore {
       .filter((d) => !state.filteredPoints.includes(d.id))
       .forEach((d) => (data[d.id] = d));
 
-    const { labels, categoryAssignments } = state;
+    if (applyTransforms) {
+      const { labels, categoryAssignments } = state;
 
-    Object.entries(labels).forEach(([label, points]) => {
-      points.forEach((p) => {
-        if (!data[p][CUSTOM_LABEL]) data[p] = { ...data[p], [CUSTOM_LABEL]: [label] };
-        else data[p][CUSTOM_LABEL].push(label);
-      });
-    });
-
-    Object.entries(categoryAssignments).forEach(([category, valueMap]) => {
-      Object.entries(valueMap).forEach(([value, points]) => {
+      Object.entries(labels).forEach(([label, points]) => {
         points.forEach((p) => {
-          const d = data[p];
-
-          if (!d[CUSTOM_CATEGORY_ASSIGNMENT]) d[CUSTOM_CATEGORY_ASSIGNMENT] = {};
-
-          d[CUSTOM_CATEGORY_ASSIGNMENT][category] = value;
-
-          data[p] = d;
+          if (!data[p][CUSTOM_LABEL]) data[p] = { ...data[p], [CUSTOM_LABEL]: [label] };
+          else data[p][CUSTOM_LABEL].push(label);
         });
       });
-    });
+
+      Object.entries(categoryAssignments).forEach(([category, valueMap]) => {
+        Object.entries(valueMap).forEach(([value, points]) => {
+          points.forEach((p) => {
+            const d = data[p];
+
+            if (!d[CUSTOM_CATEGORY_ASSIGNMENT]) d[CUSTOM_CATEGORY_ASSIGNMENT] = {};
+
+            d[CUSTOM_CATEGORY_ASSIGNMENT][category] = value;
+
+            data[p] = d;
+          });
+        });
+      });
+    }
 
     return Object.values(data);
+  }
+
+  get aggregate() {
+    if (!this.data) return [];
+    const points: DataPoint[] = [];
+    const data = this.computeDataPoints(this.state, this.rawDataPoints, false);
+
+    const { numericColumns, categoricalColumns, labelColumn } = this.data;
+
+    const { aggregates } = this.state;
+
+    Object.entries(aggregates).forEach(([id, agg]) => {
+      const memberPoints = data.filter((d) => agg.values.includes(d.id));
+      const point: DataPoint = {
+        id,
+        iid: id,
+      };
+
+      numericColumns.forEach((col) => {
+        switch (agg.map[col]) {
+          case 'Max':
+            point[col] = max(memberPoints.map((d) => d[col]));
+            break;
+          case 'Min':
+            point[col] = min(memberPoints.map((d) => d[col]));
+            break;
+          case 'Median':
+            point[col] = median(memberPoints.map((d) => d[col]));
+            break;
+          case 'Mean':
+            point[col] = mean(memberPoints.map((d) => d[col]));
+            break;
+          case 'Sum':
+            point[col] = sum(memberPoints.map((d) => d[col]));
+            break;
+        }
+      });
+
+      categoricalColumns.forEach((col) => (point[col] = 'NA'));
+
+      point[labelColumn] = agg.name;
+
+      points.push(point);
+    });
+
+    return points;
   }
 
   get doesHaveCategories() {
@@ -359,15 +419,39 @@ export default class ExploreStore {
     );
   };
 
-  handleLabelling = (label: string) => {};
+  handleLabelling = (label: string) => {
+    this.provenance.apply(
+      assignLabel({
+        i_type: 'Label',
+        as: label,
+      }),
+      `Assign label ${label}`,
+    );
+  };
 
   handleCategorization = (category: string, value: string) => {};
 
-  handleAggregate = (by: 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max') => {};
+  handleAggregate = (name: string, aggOptions: AggMap) => {
+    this.provenance.apply(
+      addAggregate({
+        i_type: 'Aggregation',
+        name,
+        id: getAggregateID(),
+        aggregate_map: aggOptions,
+      }),
+    );
+  };
 
   handleReplace = (id: string, drop: true) => {};
 
   // Mobx Actions
+  toggleHideAggregateMembers = () => (this.hideAggregateMembers = !this.hideAggregateMembers);
+
+  toggleLabelLayer = (show?: boolean) => {
+    if (show) this.showLabelLayer = show;
+    else this.showLabelLayer = !this.showLabelLayer;
+  };
+
   switchBrush = (btype: BrushType) => {
     if (this.root.opts.debug === 'on') {
       localStorage.setItem('btype', btype);
@@ -383,6 +467,11 @@ export default class ExploreStore {
       this.showCategories = !this.showCategories;
     }
   };
+
+  setHighlightMode = (highlight: boolean) => (this.highlightMode = highlight);
+
+  setHighlightPredicate = (predicate: HighlightPredicate | null) =>
+    (this.highlightPredicate = predicate);
 
   changeCategoryColumn = (col: string | null) => {
     if (!this.data || !col) return;
@@ -464,7 +553,7 @@ export default class ExploreStore {
 
                   const selectedIds = getSelectedPoints(
                     extents,
-                    this.computeDataPoints(currState, this.rawDataPoints),
+                    this.computeDataPoints(currState, this.rawDataPoints, false),
                     latest.spec.x,
                     latest.spec.y,
                   );
@@ -508,6 +597,35 @@ export default class ExploreStore {
         }
 
         state.filteredPoints = filteredPoints;
+        state = clearSelections(state);
+
+        break;
+      }
+      case 'Label': {
+        const { as } = latest;
+
+        const sels = getSelections(state);
+
+        if (!state.labels[as]) state.labels[as] = [];
+
+        state.labels[as].push(...sels);
+
+        state = clearSelections(state);
+
+        break;
+      }
+      case 'Aggregation': {
+        const { id, name, aggregate_map } = latest;
+
+        const sels = getSelections(state);
+
+        state.aggregates[id] = {
+          replace: false,
+          name,
+          map: aggregate_map,
+          values: sels,
+        };
+
         state = clearSelections(state);
 
         break;

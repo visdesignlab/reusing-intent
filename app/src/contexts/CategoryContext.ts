@@ -1,12 +1,19 @@
 import { SymbolType } from 'd3';
 import { createContext } from 'react';
 
-type Category = {
+import { AggregateBy } from './../types/Interactions';
+
+export type AggMap = { [column: string]: AggregateBy };
+
+type GlobalPlotAttributes = {
   showCategory: boolean;
+  labelMap: { [k: string]: string };
   selectedCategoryColumn: string | null;
   categoryMap: { [key: string]: SymbolType };
   hoveredCategory: string | null;
   setHoveredCategory: (cat: string | null) => void;
+  aggregateOptions: AggMap | null;
+  setAggregateOptions: (agg: AggMap) => void;
 };
 
-export const CategoryContext = createContext<Category | null>(null);
+export const GlobalPlotAttributeContext = createContext<GlobalPlotAttributes | null>(null);

@@ -1,4 +1,5 @@
 import { BrushCollection } from '../components/Brushes/Rectangular Brush/Types/Brush';
+import { AggMap } from '../contexts/CategoryContext';
 
 import { PCPSpec, ScatterplotSpec, ViewSpec } from './../types/Interactions';
 
@@ -33,7 +34,9 @@ export type ViewState = {
   aggregates: {
     [id: string]: {
       replace: boolean;
-      values: { [col_name: string]: number };
+      name: string;
+      values: string[];
+      map: AggMap;
     };
   };
 };

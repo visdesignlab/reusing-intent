@@ -79,7 +79,9 @@ export function getSelectedPoints(
   y_col: string,
 ): string[] {
   return data
+    .filter((point) => !(point.id.startsWith('agg') && point.iid.startsWith('agg')))
     .filter((point) => {
+      console.log(point.id);
       const [x, y] = [point[x_col] as number, point[y_col] as number];
 
       if (
@@ -124,12 +126,15 @@ export type Categorize = BaseInteraction & {
   ids?: string[];
 };
 
+export type AggregateBy = 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max';
+
 // Aggregate
 export type Aggregate = {
   i_type: 'Aggregation';
   // action: 'Aggregate' | 'Unaggregate';
   id: string;
-  by: 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max';
+  name: string;
+  aggregate_map: { [columnName: string]: AggregateBy };
 };
 
 // Replace Aggregate
