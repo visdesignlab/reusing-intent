@@ -3,13 +3,19 @@ import { CssBaseline } from '@material-ui/core';
 import whyDidYouRender from '@welldone-software/why-did-you-render';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { QueryClientProvider } from 'react-query';
 import { HashRouter, Route, Switch } from 'react-router-dom';
 
 import BaseLayout from './layouts/BaseLayout';
-import RootStore, { StoreContext } from './stores/RootStore';
+import { store, StoreContext } from './stores/RootStore';
 import Explore from './views/Explore';
 import Landing from './views/Landing';
 import Projects from './views/Projects';
+
+export const API = 'http://localhost';
+export const PROJECT = `${API}/project`;
+export const DATA = `${API}/data`;
+export const PREDICT = `${API}/predict`;
 
 const httpLink = createHttpLink({
   uri: 'http://localhost/graphql/',
@@ -34,18 +40,20 @@ whyDidYouRender(React, {
 const App = () => {
   return (
     <ApolloProvider client={apolloClient}>
-      <StoreContext.Provider value={new RootStore()}>
-        <CssBaseline>
-          <BaseLayout>
-            <HashRouter>
-              <Switch>
-                <Route component={Landing} path="/" exact />
-                <Route component={Projects} path="/project" exact />
-                <Route component={Explore} path="/explore" exact />
-              </Switch>
-            </HashRouter>
-          </BaseLayout>
-        </CssBaseline>
+      <StoreContext.Provider value={store}>
+        <QueryClientProvider client={store.query}>
+          <CssBaseline>
+            <BaseLayout>
+              <HashRouter>
+                <Switch>
+                  <Route component={Landing} path="/" exact />
+                  <Route component={Projects} path="/project" exact />
+                  <Route component={Explore} path="/explore" exact />
+                </Switch>
+              </HashRouter>
+            </BaseLayout>
+          </CssBaseline>
+        </QueryClientProvider>
       </StoreContext.Provider>
     </ApolloProvider>
   );

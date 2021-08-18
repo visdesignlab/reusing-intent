@@ -45,12 +45,7 @@ class Inference:
             predictions, key=lambda x: x.rank_jaccard, reverse=True
         )
 
-        final_preds = list(filter(lambda x: x.rank_jaccard >= 0.3, sorted_predictions))
-
-        if len(final_preds) < 20:
-            final_preds = sorted_predictions[:20]
-
-        return list(final_preds)
+        return list(sorted_predictions)
 
 
 def compute_intents(data: pd.DataFrame, _dimensions: List[str]) -> List[Intent]:

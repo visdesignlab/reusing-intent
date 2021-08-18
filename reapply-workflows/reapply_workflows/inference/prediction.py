@@ -1,3 +1,4 @@
+import hashlib
 import json
 from typing import List
 
@@ -16,6 +17,7 @@ class Prediction:
         self.info = json.loads(intent.info)
         self.dimensions = intent.dimensions
         self.params = json.loads(intent.params)
+        self.hash = None
         self.rank_jaccard = -1
         self.rank_auto_complete = -1
         self.rank_nb = -1
@@ -28,6 +30,7 @@ class Prediction:
             "algorithm": self.algorithm,
             "info": self.info,
             "params": self.params,
+            "hash": getUIDForPrediction(self),
             "rank_jaccard": self.rank_jaccard,
             "rank_auto_complete": self.rank_auto_complete,
             "rank_nb": self.rank_nb,
@@ -61,6 +64,7 @@ class Prediction:
                     pred.members = selected
                     pred.rank_jaccard = jaccard_similarity(pred.members, selections)
                     pred.membership_stats = get_stats(pred.members, selections)
+                    pred.info["members"] = selected
                     preds.append(pred)
                 return preds
         elif intent.algorithm == "Isolation Forest":
@@ -83,6 +87,7 @@ class Prediction:
                 pred.members = selected
                 pred.rank_jaccard = jaccard_similarity(pred.members, selections)
                 pred.membership_stats = get_stats(pred.members, selections)
+                pred.info["selected_center"] = pred.info["centers"][cluster_id]
                 preds.append(pred)
             return preds
         elif intent.algorithm == "TheilSenRegressor":
@@ -147,3 +152,15 @@ def get_stats(members, sels):
         "matches": list(set(sels).intersection(set(members))),
     }
     return stats
+
+
+def getUIDForString(toHash: str):
+    md5 = hashlib.md5(toHash.encode())
+    return md5.hexdigest()
+
+
+def getUIDForPrediction(pred: Prediction):
+    h = getUIDForString(
+        f"{pred.algorithm}-{pred.intent}-{json.dumps(pred.params)}-{json.dumps(pred.info)}"
+    )
+    return h

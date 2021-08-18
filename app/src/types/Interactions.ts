@@ -18,17 +18,15 @@ type BaseSpec = BaseInteraction & {
   i_type: 'ViewSpec';
   id: string;
   type: 'Scatterplot' | 'PCP';
+  dimensions: string[];
 };
 
 export type ScatterplotSpec = BaseSpec & {
   type: 'Scatterplot';
   action: 'Add' | 'Remove';
-  x: string;
-  y: string;
 };
 
 export type PCPSpec = BaseSpec & {
-  dimensions: string[];
   id: string;
   type: 'PCP';
   action: 'Create' | 'Add' | 'Remove';
@@ -37,17 +35,13 @@ export type PCPSpec = BaseSpec & {
 export type ViewSpec = ScatterplotSpec | PCPSpec;
 
 export function getDimensionsFromViewSpec(spec: ViewSpec): string[] {
-  if (spec.type === 'Scatterplot') return [spec.x, spec.y];
-
   return spec.dimensions;
 }
 
 // Selections
 type BaseSelection = BaseInteraction & {
   i_type: 'Selection';
-  type: 'Point' | 'Brush' | 'Intent' | 'Category';
-  spec: ViewSpec;
-  dimensions: string[];
+  type: 'Point' | 'Range' | 'Algorithmic' | 'Category';
 };
 
 export type PointSelection = BaseSelection & {
@@ -56,21 +50,22 @@ export type PointSelection = BaseSelection & {
   ids: string[];
 };
 
-type Extents = { [key: string]: [number, number] };
+type Extents = { [key: string]: { min: number; max: number } };
 
-type BrushSelection = BaseSelection & {
-  type: 'Brush';
-  brushId: string;
+type RangeSelection = BaseSelection & {
+  type: 'Range';
+  rangeId: string;
+  view: string;
   action: 'Add' | 'Remove' | 'Update';
   extents: Extents;
 };
 
-type IntentSelection = BaseSelection & {
-  type: 'Prediction';
+type AlgorithmicSelection = BaseSelection & {
+  type: 'Algorithmic';
   apply: Intent;
 };
 
-export type Selection = PointSelection | BrushSelection | IntentSelection;
+export type Selection = PointSelection | RangeSelection | AlgorithmicSelection;
 
 export function getSelectedPoints(
   extents: Extents,
@@ -81,14 +76,13 @@ export function getSelectedPoints(
   return data
     .filter((point) => !(point.id.startsWith('agg') && point.iid.startsWith('agg')))
     .filter((point) => {
-      console.log(point.id);
       const [x, y] = [point[x_col] as number, point[y_col] as number];
 
       if (
-        x >= extents[x_col][0] &&
-        x <= extents[x_col][1] &&
-        y >= extents[y_col][0] &&
-        y <= extents[y_col][1]
+        x >= extents[x_col].min &&
+        x <= extents[x_col].max &&
+        y >= extents[y_col].min &&
+        y <= extents[y_col].max
       )
         return true;
 
@@ -98,7 +92,7 @@ export function getSelectedPoints(
 }
 
 export function extentToBrushExtent(extents: Extents, x: string, y: string) {
-  const [x1, x2, y1, y2] = [extents[x][0], extents[x][1], extents[y][0], extents[y][1]];
+  const [x1, x2, y1, y2] = [extents[x].min, extents[x].max, extents[y].min, extents[y].max];
 
   return { x1, x2, y1, y2 };
 }
@@ -114,7 +108,6 @@ export type Label = BaseInteraction & {
   i_type: 'Label';
   // action: 'Assign' | 'Unassign';
   as: string;
-  ids?: string[];
 };
 
 // Categorize
@@ -123,7 +116,6 @@ export type Categorize = BaseInteraction & {
   // action: 'Assign' | 'Unassign';
   in: string;
   as: string;
-  ids?: string[];
 };
 
 export type AggregateBy = 'Mean' | 'Median' | 'Sum' | 'Min' | 'Max';
@@ -134,24 +126,11 @@ export type Aggregate = {
   // action: 'Aggregate' | 'Unaggregate';
   id: string;
   name: string;
-  aggregate_map: { [columnName: string]: AggregateBy };
-};
-
-// Replace Aggregate
-export type ReplaceAggregate = {
-  i_type: 'ReplaceAggregate';
-  id: string;
   drop: boolean;
+  rules: { [columnName: string]: AggregateBy };
 };
 
 // Interactions Type
-export type Interaction =
-  | ViewSpec
-  | Selection
-  | Filter
-  | Label
-  | Categorize
-  | Aggregate
-  | ReplaceAggregate;
+export type Interaction = ViewSpec | Selection | Filter | Label | Categorize | Aggregate;
 
 export type Interactions = Interaction[];

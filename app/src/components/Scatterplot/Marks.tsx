@@ -5,7 +5,7 @@ import { observer } from 'mobx-react';
 import { FC, useContext, useMemo } from 'react';
 
 import { GlobalPlotAttributeContext } from '../../contexts/CategoryContext';
-import { CUSTOM_LABEL, HighlightPredicate } from '../../stores/ExploreStore';
+import { ColorPredicate, CUSTOM_LABEL, HighlightPredicate } from '../../stores/ExploreStore';
 import { useStore } from '../../stores/RootStore';
 import translate from '../../utils/transform';
 import { BrushSelections } from '../Brushes/Rectangular Brush/Components/BrushComponent';
@@ -22,6 +22,7 @@ type Props = {
   symbolMap: { [key: string]: SymbolType } | null;
   highlightMode?: boolean;
   highlightPredicate?: HighlightPredicate | null;
+  colorPredicate?: ColorPredicate | null;
   type?: 'Regular' | 'Aggregate';
 };
 
@@ -35,6 +36,7 @@ const Marks: FC<Props> = ({
   type = 'Regular',
   highlightMode = false,
   highlightPredicate = null,
+  colorPredicate = null,
 }) => {
   const classes = useScatterplotStyle();
 
@@ -55,12 +57,15 @@ const Marks: FC<Props> = ({
   }, [freeformSelections, brushSelections]);
 
   const cls = (point: ScatterplotPoint, color = 'NA') => {
+    const cope = colorPredicate !== null ? colorPredicate(point) : '';
+
     return clsx('marks', {
       [classes.unionMark]: selectedPoints.includes(point.id),
       [classes.regularMark]: !selectedPoints.includes(point.id),
       [classes.dullMark]:
         highlightMode && highlightPredicate !== null && !highlightPredicate(point),
       [color]: color !== 'NA',
+      [cope]: colorPredicate !== null,
     });
   };
 

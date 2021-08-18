@@ -1,6 +1,7 @@
 import { initProvenance, isChildNode } from '@visdesignlab/trrack';
 import { makeAutoObservable, toJS, when } from 'mobx';
 import { createContext, useContext } from 'react';
+import { QueryClient } from 'react-query';
 
 import ExploreStore from './ExploreStore';
 import ProjectStore from './ProjectStore';
@@ -17,8 +18,17 @@ export default class RootStore {
   exploreStore: ExploreStore;
   opts: DebugOpts;
   provenance: ReapplyProvenance;
+  query: QueryClient;
 
   constructor() {
+    this.query = new QueryClient({
+      defaultOptions: {
+        queries: {
+          staleTime: Infinity,
+        },
+      },
+    });
+
     this.provenance = initProvenance(initState);
     this.provenance.done();
 
@@ -93,3 +103,5 @@ export function useStore() {
 
   return store;
 }
+
+export const store = new RootStore();

@@ -19,7 +19,7 @@ class KMeansCluster(AlgorithmBase):
         clf = kmeans_cluster(data[dimensions].values, n_cluster)
         self.labels = clf.labels_
         self.params = clf.get_params()
-        self.info = {}
+        self.info = {"centers": clf.cluster_centers_.tolist()}
 
     @staticmethod
     def compute(data: pd.DataFrame, combinations, n_clusters):

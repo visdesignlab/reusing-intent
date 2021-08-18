@@ -81,7 +81,7 @@ const Visualization = () => {
   const {
     projectStore: { project, dataset_id },
     exploreStore: {
-      state: { scatterplots },
+      state: { scatterplots, freeformSelections },
       addScatterplot,
       selectPointsFreeform,
       brushType,
@@ -174,7 +174,7 @@ const Visualization = () => {
             margin={60}
             points={points}
             rectangularBrushHandler={handleBrushSelection}
-            selections={view.freeformSelections}
+            selections={freeformSelections}
             showCategories={showCategory}
             size={spContainerDimension - 2 * theme.spacing(1)}
             view={view}

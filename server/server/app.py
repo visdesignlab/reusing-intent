@@ -5,6 +5,8 @@ from flask import Flask, jsonify, request
 # from flask_cors import CORS
 from reapply_workflows import hello, hello2
 
+from server.routes import init_routes
+
 from .celery import configure_celery
 from .db import db
 from .graphql import init_graphql
@@ -18,6 +20,7 @@ app.secret_key = os.getenv("SECRET_KEY")
 
 
 init_graphql(app)
+init_routes(app)
 db.init_app(app)
 configure_celery(app)
 

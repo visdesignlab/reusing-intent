@@ -26,6 +26,7 @@ export type Prediction = {
   intent: IntentType;
   algorithm: Algorithm;
   info: any;
+  hash: string;
   params: any;
   rank_jaccard: number;
   rank_auto_complete: number;
@@ -35,8 +36,20 @@ export type Prediction = {
   membership_stats: PredictionStats;
 };
 
-export type Intent = Pick<Prediction, 'intent' | 'algorithm' | 'params' | 'dimensions'>;
+export type Intent = Pick<Prediction, 'intent' | 'algorithm' | 'params' | 'dimensions' | 'info'>;
 
-export function predictionToIntent({ intent, algorithm, params, dimensions }: Prediction): Intent {
-  return { intent, algorithm, params, dimensions };
+export function predictionToIntent({
+  intent,
+  algorithm,
+  info,
+  params,
+  dimensions,
+}: Prediction): Intent {
+  return { intent, algorithm, params, dimensions, info };
 }
+
+export type PredictionResult = {
+  success: boolean;
+  errors: string[];
+  predictions: Prediction[];
+};

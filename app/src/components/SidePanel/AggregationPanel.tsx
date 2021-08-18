@@ -23,7 +23,7 @@ const AggregationPanel = () => {
   const isSelectionEmpty = getSelections(state).length === 0;
 
   const [aggLabel, setAggLabel] = useState('');
-  const [showAggLabel, setShowAggLabel] = useState(true);
+  const [showAggLabel, setShowAggLabel] = useState(false);
 
   return (
     <Box m={1}>

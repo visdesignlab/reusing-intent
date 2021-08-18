@@ -10,7 +10,7 @@ def regression_params():
 
 def regression(
     data,
-    theilsen_max_iter=300,
+    theilsen_max_iter=100,
     order="auto",
     threshold_multiplier=2,
 ):

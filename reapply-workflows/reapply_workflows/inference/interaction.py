@@ -21,16 +21,10 @@ class GenericInteraction(BaseInteraction):
 
 
 class ViewSpec(BaseInteraction):
-    def __init__(self, id, type, **kwargs):
+    def __init__(self, id, type, dimensions, **kwargs):
         self.id = id
         self.type = type
-
-    def dimensions(self) -> List[str]:
-        if isinstance(self, ScatterplotSpec):
-            return [self.x, self.y]
-        elif isinstance(self, PCPSpec):
-            return self.dimensions
-        return []
+        self.dimensions = dimensions
 
     def apply(
         self,
@@ -42,12 +36,13 @@ class ViewSpec(BaseInteraction):
 
 
 class ScatterplotSpec(ViewSpec):
-    def __init__(self, id, type, action, x, y, **kwargs):
+    def __init__(self, id, type, action, dimensions, **kwargs):
         self.id = id
         self.type = type
         self.action = action
-        self.x = x
-        self.y = y
+        self.dimensions: List[str] = dimensions
+        self.x = dimensions[0]
+        self.y = dimensions[1]
 
 
 class PCPSpec(ViewSpec):
@@ -62,30 +57,32 @@ class PCPSpec(ViewSpec):
 
 
 class Selection(BaseInteraction):
-    def __init__(self, type, spec, dimensions, **kwargs):
+    def __init__(self, type, **kwargs):
         self.type = type
-        self.spec = ViewSpec(**spec)
-        self.dimensions = dimensions
 
-    def selections(self, data, freeform, brushSelections):
+    def selections(self, data, freeform, rangeSelection):
         if isinstance(self, PointSelection):
-            freeform.extend(self.ids)
-        elif isinstance(self, BrushSelection):
+            ids = self.ids
+            if self.action == "Selection":
+                freeform.extend(ids)
+            else:
+                freeform = list(filter(lambda x: x not in ids, freeform))
+        elif isinstance(self, RangeSelection):
             if self.action == "Remove":
-                del brushSelections[self.brushId]
+                del rangeSelection[self.rangeId]
             else:
                 sels = []
 
                 for k, v in self.extents.items():
-                    d = data[(data[k] >= v[0]) & (data[k] <= v[1])]
+                    d = data[(data[k] >= v["min"]) & (data[k] <= v["max"])]
                     sels.append(d["id"].tolist())
 
                 sels = set(sels[0]).intersection(*sels)
-                brushSelections[self.brushId] = list(sels)
+                rangeSelection[self.rangeId] = list(sels)
 
         else:
             return [], {}
-        return freeform, brushSelections
+        return freeform, rangeSelection
 
     def apply(
         self,
@@ -95,10 +92,8 @@ class Selection(BaseInteraction):
 
 
 class PointSelection(Selection):
-    def __init__(self, type, spec, dimensions, action, ids, **kwargs):
+    def __init__(self, type, action, ids, **kwargs):
         self.type = type
-        self.spec = ViewSpec(**spec)
-        self.dimensions = dimensions
         self.action = action
         self.ids = ids
 
@@ -108,13 +103,12 @@ class PointSelection(Selection):
         return r
 
 
-class BrushSelection(Selection):
-    def __init__(self, type, spec, dimensions, brushId, action, extents, **kwargs):
+class RangeSelection(Selection):
+    def __init__(self, type, view, rangeId, action, extents, **kwargs):
         self.type = type
-        self.spec = ViewSpec(**spec)
-        self.dimensions = dimensions
+        self.view = view
         self.action = action
-        self.brushId = brushId
+        self.rangeId = rangeId
         self.extents = extents
 
     def apply(self, record):
@@ -122,7 +116,7 @@ class BrushSelection(Selection):
         if self.action == "Add" or self.action == "Update":
             r.add_update_brush(self.__dict__)
         elif self.action == "Remove":
-            r.remove_brush(self.__dict)
+            r.remove_brush(self.__dict__)
         return r
 
 
@@ -194,8 +188,8 @@ def getInteraction(interaction) -> Any:
         sel = Selection(**interaction)
         if sel.type == "Point":
             return PointSelection(**interaction)
-        elif sel.type == "Brush":
-            return BrushSelection(**interaction)
+        elif sel.type == "Range":
+            return RangeSelection(**interaction)
         elif sel.type == "Intent":
             return IntentSelection(**interaction)
     elif i_type == "Label":
@@ -214,7 +208,7 @@ def getInteraction(interaction) -> Any:
 class Interactions:
     def __init__(self, interactions):
         if type(interactions) is not list:
-            raise Exception("Only accepts interactions")
+            raise Exception("Only accepts list of interactions")
 
         self.order = []
 
@@ -222,25 +216,44 @@ class Interactions:
             self.order.append(getInteraction(i))
 
     def inferSelectionsAndDimensions(self, data):
+        data = data.copy(deep=True)
         dimensions: List[str] = []
         freeform = []
         brushSelections = {}
 
         for interaction in self.order:
             if isinstance(interaction, ViewSpec):
-                dims = interaction.dimensions()
+                dims = interaction.dimensions
                 dimensions.extend(dims)
-            if isinstance(interaction, Selection):
+            elif isinstance(interaction, Selection):
                 freeform, brushSelections = interaction.selections(
                     data, freeform, brushSelections
                 )
+            elif isinstance(interaction, Filter):
+                action = interaction.action
+                sels = compute_selections(freeform, brushSelections)
+                if action == "In":
+                    data = data[data.id.isin(sels)]
+                else:
+                    data = data[~data.id.isin(sels)]
 
-        selections: List[str] = []
-        selections.extend(freeform)
+                freeform = []
+                brushSelections = {}
+            else:
+                freeform = []
+                brushSelections = {}
 
-        for _, v in brushSelections.items():
-            selections.extend(v)
-
-        selections = list(set(selections))
+        selections = compute_selections(freeform, brushSelections)
 
         return dimensions, selections
+
+
+def compute_selections(freeform, brushSelections):
+    selections: List[str] = []
+    selections.extend(freeform)
+
+    for _, v in brushSelections.items():
+        selections.extend(v)
+
+    selections = list(set(selections))
+    return selections

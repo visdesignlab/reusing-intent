@@ -80,41 +80,43 @@ def process(project: str, version: str, dataset, source_metadata=None):
 
     db.session.commit()
 
-    dimensions = list(data.select_dtypes("number").columns)
+    return "Done!"
 
-    combinations = getCombinations(dimensions, upper_limit=3)
+    # dimensions = list(data.select_dtypes("number").columns)
 
-    data_json = data.to_json()
+    # combinations = getCombinations(dimensions, upper_limit=3)
 
-    dbscan_outlier_tracker = precompute_dbscan_outliers.delay(
-        data_json, combinations, rec.id
-    )
-    isolationforest_outlier_tracker = precompute_isolationforest_outliers.delay(
-        data_json, combinations, rec.id
-    )
-    kmeans_cluster_tracker = precompute_kmeans_clusters.delay(
-        data_json, combinations, rec.id
-    )
-    dbscan_cluster_tracker = precompute_dbscan_clusters.delay(
-        data_json, combinations, rec.id
-    )
-    skyline_tracker = precompute_skylines.delay(data_json, combinations, rec.id)
-    linear_tracker = precompute_linear_regression.delay(data_json, combinations, rec.id)
-    polynomial_tracker = precompute_polynomial_regression.delay(
-        data_json, combinations, rec.id
-    )
+    # data_json = data.to_json()
 
-    return {
-        "trackers": {
-            "dbscan-outlier": dbscan_outlier_tracker.task_id,
-            "isolationforest-outlier": isolationforest_outlier_tracker.task_id,
-            "kmeans-cluster": kmeans_cluster_tracker.task_id,
-            "dbscan-cluster": dbscan_cluster_tracker.task_id,
-            "skyline": skyline_tracker.task_id,
-            "linear": linear_tracker.task_id,
-            "poly": polynomial_tracker.task_id,
-        }
-    }
+    # dbscan_outlier_tracker = precompute_dbscan_outliers.delay(
+    #     data_json, combinations, rec.id
+    # )
+    # isolationforest_outlier_tracker = precompute_isolationforest_outliers.delay(
+    #     data_json, combinations, rec.id
+    # )
+    # kmeans_cluster_tracker = precompute_kmeans_clusters.delay(
+    #     data_json, combinations, rec.id
+    # )
+    # dbscan_cluster_tracker = precompute_dbscan_clusters.delay(
+    #     data_json, combinations, rec.id
+    # )
+    # skyline_tracker = precompute_skylines.delay(data_json, combinations, rec.id)
+    # linear_tracker = precompute_linear_regression.delay(data_json, combinations, rec.id)
+    # polynomial_tracker = precompute_polynomial_regression.delay(
+    #     data_json, combinations, rec.id
+    # )
+
+    # return {
+    #     "trackers": {
+    #         "dbscan-outlier": dbscan_outlier_tracker.task_id,
+    #         "isolationforest-outlier": isolationforest_outlier_tracker.task_id,
+    #         "kmeans-cluster": kmeans_cluster_tracker.task_id,
+    #         "dbscan-cluster": dbscan_cluster_tracker.task_id,
+    #         "skyline": skyline_tracker.task_id,
+    #         "linear": linear_tracker.task_id,
+    #         "poly": polynomial_tracker.task_id,
+    #     }
+    # }
 
 
 def add_label_column(data: pd.DataFrame) -> pd.DataFrame:

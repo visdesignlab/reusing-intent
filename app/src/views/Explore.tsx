@@ -4,12 +4,15 @@ import { observer } from 'mobx-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Redirect } from 'react-router-dom';
 
+import PredictionsTable from '../components/Predictions/PredictionsTable';
+import ProvenanceTree from '../components/ProvenanceTree';
 import SidePanel from '../components/SidePanel';
 import Visualization from '../components/Visualization';
 import { AggMap, GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import { useStore } from '../stores/RootStore';
 
 const useStyles = makeStyles(() => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c: any = {};
 
   schemeSet1.forEach((col) => {
@@ -60,7 +63,7 @@ const Explore = () => {
   }, [aggregateOptions, aggOpt]);
 
   const categories = useMemo(() => {
-    return selectedCategoryColumn ? data?.columnInfo[selectedCategoryColumn].options || [] : [];
+    return selectedCategoryColumn ? data?.columnInfo[selectedCategoryColumn]?.options || [] : [];
   }, [data, selectedCategoryColumn]);
 
   const labelMap = useMemo(() => {
@@ -115,7 +118,7 @@ const Explore = () => {
           <div className={styles.subroot}>
             <Visualization />
           </div>
-          <div>Test</div>
+          <PredictionsTable />
           <div>
             <ButtonGroup>
               <Button disabled={isAtRoot} onClick={() => provenance.undo()}>
@@ -126,16 +129,7 @@ const Explore = () => {
               </Button>
             </ButtonGroup>
 
-            {Object.values(provenance.graph.nodes)
-              .sort((a, b) => (a.metadata.createdOn || -1) - (b.metadata.createdOn || -1))
-              .map((d) => (
-                <div
-                  key={d.id}
-                  style={{ color: provenance.graph.current === d.id ? 'red' : 'black' }}
-                >
-                  {d.label}
-                </div>
-              ))}
+            <ProvenanceTree />
           </div>
         </GlobalPlotAttributeContext.Provider>
       </div>

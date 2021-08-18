@@ -16,6 +16,7 @@ import BrushComponent, {
 import { BrushAffectType, BrushCollection } from '../Brushes/Rectangular Brush/Types/Brush';
 
 import Axis from './Axis';
+import Legend from './Legend';
 import Marks from './Marks';
 import useScatterplotStyle from './styles';
 
@@ -79,6 +80,7 @@ const Scatterplot = ({
   showCategories,
   categoryMap = null,
   rectangularBrushHandler,
+  selections,
   _x_extents = null,
   _y_extents = null,
 }: Props) => {
@@ -91,7 +93,7 @@ const Scatterplot = ({
   // Dimensions Calculated
 
   const {
-    exploreStore: { highlightMode, highlightPredicate },
+    exploreStore: { highlightMode, highlightPredicate, colorPredicate, showMatchesLegend },
   } = useStore();
 
   // Get Scales
@@ -168,6 +170,19 @@ const Scatterplot = ({
         </clipPath>
       </defs>
       <g transform={translate(margin)}>
+        {showMatchesLegend && <Legend offset={dimension - 100} />}
+        <BrushComponent
+          bottom={dimension}
+          brushes={view.brushes}
+          data={points}
+          disableBrush={brushType !== 'Rectangular'}
+          left={0}
+          right={dimension}
+          top={0}
+          xScale={xScale}
+          yScale={yScale}
+          onBrushHandler={_rectBrushHandler}
+        />
         {brushType !== 'Rectangular' && brushType !== 'None' && (
           <FreeFormBrush
             bottom={dimension}
@@ -179,19 +194,6 @@ const Scatterplot = ({
             xScale={xScale}
             yScale={yScale}
             onBrush={_freeformBrushHandler}
-          />
-        )}
-        {brushType === 'Rectangular' && (
-          <BrushComponent
-            bottom={dimension}
-            brushes={view.brushes}
-            data={points}
-            left={0}
-            right={dimension}
-            top={0}
-            xScale={xScale}
-            yScale={yScale}
-            onBrushHandler={_rectBrushHandler}
           />
         )}
         <Axis
@@ -221,8 +223,9 @@ const Scatterplot = ({
         />
         <Marks
           brushSelections={view.brushSelections}
+          colorPredicate={colorPredicate}
           datapoints={points}
-          freeformSelections={view.freeformSelections}
+          freeformSelections={selections}
           highlightMode={highlightMode}
           highlightPredicate={highlightPredicate}
           symbolMap={showCategories ? categoryMap : null}

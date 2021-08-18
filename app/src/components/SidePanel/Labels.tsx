@@ -24,7 +24,7 @@ const Labels = () => {
   const { labelMap = {} } = useContext(GlobalPlotAttributeContext) || {};
 
   const [label, setLabel] = useState('');
-  const [showLabel, setShowLabel] = useState(true);
+  const [showLabel, setShowLabel] = useState(false);
 
   const isSelectionEmpty = getSelections(state).length === 0;
 

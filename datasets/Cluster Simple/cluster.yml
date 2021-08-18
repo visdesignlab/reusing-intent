@@ -4,9 +4,9 @@ columns:
     fullname: X
     short: A
     unit: null
-    dataType: numeric
+    data_type: numeric
   Y:
     fullname: Y
     short: B
     unit: null
-    dataType: numeric
+    data_type: numeric

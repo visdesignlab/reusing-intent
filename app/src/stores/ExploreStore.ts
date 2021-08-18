@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { isChildNode, NodeID } from '@visdesignlab/trrack';
 import { extent, max, mean, median, min, sum } from 'd3';
-import { action, makeAutoObservable, reaction, when } from 'mobx';
+import { action, makeAutoObservable, reaction, runInAction, when } from 'mobx';
 
 import { BrushSize } from '../components/Brushes/FreeFormBrush';
 import {
@@ -12,7 +12,6 @@ import {
 import { ScatterplotPoint } from '../components/Scatterplot/Scatterplot';
 import {
   extentToBrushExtent,
-  getDimensionsFromViewSpec,
   getSelectedPoints,
   Interactions,
   ScatterplotSpec,
@@ -33,12 +32,15 @@ import {
   removeBrush,
   updateBrush,
 } from './provenance/actions';
+import { queryPrediction } from './queries/queryPrediction';
 import RootStore from './RootStore';
 import { DataPoint } from './types/Dataset';
 import {
   clearSelections,
   defaultViewState,
+  getDimensions,
   getSelections,
+  getView,
   PCPView,
   ScatterplotView,
   View,
@@ -63,6 +65,7 @@ export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
 };
 
 export type HighlightPredicate = (point: ScatterplotPoint) => boolean;
+export type ColorPredicate = (point: ScatterplotPoint) => string;
 
 export default class ExploreStore {
   root: RootStore;
@@ -73,7 +76,13 @@ export default class ExploreStore {
   showLabelLayer = true;
   highlightMode = false;
   highlightPredicate: HighlightPredicate | null = null;
+  colorPredicate: ColorPredicate | null = null;
   hideAggregateMembers = false;
+  showMatchesLegend = false;
+  predictions: {
+    isLoading: boolean;
+    values: Prediction[];
+  } = { isLoading: false, values: [] };
 
   // Vis state
   record: DatasetRecord = {};
@@ -113,6 +122,16 @@ export default class ExploreStore {
       },
     );
 
+    reaction(
+      () => ({
+        dataset_id: this.datasetId,
+        interactions: this.provenance.getState(this.provenance.current.id).interactions,
+      }),
+      (args) => {
+        if (args.dataset_id) this.refreshPrediction();
+      },
+    );
+
     if (root.opts.debug === 'on') {
       this.toggleShowCategories(root.opts.showCategories);
       const btype = localStorage.getItem('btype');
@@ -121,6 +140,10 @@ export default class ExploreStore {
   }
 
   // Getters
+  get query() {
+    return this.root.query;
+  }
+
   get datasetId() {
     return this.root.projectStore.dataset_id;
   }
@@ -272,22 +295,23 @@ export default class ExploreStore {
         id: getPlotId(),
         type: 'Scatterplot',
         action: 'Add',
-        x: this.data.numericColumns[0],
-        y: this.data.numericColumns[1],
+        dimensions: [this.data.numericColumns[0], this.data.numericColumns[1]],
       };
 
-      this.provenance.apply(addScatterplot(spec), `Adding scatterplot for ${spec.x}-${spec.y}`);
+      this.provenance.apply(
+        addScatterplot(spec),
+        `Adding scatterplot for ${spec.dimensions[0]}-${spec.dimensions[1]}`,
+      );
     } else {
       const spec: ScatterplotSpec = {
         i_type: 'ViewSpec',
         id: getPlotId(),
         action: 'Add',
         type: 'Scatterplot',
-        x,
-        y,
+        dimensions: [x, y],
       };
 
-      this.provenance.apply(addScatterplot(spec), `Adding scatterplot for ${spec.x}-${spec.y}`);
+      this.provenance.apply(addScatterplot(spec), `Adding scatterplot for ${x}-${y}`);
     }
   };
 
@@ -300,8 +324,6 @@ export default class ExploreStore {
       i_type: 'Selection',
       type: 'Point',
       action: 'Selection',
-      spec,
-      dimensions: getDimensionsFromViewSpec(spec),
       ids: points,
     };
 
@@ -312,7 +334,7 @@ export default class ExploreStore {
     if (!this.data) return;
     const spec = view.spec;
 
-    const currentViewSelections = this.state.views[spec.id].freeformSelections;
+    const currentViewSelections = this.state.freeformSelections;
 
     const ids = points.filter((p) => currentViewSelections.includes(p));
 
@@ -320,8 +342,6 @@ export default class ExploreStore {
       i_type: 'Selection',
       type: 'Point',
       action: 'Deselection',
-      spec,
-      dimensions: getDimensionsFromViewSpec(spec),
       ids,
     };
 
@@ -344,22 +364,20 @@ export default class ExploreStore {
 
         if (spec.type === 'Scatterplot') {
           const extents = {
-            [spec.x]: [x1, x2] as [number, number],
-            [spec.y]: [y1, y2] as [number, number],
+            [spec.dimensions[0]]: { min: x1, max: x2 },
+            [spec.dimensions[1]]: { min: y1, max: y2 },
           };
 
-          this.provenance.apply(
-            addBrush({
-              i_type: 'Selection',
-              type: 'Brush',
-              brushId: currentBrush.id,
-              action: 'Add',
-              spec,
-              dimensions: getDimensionsFromViewSpec(spec),
-              extents,
-            }),
-            'Add Brush',
-          );
+          const interaction: Selection = {
+            i_type: 'Selection',
+            type: 'Range',
+            rangeId: currentBrush.id,
+            action: 'Add',
+            view: spec.id,
+            extents,
+          };
+
+          this.provenance.apply(addBrush(interaction), 'Add Brush');
         }
         break;
       }
@@ -368,18 +386,17 @@ export default class ExploreStore {
 
         if (spec.type === 'Scatterplot') {
           const extents = {
-            [spec.x]: [x1, x2] as [number, number],
-            [spec.y]: [y1, y2] as [number, number],
+            [spec.dimensions[0]]: { min: x1, max: x2 },
+            [spec.dimensions[1]]: { min: y1, max: y2 },
           };
 
           this.provenance.apply(
             updateBrush({
               i_type: 'Selection',
-              type: 'Brush',
-              brushId: currentBrush.id,
+              type: 'Range',
+              view: spec.id,
+              rangeId: currentBrush.id,
               action: 'Update',
-              spec,
-              dimensions: getDimensionsFromViewSpec(spec),
               extents,
             }),
             'Update Brush',
@@ -391,11 +408,10 @@ export default class ExploreStore {
         this.provenance.apply(
           removeBrush({
             i_type: 'Selection',
-            type: 'Brush',
-            brushId: affectedId,
+            type: 'Range',
+            rangeId: affectedId,
             action: 'Remove',
-            spec,
-            dimensions: getDimensionsFromViewSpec(spec),
+            view: spec.id,
             extents: {},
           }),
           'Remove Brush',
@@ -431,20 +447,37 @@ export default class ExploreStore {
 
   handleCategorization = (category: string, value: string) => {};
 
-  handleAggregate = (name: string, aggOptions: AggMap) => {
+  handleAggregate = (name: string, aggOptions: AggMap, drop = false) => {
     this.provenance.apply(
       addAggregate({
         i_type: 'Aggregation',
         name,
         id: getAggregateID(),
-        aggregate_map: aggOptions,
+        drop,
+        rules: aggOptions,
       }),
     );
   };
 
-  handleReplace = (id: string, drop: true) => {};
-
   // Mobx Actions
+  refreshPrediction = async () => {
+    runInAction(() => {
+      this.predictions.isLoading = true;
+    });
+    const selections = getSelections(this.state);
+    const dimensions = getDimensions(this.state);
+    const dataValues = this.dataPoints;
+
+    const data = await this.query.fetchQuery(
+      ['predictions', this.datasetId, selections, dimensions, dataValues],
+      () => queryPrediction(dataValues, dimensions, selections),
+    );
+
+    runInAction(() => {
+      this.predictions = { isLoading: false, values: data };
+    });
+  };
+
   toggleHideAggregateMembers = () => (this.hideAggregateMembers = !this.hideAggregateMembers);
 
   toggleLabelLayer = (show?: boolean) => {
@@ -473,6 +506,10 @@ export default class ExploreStore {
   setHighlightPredicate = (predicate: HighlightPredicate | null) =>
     (this.highlightPredicate = predicate);
 
+  setColorPredicate = (predicate: ColorPredicate | null) => (this.colorPredicate = predicate);
+
+  setShowMatchesLegend = (show: boolean) => (this.showMatchesLegend = show);
+
   changeCategoryColumn = (col: string | null) => {
     if (!this.data || !col) return;
 
@@ -487,37 +524,13 @@ export default class ExploreStore {
 
     switch (latest.i_type) {
       case 'ViewSpec':
-        if (latest.type === 'Scatterplot') {
-          state.views[latest.id] = {
-            id: latest.id,
-            type: 'Scatterplot',
-            x: latest.x,
-            y: latest.y,
-            spec: latest,
-            freeformSelections: [],
-            brushes: {},
-            brushSelections: {},
-          };
-        } else {
-          state.views[latest.id] = {
-            id: latest.id,
-            type: 'PCP',
-            spec: latest,
-            dimensions: latest.dimensions,
-            freeformSelections: [],
-            brushes: {},
-            brushSelections: {},
-          };
-        }
+        state.views[latest.id] = getView(latest);
         break;
       // View Spec Ends
       case 'Selection': {
-        const view_id = latest.spec.id;
-        const view = state.views[view_id];
-
         switch (latest.type) {
           case 'Point': {
-            let currSels = view.freeformSelections;
+            let currSels = state.freeformSelections;
 
             switch (latest.action) {
               case 'Selection': {
@@ -532,30 +545,32 @@ export default class ExploreStore {
               }
             }
 
-            state.views[view_id].freeformSelections = [...new Set(currSels)];
+            state.freeformSelections = [...new Set(currSels)];
 
             break;
           }
-          case 'Brush': {
-            const brush_id = latest.brushId;
+          case 'Range': {
+            const brush_id = latest.rangeId;
+            const view_id = latest.view;
+            const spec = state.views[latest.view].spec;
 
             switch (latest.action) {
               case 'Add':
               case 'Update': {
                 const { extents } = latest;
 
-                if (latest.spec.type === 'Scatterplot') {
+                if (spec.type === 'Scatterplot') {
                   const { x1, x2, y1, y2 } = extentToBrushExtent(
                     extents,
-                    latest.spec.x,
-                    latest.spec.y,
+                    spec.dimensions[0],
+                    spec.dimensions[1],
                   );
 
                   const selectedIds = getSelectedPoints(
                     extents,
                     this.computeDataPoints(currState, this.rawDataPoints, false),
-                    latest.spec.x,
-                    latest.spec.y,
+                    spec.dimensions[0],
+                    spec.dimensions[1],
                   );
 
                   state.views[view_id].brushes[brush_id] = {
@@ -571,6 +586,7 @@ export default class ExploreStore {
                 break;
               }
               case 'Remove': {
+                // ! Deleting doesnt recreate brush
                 delete state.views[view_id].brushes[brush_id];
                 delete state.views[view_id].brushSelections[brush_id];
 
@@ -615,14 +631,14 @@ export default class ExploreStore {
         break;
       }
       case 'Aggregation': {
-        const { id, name, aggregate_map } = latest;
+        const { id, name, rules } = latest;
 
         const sels = getSelections(state);
 
         state.aggregates[id] = {
           replace: false,
           name,
-          map: aggregate_map,
+          map: rules,
           values: sels,
         };
 

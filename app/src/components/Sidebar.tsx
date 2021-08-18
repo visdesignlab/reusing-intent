@@ -5,7 +5,7 @@ import {
   IconButton,
   makeStyles,
   Theme,
-  Typography,
+  Typography
 } from '@material-ui/core';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
@@ -19,6 +19,7 @@ import { useHistory } from 'react-router-dom';
 
 import { useStore } from '../stores/RootStore';
 import { Projects } from '../stores/types/Project';
+
 
 const useStyles = (drawerWidth: number) => {
   return makeStyles((theme: Theme) =>
@@ -56,6 +57,7 @@ const Sidebar = ({ projects }: Props) => {
   const drawerWidth = 240;
   const styles = useStyles(drawerWidth);
   const {
+    exploreStore: { changeCategoryColumn },
     projectStore: { setCurrentProject, setDatasetId, project, dataset_id },
     opts: { debug, goToExplore },
   } = useStore();
@@ -102,7 +104,10 @@ const Sidebar = ({ projects }: Props) => {
               labelIcon={FolderIcon}
               labelText={p.name}
               nodeId={p.id}
-              onClick={() => setCurrentProject(p)}
+              onClick={() => {
+                setCurrentProject(p);
+                changeCategoryColumn(null);
+              }}
             >
               {p.datasets.map((d) => {
                 return (

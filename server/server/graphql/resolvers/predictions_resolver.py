@@ -1,4 +1,3 @@
-import json
 from io import BytesIO
 
 import pandas as pd
@@ -6,7 +5,6 @@ from reapply_workflows.inference.inference import Inference
 from reapply_workflows.inference.interaction import Interactions
 
 from ...db.models.dataset_record import DatasetRecord
-from ...db.models.intent import Intent
 
 
 def resolve_predictions(*_, record_id, interactions):
@@ -17,23 +15,32 @@ def resolve_predictions(*_, record_id, interactions):
 
         data = pd.read_parquet(data_raw)
 
-        dimensions = sorted(["cmr", "tfr"])
+        interactions = Interactions(interactions)
 
-        intents = (
-            Intent.query.filter_by(record_id=record_id)
-            .filter_by(dimensions=",".join(dimensions))
-            .all()
-        )
+        dimensions, selections = interactions.inferSelectionsAndDimensions(data)
 
-        user_sel = data.sample(n=50, random_state=1).id.to_list()
+        print(len(selections))
 
-        inference = Inference(data, user_sel, dimensions, [])
+        if len(selections) == 0:
+            return {
+                "success": True,
+                "predictions": [],
+            }
+
+        inference = Inference(data, selections, dimensions, [])
 
         predictions = inference.predict()
 
-        interactions = Interactions(interactions)
+        predictions = list(
+            sorted(predictions, key=lambda x: x.rank_jaccard, reverse=True)
+        )
 
-        print(interactions.inferSelectionsAndDimensions(data))
+        high_ranking_preds = list(filter(lambda x: x.rank_jaccard > 0.5, predictions))
+
+        if len(high_ranking_preds) < 20:
+            predictions = predictions[0:20]
+        else:
+            predictions = high_ranking_preds
 
         payload = {
             "success": True,

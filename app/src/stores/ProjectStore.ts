@@ -22,6 +22,10 @@ export default class ProjectStore {
     );
   }
 
+  get query() {
+    return this.root.query;
+  }
+
   setCurrentProject = (project: Project) => {
     this.project = project;
   };
@@ -55,9 +59,15 @@ export default class ProjectStore {
       return;
     }
 
-    const { data } = await queryData(record_id);
-    runInAction(() => {
-      this.data = data.data;
-    });
+    try {
+      const data = await this.query.fetchQuery(['dataset', record_id], () => queryData(record_id));
+
+      runInAction(() => {
+        this.data = data;
+      });
+    } catch (err) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      throw new Error(err as any);
+    }
   };
 }
