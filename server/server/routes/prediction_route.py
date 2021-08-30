@@ -31,9 +31,12 @@ def get_predictions():
 
         if len(high_ranking_preds) >= 20:
             predictions = high_ranking_preds
+        else:
+            predictions = predictions[:20]
 
         return jsonify(list(map(lambda x: x.to_dict(), predictions)))
     except Exception as e:
+        raise e
         return handle_exception(e)
 
 

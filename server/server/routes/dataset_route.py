@@ -1,3 +1,4 @@
+import json
 from io import BytesIO
 
 import pandas as pd
@@ -46,18 +47,22 @@ def get_data(rid: str):
             col = c.to_dict()
             column_info[c.key] = col
 
+        d = data.T.to_json()
+
         return (
             jsonify(
                 {
-                    "values": list(data.T.to_dict().values()),
+                    "values": list(json.loads(d).values()),
                     "columnInfo": column_info,
                     "numericColumns": numeric_columns,
                     "categoricalColumns": categorical_columns,
                     "labelColumn": label_column,
                     "columns": columns,
+                    "id": rid,
                 }
             ),
             200,
         )
     except Exception as e:
+        raise e
         return handle_exception(e)

@@ -1,7 +1,12 @@
-import { BrushCollection } from '../components/Brushes/Rectangular Brush/Types/Brush';
-import { AggMap } from '../contexts/CategoryContext';
+import Axios from 'axios';
 
+import { BrushCollection } from '../components/Brushes/Rectangular Brush/Types/Brush';
+
+import { COMPUTE } from './../index';
 import { PCPSpec, ScatterplotSpec, ViewSpec } from './../types/Interactions';
+import { StateRecord } from './ExploreStore';
+import { DataPoint } from './types/Dataset';
+import { ReapplyGraph } from './types/Provenance';
 
 type BaseView = {
   id: string;
@@ -25,6 +30,7 @@ export type PCPView = BaseView & {
 
 export type View = ScatterplotView | PCPView;
 
+// # View State
 export type ViewState = {
   views: { [k: string]: View };
   labels: { [k: string]: string[] };
@@ -33,10 +39,9 @@ export type ViewState = {
   categoryAssignments: { [categoryName: string]: { [value: string]: string[] } };
   aggregates: {
     [id: string]: {
-      replace: boolean;
       name: string;
       values: string[];
-      map: AggMap;
+      aggregate: DataPoint;
     };
   };
 };
@@ -105,4 +110,13 @@ export function getView(spec: ViewSpec): View {
     brushes: {},
     brushSelections: {},
   };
+}
+
+export async function queryState(_data: DataPoint[], provenance: ReapplyGraph) {
+  const { data } = await Axios.post<StateRecord>(`${COMPUTE}/state`, {
+    data: _data,
+    provenance,
+  });
+
+  return data;
 }

@@ -48,7 +48,9 @@ def create_project():
         db.session.add(project)
         db.session.commit()
 
-        return jsonify(project.to_dict()), 200
+        project = project.to_dict()
+
+        return jsonify(project), 200
     except Exception as e:
         return handle_exception(e)
 

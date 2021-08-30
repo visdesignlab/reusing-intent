@@ -80,10 +80,11 @@ class Record:
             del self.pointSelections[id]
 
     def add_point_selection(self, sel: PointSelection):
-        view_id = sel.spec.id
-        if view_id not in self.pointSelections:
-            self.pointSelections[view_id] = []
-        self.pointSelections[view_id].append(sel)
+        pass
+        # view_id = sel.spec.id
+        # if view_id not in self.pointSelections:
+        #     self.pointSelections[view_id] = []
+        # self.pointSelections[view_id].append(sel)
 
     def add_update_brush(self, _brush):
         brush = Brush(**_brush)
@@ -138,78 +139,78 @@ class Record:
     @property
     def df(self):
         data = deepcopy(self.data)
-
-        if len(self.aggregate) > 0:
-            d = deepcopy(data)
-            cols = d.columns
-            rows = []
-            for agg in self.aggregate:
-                data[agg.id] = False
-                data.loc[data.id.isin(agg.ids), "_agg"] = True
-                a_row = None
-
-                label = f"{agg.id} ({agg.by})"
-
-                if agg.by == "Mean":
-                    a_row = (
-                        data.groupby(agg.id, as_index=False)
-                        .mean()
-                        .assign(id=label, iid=label)
-                    )
-                elif agg.by == "Median":
-                    a_row = (
-                        data.groupby(agg.id, as_index=False)
-                        .median()
-                        .assign(id=label, iid=label)
-                    )
-                elif agg.by == "Sum":
-                    a_row = (
-                        data.groupby(agg.id, as_index=False)
-                        .sum()
-                        .assign(id=label, iid=label)
-                    )
-                elif agg.by == "Min":
-                    a_row = (
-                        data.groupby(agg.id, as_index=False)
-                        .min()
-                        .assign(id=label, iid=label)
-                    )
-                elif agg.by == "Max":
-                    a_row = (
-                        data.groupby(agg.id, as_index=False)
-                        .max()
-                        .assign(id=label, iid=label)
-                    )
-                if a_row is not None:
-                    rows.append([a_row, label])
-
-            for r, id in rows:
-                d = pd.concat([d, r])
-                d.fillna(id, inplace=True)
-
-            data = d[cols]
-
-        if len(self.label) > 0:
-            data["Labels"] = "Unassigned"
-            for label in self.label:
-                data.loc[data.id.isin(label.ids), "Labels"] = label.as_
-
-        if len(self.filter) > 0:
-            data["Filtered"] = False
-            for fl in self.filter:
-                if fl.action == "In":
-                    data.loc[~data.id.isin(fl.ids), "Filtered"] = True
-                else:
-                    data.loc[data.id.isin(fl.ids), "Filtered"] = True
-
-        if len(self.categorize) > 0:
-            for cat in self.categorize:
-                if cat.in_ not in data.columns:
-                    data[cat.in_] = None
-                data.loc[data.id.isin(cat.ids), cat.in_] = cat.as_
-
-        if len(self.selections) > 0:
-            data["_Selections"] = False
-            data.loc[data.id.isin(self.selections), "_Selections"] = True
-
         return data
+        # if len(self.aggregate) > 0:
+        #     d = deepcopy(data)
+        #     cols = d.columns
+        #     rows = []
+        #     for agg in self.aggregate:
+        #         data[agg.id] = False
+        #         data.loc[data.id.isin(agg.ids), "_agg"] = True
+        #         a_row = None
+
+        #         label = f"{agg.id} ({agg.by})"
+
+        #         if agg.by == "Mean":
+        #             a_row = (
+        #                 data.groupby(agg.id, as_index=False)
+        #                 .mean()
+        #                 .assign(id=label, iid=label)
+        #             )
+        #         elif agg.by == "Median":
+        #             a_row = (
+        #                 data.groupby(agg.id, as_index=False)
+        #                 .median()
+        #                 .assign(id=label, iid=label)
+        #             )
+        #         elif agg.by == "Sum":
+        #             a_row = (
+        #                 data.groupby(agg.id, as_index=False)
+        #                 .sum()
+        #                 .assign(id=label, iid=label)
+        #             )
+        #         elif agg.by == "Min":
+        #             a_row = (
+        #                 data.groupby(agg.id, as_index=False)
+        #                 .min()
+        #                 .assign(id=label, iid=label)
+        #             )
+        #         elif agg.by == "Max":
+        #             a_row = (
+        #                 data.groupby(agg.id, as_index=False)
+        #                 .max()
+        #                 .assign(id=label, iid=label)
+        #             )
+        #         if a_row is not None:
+        #             rows.append([a_row, label])
+
+        #     for r, id in rows:
+        #         d = pd.concat([d, r])
+        #         d.fillna(id, inplace=True)
+
+        #     data = d[cols]
+
+        # if len(self.label) > 0:
+        #     data["Labels"] = "Unassigned"
+        #     for label in self.label:
+        #         data.loc[data.id.isin(label.ids), "Labels"] = label.as_
+
+        # if len(self.filter) > 0:
+        #     data["Filtered"] = False
+        #     for fl in self.filter:
+        #         if fl.action == "In":
+        #             data.loc[~data.id.isin(fl.ids), "Filtered"] = True
+        #         else:
+        #             data.loc[data.id.isin(fl.ids), "Filtered"] = True
+
+        # if len(self.categorize) > 0:
+        #     for cat in self.categorize:
+        #         if cat.in_ not in data.columns:
+        #             data[cat.in_] = None
+        #         data.loc[data.id.isin(cat.ids), cat.in_] = cat.as_
+
+        # if len(self.selections) > 0:
+        #     data["_Selections"] = False
+        #     data.loc[data.id.isin(self.selections), "_Selections"] = True
+
+        # return data

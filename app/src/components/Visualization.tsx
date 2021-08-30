@@ -16,9 +16,8 @@ import { useCallback, useContext, useState } from 'react';
 import { GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import { useStore } from '../stores/RootStore';
 
+import AddScatterplotDialog from './AddScatterplotDialog';
 import Scatterplot, { ScatterplotPoint } from './Scatterplot/Scatterplot';
-
-// type StyleProps = { dimension: number; showCategories: boolean };
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,15 +78,14 @@ const useStyles = makeStyles((theme: Theme) =>
 const Visualization = () => {
   const [open, setOpen] = useState(false);
   const {
-    projectStore: { project, dataset_id },
+    projectStore: { project, dataset_id, setDatasetId },
     exploreStore: {
       state: { scatterplots, freeformSelections },
-      addScatterplot,
       selectPointsFreeform,
       brushType,
       dataPoints,
-      aggregate,
       unselectPointsFreeform,
+      removeScatterplot,
       handleBrushSelection,
       data,
       rangeMap,
@@ -101,6 +99,8 @@ const Visualization = () => {
 
   const { showCategory = false, selectedCategoryColumn = null, categoryMap = {} } =
     useContext(GlobalPlotAttributeContext) || {};
+
+  const [showDialog, setShowDialog] = useState(false);
 
   const styles = useStyles({ dimension: spContainerDimension, showCategory });
 
@@ -124,23 +124,16 @@ const Visualization = () => {
 
   if (!project) return <div>Something went wrong!</div>;
 
+  if (!data) return <div>Loading</div>;
+
   const sps = scatterplots.map((view) => {
     const { x, y } = view;
 
     let points: ScatterplotPoint[] = [];
-    let aggregatePoints: ScatterplotPoint[] = [];
+    const aggregatePoints: ScatterplotPoint[] = [];
 
     if (data) {
       points = dataPoints.map((d) => ({
-        x: d[x] as number,
-        y: d[y] as number,
-        label: d[data.labelColumn] as string,
-        category:
-          showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-',
-        ...d,
-      }));
-
-      aggregatePoints = aggregate.map((d) => ({
         x: d[x] as number,
         y: d[y] as number,
         label: d[data.labelColumn] as string,
@@ -157,7 +150,7 @@ const Visualization = () => {
       <div key={view.id} className={styles.paperContainer}>
         <Paper className={styles.paper} elevation={3}>
           {n_plots > 1 && (
-            <IconButton className={styles.closeIcon}>
+            <IconButton className={styles.closeIcon} onClick={() => removeScatterplot(view.id)}>
               <CloseIcon />
             </IconButton>
           )}
@@ -195,6 +188,7 @@ const Visualization = () => {
               key={d.id}
               color={dataset_id === d.id ? 'primary' : 'default'}
               label={d.version}
+              onClick={() => setDatasetId(d.id)}
             />
           ))}
         </div>
@@ -215,9 +209,10 @@ const Visualization = () => {
           tooltipPlacement="right"
           tooltipTitle="Add"
           tooltipOpen
-          onClick={() => addScatterplot()}
+          onClick={() => setShowDialog(true)}
         />
       </SpeedDial>
+      <AddScatterplotDialog show={showDialog} onClose={() => setShowDialog(false)} />
     </>
   );
 };

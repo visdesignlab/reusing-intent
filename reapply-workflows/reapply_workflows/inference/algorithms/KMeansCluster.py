@@ -16,7 +16,7 @@ class KMeansCluster(AlgorithmBase):
         self.algorithm = "KMeans"
         self.intent = "Cluster"
         self.dimensions = dimensions
-        clf = kmeans_cluster(data[dimensions].values, n_cluster)
+        clf = kmeans_cluster(data[dimensions].dropna().values, n_cluster)
         self.labels = clf.labels_
         self.params = clf.get_params()
         self.info = {"centers": clf.cluster_centers_.tolist()}

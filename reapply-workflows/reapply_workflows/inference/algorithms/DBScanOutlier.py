@@ -17,7 +17,7 @@ class DBScanOutlier(AlgorithmBase):
         self.algorithm = "DBScan"
         self.intent = "Outlier"
         self.dimensions = dimensions
-        clf = dbscan(data[dimensions].values, eps, min_samples)
+        clf = dbscan(data[dimensions].dropna().values, eps, min_samples)
         self.labels = clf.labels_
         self.params = clf.get_params()
         self.info = {}

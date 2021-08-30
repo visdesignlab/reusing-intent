@@ -12,11 +12,15 @@ export async function queryPrediction(
 ) {
   if (selections.length === 0) return [];
 
-  const { data } = await Axios.post<Prediction[]>(`${PREDICT}/`, {
-    data: _data,
-    dimensions,
-    selections,
-  });
+  try {
+    const { data } = await Axios.post<Prediction[]>(`${PREDICT}/`, {
+      data: _data || [],
+      dimensions,
+      selections,
+    });
 
-  return data;
+    return data;
+  } catch {
+    return [];
+  }
 }

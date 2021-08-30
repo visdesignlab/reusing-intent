@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { isChildNode, NodeID } from '@visdesignlab/trrack';
-import { extent, max, mean, median, min, sum } from 'd3';
-import { action, makeAutoObservable, reaction, runInAction, when } from 'mobx';
+import { NodeID } from '@visdesignlab/trrack';
+import { extent } from 'd3';
+import { action, makeAutoObservable, reaction, runInAction, toJS, when } from 'mobx';
 
 import { BrushSize } from '../components/Brushes/FreeFormBrush';
 import {
@@ -10,15 +10,8 @@ import {
   BrushCollection,
 } from '../components/Brushes/Rectangular Brush/Types/Brush';
 import { ScatterplotPoint } from '../components/Scatterplot/Scatterplot';
-import {
-  extentToBrushExtent,
-  getSelectedPoints,
-  Interactions,
-  ScatterplotSpec,
-  Selection,
-} from '../types/Interactions';
-import { Prediction } from '../types/Prediction';
-import deepCopy from '../utils/DeepCopy';
+import { ScatterplotSpec, Selection } from '../types/Interactions';
+import { Prediction, predictionToIntent } from '../types/Prediction';
 import { getAggregateID, getPlotId } from '../utils/IDGens';
 
 import { AggMap } from './../contexts/CategoryContext';
@@ -26,22 +19,24 @@ import {
   addAggregate,
   addBrush,
   addFilter,
+  addIntentSelection,
   addPointSelection,
   addScatterplot,
   assignLabel,
   removeBrush,
+  removeScatterplot,
   updateBrush,
 } from './provenance/actions';
 import { queryPrediction } from './queries/queryPrediction';
 import RootStore from './RootStore';
 import { DataPoint } from './types/Dataset';
+import { ReapplyGraph } from './types/Provenance';
 import {
-  clearSelections,
   defaultViewState,
   getDimensions,
   getSelections,
-  getView,
   PCPView,
+  queryState,
   ScatterplotView,
   View,
   ViewState,
@@ -50,9 +45,7 @@ import {
 export const CUSTOM_LABEL = 'customlabel';
 export const CUSTOM_CATEGORY_ASSIGNMENT = 'customCategoryAssignment';
 
-type DatasetRecord = Record<string, StateRecord>;
-
-type StateRecord = Record<NodeID, ViewState>;
+export type StateRecord = Record<NodeID, ViewState>;
 
 export type FreeFormBrushType = 'Freeform Small' | 'Freeform Medium' | 'Freeform Large';
 
@@ -85,14 +78,17 @@ export default class ExploreStore {
   } = { isLoading: false, values: [] };
 
   // Vis state
-  record: DatasetRecord = {};
+  record: StateRecord = {};
+  lastAccessed = '';
 
   constructor(root: RootStore) {
     this.root = root;
 
     makeAutoObservable(this, {
-      getState: action,
-      updateVisState: action,
+      // getState: action,
+      updateRecord: action,
+      stateHelper: action,
+      refreshPrediction: action,
       toggleShowCategories: action,
       switchBrush: action,
       toggleLabelLayer: action,
@@ -125,11 +121,16 @@ export default class ExploreStore {
     reaction(
       () => ({
         dataset_id: this.datasetId,
-        interactions: this.provenance.getState(this.provenance.current.id).interactions,
+        provenance: Object.values(this.provenance.graph.nodes).length,
       }),
-      (args) => {
-        if (args.dataset_id) this.refreshPrediction();
+      ({ dataset_id }) => {
+        if (dataset_id) this.updateRecord(dataset_id, this.provenance.graph);
       },
+    );
+
+    reaction(
+      () => this.state,
+      (st) => this.refreshPrediction(st),
     );
 
     if (root.opts.debug === 'on') {
@@ -176,6 +177,18 @@ export default class ExploreStore {
     return this.computeDataPoints(this.state, this.rawDataPoints);
   }
 
+  get aggregateDataPoints() {
+    const { aggregates } = this.state;
+
+    const agg: DataPoint[] = [];
+
+    Object.values(aggregates).forEach((a) => {
+      agg.push(a.aggregate);
+    });
+
+    return agg;
+  }
+
   computeDataPoints(state: ViewState, rawDataPoints: DataPoint[], applyTransforms = true) {
     if (rawDataPoints.length === 0) return rawDataPoints;
 
@@ -183,80 +196,20 @@ export default class ExploreStore {
 
     rawDataPoints
       .filter((d) => !state.filteredPoints.includes(d.id))
-      .forEach((d) => (data[d.id] = d));
-
-    if (applyTransforms) {
-      const { labels, categoryAssignments } = state;
-
-      Object.entries(labels).forEach(([label, points]) => {
-        points.forEach((p) => {
-          if (!data[p][CUSTOM_LABEL]) data[p] = { ...data[p], [CUSTOM_LABEL]: [label] };
-          else data[p][CUSTOM_LABEL].push(label);
-        });
+      .forEach((pt) => {
+        data[pt.id] = toJS(pt);
       });
 
-      Object.entries(categoryAssignments).forEach(([category, valueMap]) => {
-        Object.entries(valueMap).forEach(([value, points]) => {
-          points.forEach((p) => {
-            const d = data[p];
-
-            if (!d[CUSTOM_CATEGORY_ASSIGNMENT]) d[CUSTOM_CATEGORY_ASSIGNMENT] = {};
-
-            d[CUSTOM_CATEGORY_ASSIGNMENT][category] = value;
-
-            data[p] = d;
-          });
+    if (applyTransforms) {
+      Object.entries(state.labels).forEach(([label, ids]) => {
+        ids.forEach((id) => {
+          if (!data[id][CUSTOM_LABEL]) data[id][CUSTOM_LABEL] = [label];
+          else data[id][CUSTOM_LABEL].push(label);
         });
       });
     }
 
     return Object.values(data);
-  }
-
-  get aggregate() {
-    if (!this.data) return [];
-    const points: DataPoint[] = [];
-    const data = this.computeDataPoints(this.state, this.rawDataPoints, false);
-
-    const { numericColumns, categoricalColumns, labelColumn } = this.data;
-
-    const { aggregates } = this.state;
-
-    Object.entries(aggregates).forEach(([id, agg]) => {
-      const memberPoints = data.filter((d) => agg.values.includes(d.id));
-      const point: DataPoint = {
-        id,
-        iid: id,
-      };
-
-      numericColumns.forEach((col) => {
-        switch (agg.map[col]) {
-          case 'Max':
-            point[col] = max(memberPoints.map((d) => d[col]));
-            break;
-          case 'Min':
-            point[col] = min(memberPoints.map((d) => d[col]));
-            break;
-          case 'Median':
-            point[col] = median(memberPoints.map((d) => d[col]));
-            break;
-          case 'Mean':
-            point[col] = mean(memberPoints.map((d) => d[col]));
-            break;
-          case 'Sum':
-            point[col] = sum(memberPoints.map((d) => d[col]));
-            break;
-        }
-      });
-
-      categoricalColumns.forEach((col) => (point[col] = 'NA'));
-
-      point[labelColumn] = agg.name;
-
-      points.push(point);
-    });
-
-    return points;
   }
 
   get doesHaveCategories() {
@@ -266,8 +219,20 @@ export default class ExploreStore {
   }
 
   get state() {
-    const id = this.provenance.current.id;
-    const st = this.getState(id);
+    const id = this.provenance.graph.current;
+    const record = this.record[id];
+
+    return this.stateHelper(id, record);
+  }
+
+  stateHelper = (id: NodeID, state?: ViewState) => {
+    let st: ViewState =
+      this.lastAccessed !== '' ? toJS(this.record[this.lastAccessed]) : defaultViewState;
+
+    if (state) {
+      st = toJS(state);
+      this.lastAccessed = id;
+    }
 
     const scatterplots = Object.values(st.views).filter(
       (c) => c.type === 'Scatterplot',
@@ -275,7 +240,7 @@ export default class ExploreStore {
     const pcps = Object.values(st.views).filter((c) => c.type === 'PCP') as PCPView[];
 
     return { ...st, scatterplots, pcps };
-  }
+  };
 
   get provenance() {
     return this.root.provenance;
@@ -313,6 +278,19 @@ export default class ExploreStore {
 
       this.provenance.apply(addScatterplot(spec), `Adding scatterplot for ${x}-${y}`);
     }
+  };
+
+  removeScatterplot = (id: string) => {
+    this.provenance.apply(
+      removeScatterplot({
+        i_type: 'ViewSpec',
+        id,
+        action: 'Remove',
+        type: 'Scatterplot',
+        dimensions: [],
+      }),
+      'Remove Scatterplot',
+    );
   };
 
   selectPointsFreeform = (points: string[], view: View) => {
@@ -423,7 +401,16 @@ export default class ExploreStore {
     }
   };
 
-  handleIntentSelection = (prediction: Prediction) => {};
+  handleIntentSelection = (prediction: Prediction) => {
+    this.provenance.apply(
+      addIntentSelection({
+        i_type: 'Selection',
+        type: 'Algorithmic',
+        apply: predictionToIntent(prediction),
+      }),
+      `Apply ${prediction.intent} selection`,
+    );
+  };
 
   handleFilter = (filterType: 'In' | 'Out') => {
     this.provenance.apply(
@@ -460,22 +447,36 @@ export default class ExploreStore {
   };
 
   // Mobx Actions
-  refreshPrediction = async () => {
+  refreshPrediction = (state: ViewState) => {
+    const selections = getSelections(state);
+    const dimensions = getDimensions(state);
+    const dataValues = this.dataPoints;
+
+    if (selections.length === 0) {
+      runInAction(
+        () =>
+          (this.predictions = {
+            isLoading: false,
+            values: [],
+          }),
+      );
+
+      return;
+    }
+
     runInAction(() => {
       this.predictions.isLoading = true;
     });
-    const selections = getSelections(this.state);
-    const dimensions = getDimensions(this.state);
-    const dataValues = this.dataPoints;
 
-    const data = await this.query.fetchQuery(
-      ['predictions', this.datasetId, selections, dimensions, dataValues],
-      () => queryPrediction(dataValues, dimensions, selections),
-    );
-
-    runInAction(() => {
-      this.predictions = { isLoading: false, values: data };
-    });
+    this.query
+      .fetchQuery(['predictions', this.datasetId, selections, dimensions, dataValues], () =>
+        queryPrediction(dataValues, dimensions, selections),
+      )
+      .then((pred) => {
+        runInAction(() => {
+          this.predictions = { isLoading: false, values: pred };
+        });
+      });
   };
 
   toggleHideAggregateMembers = () => (this.hideAggregateMembers = !this.hideAggregateMembers);
@@ -515,173 +516,18 @@ export default class ExploreStore {
 
     if (this.data.categoricalColumns.includes(col)) this.selectedCategoryColumn = col;
     else throw new Error('Undefined column');
+
+    localStorage.setItem('category-column', col);
   };
 
-  updateVisState = (_state: ViewState, interactions: Interactions): ViewState => {
-    let state = deepCopy(_state);
-    const latest = interactions[interactions.length - 1];
-    const currState = JSON.parse(JSON.stringify(state));
-
-    switch (latest.i_type) {
-      case 'ViewSpec':
-        state.views[latest.id] = getView(latest);
-        break;
-      // View Spec Ends
-      case 'Selection': {
-        switch (latest.type) {
-          case 'Point': {
-            let currSels = state.freeformSelections;
-
-            switch (latest.action) {
-              case 'Selection': {
-                currSels.push(...latest.ids);
-
-                break;
-              }
-              case 'Deselection': {
-                currSels = [...new Set(currSels.filter((p) => !latest.ids.includes(p)))];
-
-                break;
-              }
-            }
-
-            state.freeformSelections = [...new Set(currSels)];
-
-            break;
-          }
-          case 'Range': {
-            const brush_id = latest.rangeId;
-            const view_id = latest.view;
-            const spec = state.views[latest.view].spec;
-
-            switch (latest.action) {
-              case 'Add':
-              case 'Update': {
-                const { extents } = latest;
-
-                if (spec.type === 'Scatterplot') {
-                  const { x1, x2, y1, y2 } = extentToBrushExtent(
-                    extents,
-                    spec.dimensions[0],
-                    spec.dimensions[1],
-                  );
-
-                  const selectedIds = getSelectedPoints(
-                    extents,
-                    this.computeDataPoints(currState, this.rawDataPoints, false),
-                    spec.dimensions[0],
-                    spec.dimensions[1],
-                  );
-
-                  state.views[view_id].brushes[brush_id] = {
-                    id: brush_id,
-                    extents: { x1, x2, y1, y2 },
-                  };
-
-                  state.views[view_id].brushSelections[brush_id] = selectedIds;
-                } else {
-                  // ! Implement PCP Brush
-                }
-
-                break;
-              }
-              case 'Remove': {
-                // ! Deleting doesnt recreate brush
-                delete state.views[view_id].brushes[brush_id];
-                delete state.views[view_id].brushSelections[brush_id];
-
-                break;
-              }
-            }
-
-            break;
-          }
-        }
-
-        break;
-      }
-      case 'Filter': {
-        const { action } = latest;
-        const filteredPoints = state.filteredPoints;
-        const sels = getSelections(state);
-
-        if (action === 'In') {
-          const filterOut = this.rawDataPoints.filter((d) => !sels.includes(d.id)).map((d) => d.id);
-          state.filteredPoints.push(...filterOut);
-        } else {
-          state.filteredPoints.push(...sels);
-        }
-
-        state.filteredPoints = filteredPoints;
-        state = clearSelections(state);
-
-        break;
-      }
-      case 'Label': {
-        const { as } = latest;
-
-        const sels = getSelections(state);
-
-        if (!state.labels[as]) state.labels[as] = [];
-
-        state.labels[as].push(...sels);
-
-        state = clearSelections(state);
-
-        break;
-      }
-      case 'Aggregation': {
-        const { id, name, rules } = latest;
-
-        const sels = getSelections(state);
-
-        state.aggregates[id] = {
-          replace: false,
-          name,
-          map: rules,
-          values: sels,
-        };
-
-        state = clearSelections(state);
-
-        break;
-      }
-      default:
-        break;
-    }
-
-    return state;
-  };
-
-  getState = (nodeid: NodeID): ViewState => {
-    if (!this.datasetId) return defaultViewState;
-
-    let stateRecord = this.record[this.datasetId];
-
-    const current = this.provenance.graph.nodes[nodeid];
-
-    if (!stateRecord) {
-      stateRecord = {};
-      this.record[this.datasetId] = stateRecord;
-    }
-
-    let visState = stateRecord[current.id];
-
-    if (!visState) {
-      if (isChildNode(current)) {
-        const parentVisState = this.getState(current.parent);
-        const { interactions } = this.provenance.getState(current);
-        visState = this.updateVisState(parentVisState, interactions);
-      } else {
-        visState = deepCopy(defaultViewState);
-      }
-
-      this.record[this.datasetId][current.id] = visState;
-
-      return deepCopy(this.record[this.datasetId][current.id]);
-    }
-
-    return visState;
+  updateRecord = (dataset_id: string, graph: ReapplyGraph) => {
+    this.query
+      .fetchQuery(['state', dataset_id, graph], () => queryState(this.rawDataPoints, graph))
+      .then((rec) => {
+        runInAction(() => {
+          this.record = rec;
+        });
+      });
   };
 }
 

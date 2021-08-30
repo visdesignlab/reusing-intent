@@ -16,6 +16,7 @@ export const API = 'http://localhost';
 export const PROJECT = `${API}/project`;
 export const DATA = `${API}/data`;
 export const PREDICT = `${API}/predict`;
+export const COMPUTE = `${API}/compute`;
 
 const httpLink = createHttpLink({
   uri: 'http://localhost/graphql/',

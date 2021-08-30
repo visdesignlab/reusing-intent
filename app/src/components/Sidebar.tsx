@@ -5,7 +5,7 @@ import {
   IconButton,
   makeStyles,
   Theme,
-  Typography
+  Typography,
 } from '@material-ui/core';
 import ArrowDropDownIcon from '@material-ui/icons/ArrowDropDown';
 import ArrowRightIcon from '@material-ui/icons/ArrowRight';
@@ -19,7 +19,6 @@ import { useHistory } from 'react-router-dom';
 
 import { useStore } from '../stores/RootStore';
 import { Projects } from '../stores/types/Project';
-
 
 const useStyles = (drawerWidth: number) => {
   return makeStyles((theme: Theme) =>
@@ -68,11 +67,11 @@ const Sidebar = ({ projects }: Props) => {
     if (debug === 'off') return;
 
     if (!project) {
-      setCurrentProject(projects[0]);
+      setCurrentProject(projects[1]);
     }
 
     if (!dataset_id) {
-      setDatasetId(projects[0].datasets[0].id);
+      setDatasetId(projects[1].datasets[0].id);
     }
 
     if (goToExplore) history.push('/explore');

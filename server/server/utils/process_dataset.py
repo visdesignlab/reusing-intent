@@ -39,7 +39,7 @@ def process(project: str, version: str, dataset, source_metadata=None):
 
     data: pd.DataFrame = pd.read_csv(dataset)  # type: ignore
 
-    data.dropna(inplace=True)
+    # data.dropna(inplace=True)
 
     sorted_columns = sorted(data.columns)
     data = data[sorted_columns]

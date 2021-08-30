@@ -1,5 +1,6 @@
 import hashlib
 import json
+from copy import deepcopy
 from typing import List
 
 import numpy as np
@@ -43,10 +44,12 @@ class Prediction:
     def from_intent(
         intent: Intent, data: pd.DataFrame, selections: List[str]
     ) -> List["Prediction"]:
+        cols = deepcopy(intent.dimensions)
+        cols.append("id")
         if intent.algorithm == "DBScan":
             if intent.intent == "Outlier":
                 mask = np.array(intent.output) == -1
-                selected = data[mask].id.tolist()
+                selected = data[cols].dropna()[mask].id.tolist()
                 pred = Prediction(intent)
                 pred.members = selected
                 pred.rank_jaccard = jaccard_similarity(pred.members, selections)
@@ -59,17 +62,18 @@ class Prediction:
                     if cluster_id == -1:
                         continue
                     mask = np.array(intent.output) == cluster_id
-                    selected = data[mask].id.tolist()
+                    selected = data[cols].dropna()[mask].id.tolist()
                     pred = Prediction(intent)
                     pred.members = selected
                     pred.rank_jaccard = jaccard_similarity(pred.members, selections)
                     pred.membership_stats = get_stats(pred.members, selections)
                     pred.info["members"] = selected
+                    pred.info["test"] = cluster_vals.tolist()
                     preds.append(pred)
                 return preds
         elif intent.algorithm == "Isolation Forest":
             mask = np.array(intent.output) == -1
-            selected = data[mask].id.tolist()
+            selected = data[cols].dropna()[mask].id.tolist()
             pred = Prediction(intent)
             pred.members = selected
             pred.rank_jaccard = jaccard_similarity(pred.members, selections)
@@ -82,7 +86,7 @@ class Prediction:
                 if cluster_id == -1:
                     continue
                 mask = np.array(intent.output) == cluster_id
-                selected = data[mask].id.tolist()
+                selected = data[cols].dropna()[mask].id.tolist()
                 pred = Prediction(intent)
                 pred.members = selected
                 pred.rank_jaccard = jaccard_similarity(pred.members, selections)
@@ -96,7 +100,7 @@ class Prediction:
             inlier_mask = output == 1
             outlier_mask = output == 0
 
-            inliers = data[inlier_mask].id.tolist()
+            inliers = data[cols].dropna()[inlier_mask].id.tolist()
 
             inlier_pred = Prediction(intent)
             inlier_pred.members = inliers
@@ -104,7 +108,7 @@ class Prediction:
             inlier_pred.membership_stats = get_stats(inliers, selections)
             inlier_pred.info["type"] = "Within"
 
-            outliers = data[outlier_mask].id.tolist()
+            outliers = data[cols].dropna()[outlier_mask].id.tolist()
             outlier_pred = Prediction(intent)
             outlier_pred.members = outliers
             outlier_pred.rank_jaccard = jaccard_similarity(outliers, selections)
@@ -118,7 +122,7 @@ class Prediction:
             inlier_mask = output == 1
             outlier_mask = output == 0
 
-            inliers = data[inlier_mask].id.tolist()
+            inliers = data[cols].dropna()[inlier_mask].id.tolist()
 
             inlier_pred = Prediction(intent)
             inlier_pred.members = inliers
@@ -126,7 +130,7 @@ class Prediction:
             inlier_pred.membership_stats = get_stats(inliers, selections)
             inlier_pred.info["type"] = "Within"
 
-            outliers = data[outlier_mask].id.tolist()
+            outliers = data[cols].dropna()[outlier_mask].id.tolist()
             outlier_pred = Prediction(intent)
             outlier_pred.members = outliers
             outlier_pred.rank_jaccard = jaccard_similarity(outliers, selections)
@@ -136,7 +140,7 @@ class Prediction:
             return [inlier_pred, outlier_pred]
         elif intent.algorithm == "BNL":
             mask = np.array(intent.output) == 1
-            skyline = data[mask].id.tolist()
+            skyline = data[cols].dropna()[mask].id.tolist()
             pred = Prediction(intent)
             pred.members = skyline
             pred.rank_jaccard = jaccard_similarity(pred.members, selections)

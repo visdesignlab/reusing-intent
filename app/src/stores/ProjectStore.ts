@@ -10,16 +10,24 @@ export default class ProjectStore {
   root: RootStore;
   project: Project | null = null;
   dataset_id: string | null = null;
-  data: Data | null = null;
+  _data: { [id: string]: Data } = {};
   projects: Projects = [];
 
   constructor(root: RootStore) {
     this.root = root;
     makeAutoObservable(this);
     reaction(
-      () => this.dataset_id,
-      (id) => this.getData(id),
+      () => this.project,
+      (project) => {
+        if (project) this.getData(project);
+      },
     );
+  }
+
+  get data() {
+    if (!this.dataset_id) return null;
+
+    return this._data[this.dataset_id];
   }
 
   get query() {
@@ -27,6 +35,8 @@ export default class ProjectStore {
   }
 
   setCurrentProject = (project: Project) => {
+    localStorage.removeItem('aggOpt');
+
     this.project = project;
   };
 
@@ -43,31 +53,37 @@ export default class ProjectStore {
       const { addCategoryColumn } = d;
       runInAction(() => {
         if (this.data) {
-          this.data = { ...this.data, ...addCategoryColumn };
+          if (!this.dataset_id) return;
+          this._data[this.dataset_id] = { ...this.data, ...addCategoryColumn };
+
           this.root.exploreStore.selectedCategoryColumn = columnName;
         }
       });
     }
   };
 
-  getData = async (record_id: string | null) => {
-    if (!record_id) {
-      runInAction(() => {
-        this.data = null;
+  getData = (project: Project) => {
+    const { datasets } = project;
+
+    const dataset_requests: Promise<Data>[] = [];
+
+    datasets.forEach((dataset) => {
+      const data = this.query.fetchQuery(['dataset', dataset.id], () => queryData(dataset.id));
+      dataset_requests.push(data);
+    });
+
+    Promise.all(dataset_requests)
+      .then((datasets) => {
+        const datas: { [r: string]: Data } = {};
+        datasets.forEach((data) => {
+          datas[data.id] = data;
+        });
+        runInAction(() => {
+          this._data = datas;
+        });
+      })
+      .catch((err) => {
+        throw new Error(err);
       });
-
-      return;
-    }
-
-    try {
-      const data = await this.query.fetchQuery(['dataset', record_id], () => queryData(record_id));
-
-      runInAction(() => {
-        this.data = data;
-      });
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      throw new Error(err as any);
-    }
   };
 }

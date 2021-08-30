@@ -16,7 +16,9 @@ class IsolationForestOutlier(AlgorithmBase):
         self.algorithm = "Isolation Forest"
         self.intent = "Outlier"
         self.dimensions = dimensions
-        clf, labels = isolationforest_outlier(data[dimensions].values, contamination)
+        clf, labels = isolationforest_outlier(
+            data[dimensions].dropna().values, contamination
+        )
         self.labels = labels
         self.params = clf.get_params()
         self.info = {}

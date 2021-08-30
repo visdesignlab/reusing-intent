@@ -1,4 +1,4 @@
-import { Provenance } from '@visdesignlab/trrack';
+import { Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
 
 import { Interactions } from '../../types/Interactions';
 
@@ -13,3 +13,4 @@ export const initState: State = {
 export type ReapplyEvents = 'Add Scatterplot' | 'Freeform Selection' | 'Remove Scatterplot';
 
 export type ReapplyProvenance = Provenance<State, ReapplyEvents>;
+export type ReapplyGraph = ProvenanceGraph<ReapplyEvents, void>;

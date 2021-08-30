@@ -62,7 +62,7 @@ const AggregateDialog = ({ open, onSet, onClose }: Props) => {
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Hello, World!</DialogTitle>
+      <DialogTitle>Aggregate</DialogTitle>
       <DialogContent>
         <DialogContentText>Select how each numeric column should be aggregated.</DialogContentText>
         {numericColumns.map((column) => {

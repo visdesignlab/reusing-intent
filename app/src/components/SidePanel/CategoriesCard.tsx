@@ -102,8 +102,6 @@ const CategoriesCard = () => {
         />
         {!doesHaveCategories ? (
           <CardContent>No category column in the dataset!</CardContent>
-        ) : selectedCategoryColumn === null ? (
-          <CardContent>Loading...</CardContent>
         ) : (
           <CardContent>
             <Autocomplete
@@ -135,7 +133,7 @@ const CategoriesCard = () => {
               renderOption={(opt) => (
                 <Typography variant="button">{opt.title.toUpperCase()}</Typography>
               )}
-              value={{ title: selectedCategoryColumn }}
+              value={selectedCategoryColumn ? { title: selectedCategoryColumn } : null}
               clearOnBlur
               handleHomeEndKeys
               selectOnFocus
@@ -153,14 +151,18 @@ const CategoriesCard = () => {
                 }
               }}
             />
-            {Object.entries(categoryMap).map(([col, sym]) => (
-              <Symbol
-                key={col}
-                disabled={!showCategory}
-                label={col}
-                path={symbol(sym).size(100)()}
-              />
-            ))}
+            {selectedCategoryColumn === null ? (
+              <CardContent>Loading...</CardContent>
+            ) : (
+              Object.entries(categoryMap).map(([col, sym]) => (
+                <Symbol
+                  key={col}
+                  disabled={!showCategory}
+                  label={col}
+                  path={symbol(sym).size(100)()}
+                />
+              ))
+            )}
           </CardContent>
         )}
       </Card>

@@ -17,10 +17,13 @@ class PolynomialRegression(AlgorithmBase):
         self.intent = "Polynomial Regression"
         self.dimensions = dimensions
         clf, inlier_mask, threshold, order = regression(
-            data[dimensions].values, threshold_multiplier=threshold_multiplier
+            data[dimensions].dropna().values, threshold_multiplier=threshold_multiplier
         )
         self.labels = inlier_mask
-        self.params = {"order": order}
+        self.params = {
+            "order": order,
+            "multiplier": threshold_multiplier,
+        }
         self.info = {"threshold": threshold, "order": order}
 
     @staticmethod

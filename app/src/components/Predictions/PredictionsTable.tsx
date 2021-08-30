@@ -45,6 +45,7 @@ const PredictionsTable = () => {
       setHighlightMode,
       setHighlightPredicate,
       setColorPredicate,
+      handleIntentSelection,
       setShowMatchesLegend,
     },
   } = useStore();
@@ -108,7 +109,15 @@ const PredictionsTable = () => {
               rank={pred.rank_jaccard}
             />
             <ListItemIcon>
-              <IconButton>
+              <IconButton
+                onClick={() => {
+                  handleIntentSelection(pred);
+                  setHighlightMode(false);
+                  setHighlightPredicate(null);
+                  setColorPredicate(null);
+                  setShowMatchesLegend(false);
+                }}
+              >
                 <TouchAppIcon />
               </IconButton>
             </ListItemIcon>

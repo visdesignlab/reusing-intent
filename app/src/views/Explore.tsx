@@ -46,6 +46,7 @@ const Explore = () => {
       data,
       showCategories,
       selectedCategoryColumn,
+      changeCategoryColumn,
       state: { views, labels },
     },
   } = useStore();
@@ -54,6 +55,10 @@ const Explore = () => {
 
   const aggOpt = localStorage.getItem('aggOpt');
 
+  // useEffect(() => {
+
+  // }, [])
+
   useEffect(() => {
     if (JSON.stringify(aggregateOptions) !== aggOpt) {
       if (aggOpt) {
@@ -61,6 +66,16 @@ const Explore = () => {
       }
     }
   }, [aggregateOptions, aggOpt]);
+
+  useEffect(() => {
+    if (!selectedCategoryColumn && data && data.categoricalColumns.length > 0) {
+      const col = localStorage.getItem('category-column');
+
+      changeCategoryColumn(
+        col && data.categoricalColumns.includes(col) ? col : data.categoricalColumns[0],
+      );
+    }
+  }, [selectedCategoryColumn, changeCategoryColumn, data]);
 
   const categories = useMemo(() => {
     return selectedCategoryColumn ? data?.columnInfo[selectedCategoryColumn]?.options || [] : [];

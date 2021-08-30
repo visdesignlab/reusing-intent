@@ -12,7 +12,7 @@ class MultivariateOptimization(AlgorithmBase):
         self.algorithm = "BNL"
         self.intent = "Multivariate Optimization"
         self.dimensions = dimensions
-        mask = pareto(data[dimensions].values, sense)
+        mask = pareto(data[dimensions].dropna().values, sense)
         self.labels = mask
         self.params = {"sense": sense}
         self.info = {}

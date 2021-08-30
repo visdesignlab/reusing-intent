@@ -19,6 +19,7 @@ export default class RootStore {
   opts: DebugOpts;
   provenance: ReapplyProvenance;
   query: QueryClient;
+  workforce_id: string | null = null;
 
   constructor() {
     this.query = new QueryClient({
@@ -58,6 +59,11 @@ export default class RootStore {
       // eslint-disable-next-line no-console
       console.log(this.provenance.state);
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).printRawProvenance = () => {
+      // eslint-disable-next-line no-console
+      console.log(toJS(this.provenance.graph));
+    };
 
     makeAutoObservable(this);
 
@@ -87,6 +93,10 @@ export default class RootStore {
 
     return current.children.length === 0;
   }
+
+  setWorkforceId = (id: string) => {
+    this.workforce_id = id;
+  };
 
   setDebugOpts = (opts: Partial<DebugOpts>) => {
     this.opts = { ...this.opts, ...opts };

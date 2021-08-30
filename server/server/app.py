@@ -10,6 +10,7 @@ from server.routes import init_routes
 from .celery import configure_celery
 from .db import db
 from .graphql import init_graphql
+from .routes.handle_exception import handle_exception
 from .utils.process_dataset import process
 
 app = Flask(__name__)
@@ -36,6 +37,33 @@ def hello_world():
 
     test = test_task.delay()
     return "<pre>{} {} {}</pre>".format(hello(), hello2(), test.task_id)
+
+
+@app.route("/compare", methods=["POST"])
+def compare():
+    try:
+        body = request.get_json()
+
+        if body is None:
+            raise Exception("Error")
+
+        if "base" not in body:
+            raise Exception("No base dataset")
+
+        if "target" not in body:
+            raise Exception("No target dataset")
+
+        if "provenance" not in body:
+            raise Exception("No provenance")
+
+        base = body["base"]
+        target = body["target"]
+        provenance = body["provenance"]
+
+        return jsonify({"base": base, "target": target, "provenance": provenance})
+    except Exception as ex:
+        raise ex
+        return handle_exception(ex)
 
 
 @app.route("/upload", methods=["POST"])

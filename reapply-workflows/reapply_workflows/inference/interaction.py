@@ -2,6 +2,8 @@ from abc import abstractmethod
 from copy import deepcopy
 from typing import Any, List
 
+from reapply_workflows.inference.intent import Intent
+
 
 class BaseInteraction:
     @abstractmethod
@@ -21,10 +23,11 @@ class GenericInteraction(BaseInteraction):
 
 
 class ViewSpec(BaseInteraction):
-    def __init__(self, id, type, dimensions, **kwargs):
-        self.id = id
-        self.type = type
-        self.dimensions = dimensions
+    def __init__(self, interaction):
+        self.id = interaction["id"]
+        self.type = interaction["type"]
+        self.dimensions = interaction["dimensions"]
+        self.__interaction__ = interaction
 
     def apply(
         self,
@@ -34,23 +37,32 @@ class ViewSpec(BaseInteraction):
         r.add_update_view(self)
         return r
 
+    def to_dict(self):
+        return self.__interaction__
+
 
 class ScatterplotSpec(ViewSpec):
-    def __init__(self, id, type, action, dimensions, **kwargs):
-        self.id = id
-        self.type = type
-        self.action = action
-        self.dimensions: List[str] = dimensions
-        self.x = dimensions[0]
-        self.y = dimensions[1]
+    def __init__(self, interaction):
+        self.id = interaction["id"]
+        self.type = interaction["type"]
+        self.action = interaction["action"]
+        self.dimensions: List[str] = interaction["dimensions"]
+        if len(self.dimensions) == 2:
+            self.x = self.dimensions[0]
+            self.y = self.dimensions[1]
+        else:
+            self.x = None
+            self.y = None
+        self.__interaction__ = interaction
 
 
 class PCPSpec(ViewSpec):
-    def __init__(self, id, type, action, dimensions, **kwargs):
-        self.id = id
-        self.type = type
-        self.action = action
-        self.dimensions: List[str] = dimensions
+    def __init__(self, interaction):
+        self.id = interaction["id"]
+        self.type = interaction["type"]
+        self.action = interaction["action"]
+        self.dimensions: List[str] = interaction["dimensions"]
+        self.__interaction__ = interaction
 
 
 # ? Get brush extents here
@@ -120,8 +132,10 @@ class RangeSelection(Selection):
         return r
 
 
-class IntentSelection(Selection):
-    pass
+class AlgorithmicSelection(Selection):
+    def __init__(self, type, apply, **kwargs):
+        self.type = type
+        self.intent = Intent.from_intent(apply)
 
 
 class Filter:
@@ -159,9 +173,11 @@ class Categorize:
 
 
 class Aggregate:
-    def __init__(self, id, by, **kwargs):
+    def __init__(self, id, name, drop, rules, **kwargs):
         self.id = id
-        self.by = by
+        self.name = name
+        self.drop = drop
+        self.rules = rules
         self.ids: List[str] = []
 
     def apply(self, record):
@@ -179,26 +195,26 @@ class ReplaceAggregate:
 def getInteraction(interaction) -> Any:
     i_type = interaction["i_type"]
     if i_type == "ViewSpec":
-        vs = ViewSpec(**interaction)
+        vs = ViewSpec(interaction)
         if vs.type == "Scatterplot":
-            return ScatterplotSpec(**interaction)
+            return ScatterplotSpec(interaction)
         elif vs.type == "PCP":
-            return PCPSpec(**interaction)
+            return PCPSpec(interaction)
     elif i_type == "Selection":
         sel = Selection(**interaction)
         if sel.type == "Point":
             return PointSelection(**interaction)
         elif sel.type == "Range":
             return RangeSelection(**interaction)
-        elif sel.type == "Intent":
-            return IntentSelection(**interaction)
+        elif sel.type == "Algorithmic":
+            return AlgorithmicSelection(**interaction)
     elif i_type == "Label":
         return Label(**interaction)
     elif i_type == "Filter":
         return Filter(**interaction)
     elif i_type == "Categorize":
         return Categorize(**interaction)
-    elif i_type == "Aggregate":
+    elif i_type == "Aggregation":
         return Aggregate(**interaction)
     elif i_type == "ReplaceAggregate":
         return ReplaceAggregate(**interaction)
@@ -214,6 +230,10 @@ class Interactions:
 
         for i in interactions:
             self.order.append(getInteraction(i))
+
+    @property
+    def latest(self) -> BaseInteraction:
+        return self.order[-1]
 
     def inferSelectionsAndDimensions(self, data):
         data = data.copy(deep=True)

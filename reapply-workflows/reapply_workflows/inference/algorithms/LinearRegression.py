@@ -17,11 +17,17 @@ class LinearRegression(AlgorithmBase):
         self.intent = "Linear Regression"
         self.dimensions = dimensions
         clf, inlier_mask, threshold, order = regression(
-            data[dimensions].values, threshold_multiplier, order=1
+            data[dimensions].dropna().values, threshold_multiplier, order=1
         )
         self.labels = inlier_mask
-        self.params = {"order": order}
-        self.info = {"threshold": threshold, "order": order}
+        self.params = {
+            "order": order,
+            "multiplier": threshold_multiplier,
+        }
+        self.info = {
+            "threshold": threshold,
+            "order": order,
+        }
 
     @staticmethod
     def compute(data: pd.DataFrame, combinations, threshold_multipliers):
