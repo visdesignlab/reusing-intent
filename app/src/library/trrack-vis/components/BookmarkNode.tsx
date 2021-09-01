@@ -1,10 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
+import { StateNode } from '@visdesignlab/trrack';
+import { observer } from 'mobx-react';
+import React from 'react';
 import { Animate } from 'react-move';
+
+import { EventConfig } from '../Utils/EventConfig';
 
 import { treeColor } from './Styles';
 
-function BookmarkNode({ current, node, eventConfig }: any) {
+type BookmarkNodeProps<T, S extends string> = {
+  current: boolean;
+  node: StateNode<T, S>;
+  nodeMap: any;
+  editAnnotations: boolean;
+  eventConfig?: EventConfig<S>;
+};
+
+function BookmarkNode<T, S extends string>({
+  current,
+  node,
+  eventConfig,
+}: BookmarkNodeProps<T, S>) {
   const radius = 5;
   const strokeWidth = 2;
   const textSize = 15;
@@ -23,7 +40,7 @@ function BookmarkNode({ current, node, eventConfig }: any) {
   );
 
   const dropDownAdded = false;
-  const { eventType } = node.metadata;
+  const { eventType }: { eventType: any } = node.metadata;
 
   if (eventConfig) {
     const { currentGlyph, backboneGlyph } = eventConfig[eventType];
@@ -100,4 +117,4 @@ function BookmarkNode({ current, node, eventConfig }: any) {
   );
 }
 
-export default BookmarkNode;
+export default observer(BookmarkNode);

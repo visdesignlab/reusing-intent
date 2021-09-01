@@ -15,9 +15,10 @@ type Props = {
   disabled?: boolean;
   label: string;
   path: string | null;
+  onClick?: () => void;
 };
 
-const Symbol: FC<Props> = ({ disabled = false, path, label }) => {
+const Symbol: FC<Props> = ({ disabled = false, path, label, onClick }) => {
   const styles = useStyles();
   const {
     exploreStore: { setHighlightMode, setHighlightPredicate },
@@ -32,6 +33,9 @@ const Symbol: FC<Props> = ({ disabled = false, path, label }) => {
             {path && <path d={path} opacity="0.5" transform={translate(25 / 2)} />}
           </svg>
         }
+        onClick={() => {
+          if (onClick) onClick();
+        }}
         onMouseEnter={() => {
           setHighlightMode(true);
           setHighlightPredicate((p) => p.category === label);

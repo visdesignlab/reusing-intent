@@ -1,7 +1,9 @@
 import { initProvenance, isChildNode } from '@visdesignlab/trrack';
-import { makeAutoObservable, toJS, when } from 'mobx';
+import { action, makeAutoObservable, reaction, toJS, when } from 'mobx';
 import { createContext, useContext } from 'react';
 import { QueryClient } from 'react-query';
+
+import { loadWorkflowFromFirebase } from '../Firebase/firebase';
 
 import ExploreStore from './ExploreStore';
 import ProjectStore from './ProjectStore';
@@ -19,13 +21,14 @@ export default class RootStore {
   opts: DebugOpts;
   provenance: ReapplyProvenance;
   query: QueryClient;
-  workforce_id: string | null = null;
+  workflowId: string | null = null;
 
   constructor() {
     this.query = new QueryClient({
       defaultOptions: {
         queries: {
           staleTime: Infinity,
+          cacheTime: Infinity,
         },
       },
     });
@@ -65,12 +68,22 @@ export default class RootStore {
       console.log(toJS(this.provenance.graph));
     };
 
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      setWorkflowId: action,
+      loadWorkflow: action,
+    });
 
     when(
       () => this.opts.showCategories,
       () => {
         this.exploreStore.toggleShowCategories(this.opts.showCategories);
+      },
+    );
+
+    reaction(
+      () => this.workflowId,
+      (workflowId) => {
+        this.loadWorkflow(workflowId);
       },
     );
   }
@@ -94,13 +107,27 @@ export default class RootStore {
     return current.children.length === 0;
   }
 
-  setWorkforceId = (id: string) => {
-    this.workforce_id = id;
+  setWorkflowId = (id: string) => {
+    if (id === this.workflowId) return;
+    this.workflowId = id;
   };
 
   setDebugOpts = (opts: Partial<DebugOpts>) => {
     this.opts = { ...this.opts, ...opts };
     localStorage.setItem('debug-opts', JSON.stringify(this.opts));
+  };
+
+  loadWorkflow = async (id: string | null) => {
+    if (!id) return;
+    const { project } = await loadWorkflowFromFirebase('ABC');
+    this.projectStore.setCurrentProject(project);
+    const prj = this.projectStore.project;
+
+    if (prj) {
+      const { datasets = [] } = prj;
+
+      if (datasets.length > 0) this.projectStore.setDatasetId(datasets[0].id);
+    }
   };
 }
 

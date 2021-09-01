@@ -1,4 +1,18 @@
-function BookmarkToggle({ graph, bookmarkView, setBookmarkView }: any) {
+import { ProvenanceGraph } from '@visdesignlab/trrack';
+import { observer } from 'mobx-react';
+
+export type BookmarkToggleConfig<T, S extends string> = {
+  graph?: ProvenanceGraph<T, S>;
+  bookmarkView: boolean;
+  // eslint-disable-next-line no-unused-vars
+  setBookmarkView: (b: boolean) => void;
+};
+
+function BookmarkToggle<T, S extends string>({
+  graph,
+  bookmarkView,
+  setBookmarkView,
+}: BookmarkToggleConfig<T, S>) {
   if (graph === undefined) {
     return null;
   }
@@ -22,4 +36,4 @@ function BookmarkToggle({ graph, bookmarkView, setBookmarkView }: any) {
   );
 }
 
-export default BookmarkToggle;
+export default observer(BookmarkToggle);

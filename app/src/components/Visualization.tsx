@@ -14,6 +14,7 @@ import { observer } from 'mobx-react';
 import { useCallback, useContext, useState } from 'react';
 
 import { GlobalPlotAttributeContext } from '../contexts/CategoryContext';
+import { CUSTOM_CATEGORY_ASSIGNMENT } from '../stores/ExploreStore';
 import { useStore } from '../stores/RootStore';
 
 import AddScatterplotDialog from './AddScatterplotDialog';
@@ -133,14 +134,22 @@ const Visualization = () => {
     const aggregatePoints: ScatterplotPoint[] = [];
 
     if (data) {
-      points = dataPoints.map((d) => ({
-        x: d[x] as number,
-        y: d[y] as number,
-        label: d[data.labelColumn] as string,
-        category:
-          showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-',
-        ...d,
-      }));
+      points = dataPoints.map((d) => {
+        let selectedCategory =
+          showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-';
+
+        if (d[CUSTOM_CATEGORY_ASSIGNMENT]) {
+          selectedCategory = d[CUSTOM_CATEGORY_ASSIGNMENT];
+        }
+
+        return {
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[data.labelColumn] as string,
+          category: selectedCategory,
+          ...d,
+        };
+      });
     }
 
     const x_range = rangeMap[x];

@@ -36,6 +36,7 @@ export type ViewState = {
   labels: { [k: string]: string[] };
   freeformSelections: string[];
   filteredPoints: string[];
+  selections: string[];
   categoryAssignments: { [categoryName: string]: { [value: string]: string[] } };
   aggregates: {
     [id: string]: {
@@ -53,6 +54,7 @@ export const defaultViewState: ViewState = {
   categoryAssignments: {},
   freeformSelections: [],
   aggregates: {},
+  selections: [],
 };
 
 // Helper Functions

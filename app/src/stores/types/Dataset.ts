@@ -44,6 +44,7 @@ export type Data = {
   success: boolean;
   errors: string[];
   id: string;
+  version: string;
   columnInfo: ColumnInfo;
   numericColumns: string[];
   categoricalColumns: string[];

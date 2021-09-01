@@ -6,6 +6,7 @@ import pandas as pd
 from reapply_workflows.inference.interaction import (
     Aggregate,
     AlgorithmicSelection,
+    Categorize,
     Filter,
     Interactions,
     Label,
@@ -91,6 +92,8 @@ class Node(object):
             state.apply_label(interaction)
         elif isinstance(interaction, Aggregate):
             state.apply_aggregate(interaction)
+        elif isinstance(interaction, Categorize):
+            state.apply_category(interaction)
         else:
             print("Unplanned", interaction)
 

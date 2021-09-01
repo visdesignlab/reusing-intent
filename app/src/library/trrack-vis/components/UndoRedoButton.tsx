@@ -1,5 +1,13 @@
+import { ProvenanceGraph } from '@visdesignlab/trrack';
+import React from 'react';
 import { Button } from 'semantic-ui-react';
 import { style } from 'typestyle';
+
+export type UndoRedoConfig<T, S extends string> = {
+  undoCallback: () => void;
+  redoCallback: () => void;
+  graph?: ProvenanceGraph<T, S>;
+};
 
 const undoButtonStyle = style({
   marginTop: '2px',
@@ -38,7 +46,11 @@ const redoButtonStyle = style({
   },
 });
 
-function UndoRedoButton({ graph, undoCallback, redoCallback }: any) {
+function UndoRedoButton<T, S extends string>({
+  graph,
+  undoCallback,
+  redoCallback,
+}: UndoRedoConfig<T, S>) {
   if (graph === undefined) {
     return null;
   }

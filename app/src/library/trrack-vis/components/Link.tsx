@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { FC } from 'react';
+import React, { FC } from 'react';
 
 type LinkProps = {} & React.SVGProps<SVGLineElement>;
 

@@ -5,6 +5,7 @@ import pandas as pd
 from reapply_workflows.inference.interaction import (
     Aggregate,
     AlgorithmicSelection,
+    Categorize,
     Filter,
     Label,
     PCPSpec,
@@ -265,6 +266,19 @@ class State:
             self.filteredPoints.extend(aggRecord.values)
 
         self.aggregates[agg.id] = aggRecord
+        self.clearSelections()
+
+    def apply_category(self, category: Categorize):
+        in_: Any = category.in_
+        as_: Any = category.as_
+        if in_ not in self.categoryAssignments:
+            self.categoryAssignments[in_] = {}
+
+        if as_ not in self.categoryAssignments[in_]:
+            self.categoryAssignments[in_][as_] = []
+
+        self.categoryAssignments[in_][as_].extend(self.selections)
+
         self.clearSelections()
 
     def toJSON(self):

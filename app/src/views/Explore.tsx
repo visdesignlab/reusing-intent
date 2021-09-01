@@ -1,4 +1,4 @@
-import { Button, ButtonGroup, createStyles, makeStyles } from '@material-ui/core';
+import { createStyles, makeStyles } from '@material-ui/core';
 import { schemeSet1, symbols, SymbolType } from 'd3';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -9,6 +9,7 @@ import ProvenanceTree from '../components/ProvenanceTree';
 import SidePanel from '../components/SidePanel';
 import Visualization from '../components/Visualization';
 import { AggMap, GlobalPlotAttributeContext } from '../contexts/CategoryContext';
+import useWorkflowFromURL from '../hooks/useWorflow';
 import { useStore } from '../stores/RootStore';
 
 const useStyles = makeStyles(() => {
@@ -36,10 +37,9 @@ const useStyles = makeStyles(() => {
 
 const Explore = () => {
   const styles = useStyles();
+  const { workflow, location } = useWorkflowFromURL();
   const {
-    provenance,
-    isAtRoot,
-    isAtLatest,
+    setWorkflowId,
     projectStore: { dataset_id },
     exploreStore: {
       addScatterplot,
@@ -50,14 +50,15 @@ const Explore = () => {
       state: { views, labels },
     },
   } = useStore();
+
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [aggregateOptions, setAggregateOptions] = useState<AggMap | null>(null);
 
   const aggOpt = localStorage.getItem('aggOpt');
 
-  // useEffect(() => {
-
-  // }, [])
+  useEffect(() => {
+    if (workflow) setWorkflowId(workflow);
+  }, [workflow, setWorkflowId]);
 
   useEffect(() => {
     if (JSON.stringify(aggregateOptions) !== aggOpt) {
@@ -112,7 +113,9 @@ const Explore = () => {
     if (data !== null && n_plots === 0) addScatterplot();
   }, [n_plots, addScatterplot, data]);
 
-  if (!dataset_id) return <Redirect to="/project" />;
+  if (!dataset_id) {
+    return <Redirect to={{ pathname: '/project', search: location.search }} />;
+  }
 
   return (
     <>
@@ -135,15 +138,6 @@ const Explore = () => {
           </div>
           <PredictionsTable />
           <div>
-            <ButtonGroup>
-              <Button disabled={isAtRoot} onClick={() => provenance.undo()}>
-                Undo
-              </Button>
-              <Button disabled={isAtLatest} onClick={() => provenance.redo()}>
-                Redo
-              </Button>
-            </ButtonGroup>
-
             <ProvenanceTree />
           </div>
         </GlobalPlotAttributeContext.Provider>

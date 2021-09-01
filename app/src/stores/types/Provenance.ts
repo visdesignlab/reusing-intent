@@ -10,7 +10,26 @@ export const initState: State = {
   interactions: [],
 };
 
-export type ReapplyEvents = 'Add Scatterplot' | 'Freeform Selection' | 'Remove Scatterplot';
+export type ReapplyEvents =
+  | 'Add Scatterplot'
+  | 'Remove Scatterplot'
+  | 'Point Selection'
+  | 'Point Deselection'
+  | 'Add Brush'
+  | 'Update Brush'
+  | 'Remove Brush'
+  | 'Filter'
+  | 'Label'
+  | 'Aggregate'
+  | 'Categorize'
+  | 'Algorithmic Selection';
 
-export type ReapplyProvenance = Provenance<State, ReapplyEvents>;
+type Status = 'Accepted' | 'Rejected' | 'Unknown';
+
+export type NodeStatus = {
+  original_record: string;
+  status: { [nodeId: string]: Status };
+};
+
+export type ReapplyProvenance = Provenance<State, ReapplyEvents, NodeStatus>;
 export type ReapplyGraph = ProvenanceGraph<ReapplyEvents, void>;

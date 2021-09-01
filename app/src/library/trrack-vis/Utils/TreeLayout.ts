@@ -1,19 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { ProvenanceNode } from '@visdesignlab/trrack';
 import { HierarchyNode } from 'd3';
 
 import { StratifiedMap } from '../components/ProvVis';
 
 export type TreeNode = HierarchyNode<unknown>;
 
-export type ExtendedHierarchyNode = {
+export type ExtendedHierarchyNode<T, S> = {
   column: number;
-} & HierarchyNode<any>;
+} & HierarchyNode<ProvenanceNode<T, S>>;
 
-export type ExtendedStratifiedMap = {
-  [key: string]: ExtendedHierarchyNode;
+export type ExtendedStratifiedMap<T, S> = {
+  [key: string]: ExtendedHierarchyNode<T, S>;
 };
 
-export function treeLayout<T, S, A>(nodes: StratifiedMap<T, S, A>, current: string, root: string) {
+export function treeLayout<T, S>(nodes: StratifiedMap<T, S>, current: string, root: string) {
   const depthMap: { [key: string]: any } = {};
 
   const currentPath = getPathTo(nodes, root, current);
@@ -23,12 +24,7 @@ export function treeLayout<T, S, A>(nodes: StratifiedMap<T, S, A>, current: stri
   return currentPath;
 }
 
-function DFS<T, S, A>(
-  nodes: StratifiedMap<T, S, A>,
-  node: string,
-  depthMap: any,
-  currentPath: string[],
-) {
+function DFS<T, S>(nodes: StratifiedMap<T, S>, node: string, depthMap: any, currentPath: string[]) {
   const explored = new Set();
 
   const toExplore = [];
@@ -63,11 +59,7 @@ function DFS<T, S, A>(
   }
 }
 
-export function getPathTo<T, S, A>(
-  nodes: StratifiedMap<T, S, A>,
-  from: string,
-  to: string,
-): string[] {
+export function getPathTo<T, S>(nodes: StratifiedMap<T, S>, from: string, to: string): string[] {
   const path: string[] = [];
 
   search(nodes, from, to, path);
@@ -75,12 +67,7 @@ export function getPathTo<T, S, A>(
   return [from, ...path.reverse()];
 }
 
-function search<T, S, A>(
-  nodes: StratifiedMap<T, S, A>,
-  node: string,
-  final: string,
-  path: string[],
-) {
+function search<T, S>(nodes: StratifiedMap<T, S>, node: string, final: string, path: string[]) {
   if (!nodes[node]) return false;
 
   if (node === final) {

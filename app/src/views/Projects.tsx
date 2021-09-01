@@ -1,12 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { createStyles, makeStyles } from '@material-ui/core';
 import Axios from 'axios';
 import { observer } from 'mobx-react';
+import { useEffect } from 'react';
 import { useQuery } from 'react-query';
 
 import { PROJECT } from '..';
 import DataView from '../components/DataView';
 import Sidebar from '../components/Sidebar';
 import If from '../components/utils/If';
+import useWorkflowFromURL from '../hooks/useWorflow';
 import { useStore } from '../stores/RootStore';
 import { Project } from '../stores/types/Project';
 
@@ -34,13 +37,67 @@ const Projects = () => {
   const styles = useStyles();
 
   const {
-    projectStore: { project, dataset_id },
+    workflowId,
+    setWorkflowId,
+    projectStore: {
+      setCurrentProject,
+      setDatasetId,
+      project,
+      dataset_id,
+      projects: prj,
+      setProjects,
+    },
+    opts: { debug, goToExplore },
   } = useStore();
 
   const { isLoading, isError, error, data: projects = [] } = useQuery<Project[], Error>(
     'projects',
     fetchAllProjects,
   );
+
+  const {
+    workflow,
+    history,
+    location: { search },
+  } = useWorkflowFromURL();
+
+  useEffect(() => {
+    if (projects.length === 0) return;
+
+    if (Object.values(prj).length === 0) {
+      setProjects(projects);
+
+      return;
+    }
+
+    if (workflow) {
+      setWorkflowId(workflow);
+
+      if (dataset_id) {
+        history.replace({ pathname: '/explore', search });
+      }
+    } else {
+      if (!project) {
+        setCurrentProject(projects[1].id);
+      }
+
+      if (!dataset_id) {
+        setDatasetId(projects[1].datasets[0].id);
+      }
+    }
+  }, [
+    project,
+    projects,
+    prj,
+    setCurrentProject,
+    dataset_id,
+    setDatasetId,
+    debug,
+    goToExplore,
+    history,
+    workflowId,
+    search,
+  ]);
 
   if (isLoading) return <div>Loading Projects</div>;
 

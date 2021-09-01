@@ -1,48 +1,50 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 /* eslint-disable no-unused-vars */
-import { useState } from 'react';
+import { NodeID, Provenance, ProvenanceNode, StateNode } from '@visdesignlab/trrack';
+import { observer } from 'mobx-react';
+import React, { ReactChild, useState } from 'react';
 import { Animate } from 'react-move';
-import ReactResizeDetector from 'react-resize-detector';
-import { Button, Form, Icon, Popup, TextArea } from 'semantic-ui-react';
+import { Button, Icon, Popup } from 'semantic-ui-react';
 
+import { BundleMap, OriginMap } from '../Utils/BundleMap';
+import { EventConfig } from '../Utils/EventConfig';
 import translate from '../Utils/translate';
 
 import { treeColor } from './Styles';
 
-// type BackboneNodeProps<T, S extends string, A> = {
-//   prov: Provenance<T, S, A>;
-//   first: boolean;
-//   iconOnly: boolean;
-//   current: boolean;
-//   duration: number;
-//   node: StateNode<T, S, A>;
-//   radius: number;
-//   strokeWidth: number;
-//   textSize: number;
-//   setBookmark: any;
-//   bookmark: any;
-//   nodeMap: any;
-//   currentDataset: string;
-//   setAnnotationHeight: any;
-//   annotationOpen: number;
-//   setAnnotationOpen: any;
-//   exemptList: string[];
-//   setExemptList: any;
-//   bundleMap?: BundleMap;
-//   clusterLabels: boolean;
-//   editAnnotations: boolean;
-//   eventConfig?: EventConfig<S>;
-//   popupContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
-//   annotationContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
-//   approvedFunction: (id: NodeID) => void;
-//   nodeCreationMap: OriginMap;
-//   addToWorkflow: (id: string) => void;
-//   rejectedFunction: (id: NodeID) => void;
-//   expandedClusterList?: string[];
-// };
+type BackboneNodeProps<T, S extends string> = {
+  prov: Provenance<T, S>;
+  first: boolean;
+  iconOnly: boolean;
+  current: boolean;
+  duration: number;
+  node: StateNode<T, S>;
+  radius: number;
+  strokeWidth: number;
+  textSize: number;
+  setBookmark: any;
+  bookmark: any;
+  nodeMap: any;
+  currentDataset: string;
+  annotationOpen: number;
+  setAnnotationOpen: any;
+  exemptList: string[];
+  setExemptList: any;
+  bundleMap?: BundleMap;
+  clusterLabels: boolean;
+  editAnnotations: boolean;
+  eventConfig?: EventConfig<S>;
+  popupContent?: (nodeId: StateNode<T, S>) => ReactChild;
+  annotationContent?: (nodeId: StateNode<T, S>) => ReactChild;
+  approvedFunction: (id: NodeID) => void;
+  nodeCreationMap: OriginMap;
+  addToWorkflow: (id: string) => void;
+  rejectedFunction: (id: NodeID) => void;
+  expandedClusterList?: string[];
+};
 
-function BackboneNode({
+function BackboneNode<T, S extends string>({
   prov,
   first,
   iconOnly,
@@ -59,7 +61,6 @@ function BackboneNode({
   setAnnotationOpen,
   exemptList,
   setExemptList,
-  setAnnotationHeight,
   bundleMap,
   eventConfig,
   popupContent,
@@ -70,7 +71,7 @@ function BackboneNode({
   currentDataset,
   nodeCreationMap,
   expandedClusterList,
-}: any) {
+}: BackboneNodeProps<T, S>) {
   const padding = 25;
 
   const cursorStyle = {
@@ -88,7 +89,6 @@ function BackboneNode({
 
     if (lastAnnotation?.annotation !== annotateText.trim()) {
       prov.addAnnotation(annotateText, node.id);
-      setAnnotateText(annotateText);
       setAnnotationOpen(-1);
     }
   };
@@ -99,9 +99,7 @@ function BackboneNode({
   };
 
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  const handleInputChange = (c: any) => {
-    setAnnotateText(c.target.value);
-  };
+  const handleInputChange = () => {};
 
   // console.log(JSON.parse(JSON.stringify(node)));
   let glyph = (
@@ -118,7 +116,7 @@ function BackboneNode({
   let dropDownAdded = false;
 
   if (eventConfig) {
-    const { eventType } = node.metadata;
+    const { eventType }: { eventType: any } = node.metadata;
 
     if (eventType && eventType in eventConfig && eventType !== 'Root') {
       const { bundleGlyph, currentGlyph, backboneGlyph } = eventConfig[eventType];
@@ -191,7 +189,7 @@ function BackboneNode({
     <g style={{ opacity: 1 }} transform={translate(padding, 0)}>
       {nodeCreationMap[node.id] ? (
         <g>
-          <g transform={translate(0, -20)}>
+          <g transform={translate(-10, -10)}>
             <circle fill="white" opacity="1" r="7" />
 
             <text
@@ -204,8 +202,8 @@ function BackboneNode({
               fontSize={10}
               fontWeight="bold"
               style={cursorStyle}
-              textAnchor="start"
-              x={dropDownAdded ? 10 : 0}
+              textAnchor="middle"
+              x={0}
               y={0}
             >
               {nodeCreationMap[node.id] ? nodeCreationMap[node.id].createdIn : ''}
@@ -450,47 +448,28 @@ function BackboneNode({
 
           {annotationOpen !== -1 && nodeMap[node.id].depth === annotationOpen ? (
             <g transform="translate(15, 25)">
-              <foreignObject height="400" width="250" x="0" y="0">
+              <foreignObject height="80" width="175" x="0" y="0">
                 <div>
-                  <Form>
-                    <ReactResizeDetector
-                      onResize={(width: number | undefined, height: number | undefined) =>
-                        setAnnotationHeight(height ? height + 15 : 50)
-                      }
-                    >
-                      <TextArea
-                        defaultValue={annotateText}
-                        placeholder="Tell us more"
-                        rows={2}
-                        style={{
-                          width: '170px',
-                          marginRight: '1px',
-                        }}
-                        onInput={handleInputChange}
-                      />
-                      <Button
-                        style={{
-                          margin: '1px',
-                          padding: '5px',
-                          maxWidth: '30px',
-                        }}
-                        onClick={handleCheck}
-                      >
-                        <Icon color="green" name="check" style={{ margin: '0px' }} />
-                      </Button>
-                      <Button
-                        style={{
-                          margin: '1px',
-                          padding: '5px',
-                          maxWidth: '30px',
-                        }}
-                        onClick={handleClose}
-                      >
-                        <Icon color="red" name="close" style={{ margin: '0px' }} />
-                      </Button>
-                    </ReactResizeDetector>
-                  </Form>
+                  <textarea
+                    style={{ maxWidth: 130, resize: 'none' }}
+                    value={annotateText}
+                    onChange={handleInputChange}
+                  />
+                  <button onClick={handleCheck}>Annotate</button>
+
+                  <button onClick={handleClose}>Close</button>
                 </div>
+
+                {/* <Input size='massive' icon='close' onChange={handleInputChange}
+                  defaultValue={annotateText.current} placeholder="Edit Annotation" action>
+                    <input />
+                    <Button color="green" type="submit" onClick={handleCheck}>
+                      <Icon name="world"/>
+                    </Button>
+                    <Button color="red" type="submit" onClick={handleClose}>
+                      <Icon name="close"/>
+                    </Button>
+                  </Input> */}
               </foreignObject>
             </g>
           ) : (
@@ -501,7 +480,7 @@ function BackboneNode({
     </Animate>
   );
 
-  function labelClicked(innerNode: any) {
+  function labelClicked(innerNode: ProvenanceNode<T, S>) {
     if (annotationOpen === nodeMap[innerNode.id].depth && annotationContent) {
       setAnnotationOpen(-1);
     } else if (annotationContent) {
@@ -509,7 +488,7 @@ function BackboneNode({
     }
   }
 
-  function nodeClicked(innerNode: any, event: any) {
+  function nodeClicked(innerNode: ProvenanceNode<T, S>, event: any) {
     if (bundleMap && Object.keys(bundleMap).includes(innerNode.id)) {
       const exemptCopy: string[] = Array.from(exemptList);
 
@@ -529,10 +508,4 @@ function BackboneNode({
   }
 }
 
-export default BackboneNode;
-
-// const Label: FC<{ label: string } & React.SVGProps<SVGTextElement>> = (props: {
-//   label: string;
-// }) => {
-//   return <text {...props}>{props.label}</text>;
-// };
+export default observer(BackboneNode);

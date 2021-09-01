@@ -15,6 +15,7 @@ import { Prediction, predictionToIntent } from '../types/Prediction';
 import { getAggregateID, getPlotId } from '../utils/IDGens';
 
 import { AggMap } from './../contexts/CategoryContext';
+import { OriginMap, Source } from './../library/trrack-vis/Utils/BundleMap';
 import {
   addAggregate,
   addBrush,
@@ -22,6 +23,7 @@ import {
   addIntentSelection,
   addPointSelection,
   addScatterplot,
+  assignCategory,
   assignLabel,
   removeBrush,
   removeScatterplot,
@@ -124,7 +126,7 @@ export default class ExploreStore {
         provenance: Object.values(this.provenance.graph.nodes).length,
       }),
       ({ dataset_id }) => {
-        if (dataset_id) this.updateRecord(dataset_id, this.provenance.graph);
+        if (dataset_id) this.updateRecord(dataset_id, this.provenance.graph as any);
       },
     );
 
@@ -155,6 +157,31 @@ export default class ExploreStore {
 
   get rawDataPoints() {
     return this.data?.values || [];
+  }
+
+  get nodeCreationMap() {
+    const originMap: OriginMap = {};
+
+    Object.values(this.provenance.graph.nodes).forEach((node) => {
+      const art = this.provenance.getLatestArtifact(node.id);
+
+      if (!art) return;
+
+      const { artifact } = art;
+      const datasetKey = this.root.projectStore.datasetVersionFromKey(artifact.original_record);
+      const source: Source = {
+        createdIn: datasetKey,
+        approvedIn: Object.entries(artifact.status)
+          .filter((v) => v[1] === 'Accepted')
+          .map((v) => this.root.projectStore.datasetVersionFromKey(v[0])),
+        rejectedIn: Object.entries(artifact.status)
+          .filter((v) => v[1] === 'Rejected')
+          .map((v) => this.root.projectStore.datasetVersionFromKey(v[0])),
+      };
+      originMap[node.id] = source;
+    });
+
+    return originMap;
   }
 
   get rangeMap() {
@@ -207,6 +234,15 @@ export default class ExploreStore {
           else data[id][CUSTOM_LABEL].push(label);
         });
       });
+
+      Object.entries(state.categoryAssignments).forEach(([category, assignments]) => {
+        if (category !== this.selectedCategoryColumn) return;
+        Object.entries(assignments).forEach(([label, values]) => {
+          values.forEach((id) => {
+            data[id][CUSTOM_CATEGORY_ASSIGNMENT] = label;
+          });
+        });
+      });
     }
 
     return Object.values(data);
@@ -223,6 +259,10 @@ export default class ExploreStore {
     const record = this.record[id];
 
     return this.stateHelper(id, record);
+  }
+
+  get selections() {
+    return this.state.selections;
   }
 
   stateHelper = (id: NodeID, state?: ViewState) => {
@@ -432,7 +472,15 @@ export default class ExploreStore {
     );
   };
 
-  handleCategorization = (category: string, value: string) => {};
+  handleCategorization = (category: string, value: string) => {
+    this.provenance.apply(
+      assignCategory({
+        i_type: 'Categorize',
+        in: category,
+        as: value,
+      }),
+    );
+  };
 
   handleAggregate = (name: string, aggOptions: AggMap, drop = false) => {
     this.provenance.apply(

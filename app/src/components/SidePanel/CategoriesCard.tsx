@@ -54,7 +54,14 @@ const useStyles = makeStyles((theme: Theme) =>
 const CategoriesCard = () => {
   const styles = useStyles();
   const {
-    exploreStore: { toggleShowCategories, doesHaveCategories, data, changeCategoryColumn },
+    exploreStore: {
+      toggleShowCategories,
+      doesHaveCategories,
+      data,
+      changeCategoryColumn,
+      handleCategorization,
+      selections,
+    },
     projectStore: { addCategoryColumn },
   } = useStore();
 
@@ -160,6 +167,9 @@ const CategoriesCard = () => {
                   disabled={!showCategory}
                   label={col}
                   path={symbol(sym).size(100)()}
+                  onClick={() => {
+                    if (selections.length > 0) handleCategorization(selectedCategoryColumn, col);
+                  }}
                 />
               ))
             )}

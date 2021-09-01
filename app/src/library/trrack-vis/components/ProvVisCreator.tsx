@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-unused-vars */
-import { NodeID, Provenance } from '@visdesignlab/trrack';
+import { NodeID, Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
 import { configure } from 'mobx';
+import React from 'react';
 import ReactDOM from 'react-dom';
 
 import { BundleMap, OriginMap } from '../Utils/BundleMap';
@@ -60,7 +61,7 @@ export function ProvVisCreator<T, S extends string, A>(
         ephemeralUndo={ephemeralUndo}
         nodeCreationMap={nodeCreationMap}
         nodeMap={prov.graph.nodes}
-        prov={prov}
+        prov={prov as any}
         rejectedFunction={rejectedFunction}
         root={fauxRoot}
         undoRedoButtons
@@ -82,7 +83,7 @@ export function ProvVisCreator<T, S extends string, A>(
       ephemeralUndo={ephemeralUndo}
       nodeCreationMap={nodeCreationMap}
       nodeMap={prov.graph.nodes}
-      prov={prov}
+      prov={prov as any}
       rejectedFunction={rejectedFunction}
       root={fauxRoot}
       undoRedoButtons
@@ -91,9 +92,9 @@ export function ProvVisCreator<T, S extends string, A>(
   );
 }
 
-export function UndoRedoButtonCreator(
+export function UndoRedoButtonCreator<T, S extends string>(
   node: Element,
-  graph: any,
+  graph: ProvenanceGraph<T, S>,
   undoCallback: () => void,
   redoCallback: () => void,
 ) {

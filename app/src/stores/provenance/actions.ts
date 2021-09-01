@@ -19,25 +19,31 @@ export const removeScatterplot = createNewAction()
   .setLabel('Remove Scatterplot');
 
 export const addPointSelection = createNewAction()
-  .setEventType('Freeform Selection')
+  .setEventType('Point Selection')
   .setLabel('Select points');
 
 export const addPointDeselection = createNewAction()
-  .setEventType('Freeform Selection')
+  .setEventType('Point Deselection')
   .setLabel('Unselect points');
 
-export const addBrush = createNewAction().setLabel('Brush');
-export const updateBrush = createNewAction().setLabel('Brush');
-export const removeBrush = createNewAction().setLabel('Brush');
+export const addBrush = createNewAction().setLabel('Brush').setEventType('Add Brush');
+export const updateBrush = createNewAction().setLabel('Brush').setEventType('Update Brush');
+export const removeBrush = createNewAction().setLabel('Brush').setEventType('Remove Brush');
 
-export const addIntentSelection = createNewAction().setLabel('Intent Selection');
+export const addIntentSelection = createNewAction()
+  .setLabel('Intent Selection')
+  .setEventType('Algorithmic Selection');
 
-export const addFilter = createNewAction().setLabel('Filter Selections');
+export const addFilter = createNewAction().setLabel('Filter Selections').setEventType('Filter');
 
-export const assignLabel = createNewAction().setLabel('Label Selections');
+export const assignLabel = createNewAction().setLabel('Label Selections').setEventType('Label');
 
-export const assignCategory = createNewAction().setLabel('Categorize Selections');
+export const assignCategory = createNewAction()
+  .setLabel('Categorize Selections')
+  .setEventType('Categorize');
 
-export const addAggregate = createNewAction().setLabel('Aggregate Selections');
+export const addAggregate = createNewAction()
+  .setLabel('Aggregate Selections')
+  .setEventType('Label');
 
 export const replaceAggregate = createNewAction().setLabel('Replace Aggregate');

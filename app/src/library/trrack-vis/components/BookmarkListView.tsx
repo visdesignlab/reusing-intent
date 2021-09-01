@@ -1,17 +1,25 @@
+import { NodeID, ProvenanceGraph } from '@visdesignlab/trrack';
+import { observer } from 'mobx-react';
+import React from 'react';
 import { NodeGroup } from 'react-move';
 
+import { EventConfig } from '../Utils/EventConfig';
 import translate from '../Utils/translate';
 
 import BookmarkNode from './BookmarkNode';
 import BookmarkTransitions from './BookmarkTransitions';
 
-// export type BookmarkListViewConfig<T, S extends string, A> = {
-//   graph?: ProvenanceGraph<T, S, A>;
-//   eventConfig?: EventConfig<S>;
-//   currentNode: NodeID;
-// };
+export type BookmarkListViewConfig<T, S extends string> = {
+  graph?: ProvenanceGraph<T, S>;
+  eventConfig?: EventConfig<S>;
+  currentNode: NodeID;
+};
 
-function BookmarkListView({ graph, eventConfig, currentNode }: any) {
+function BookmarkListView<T, S extends string>({
+  graph,
+  eventConfig,
+  currentNode,
+}: BookmarkListViewConfig<T, S>) {
   if (graph === undefined) {
     return null;
   }
@@ -60,4 +68,4 @@ function BookmarkListView({ graph, eventConfig, currentNode }: any) {
   );
 }
 
-export default BookmarkListView;
+export default observer(BookmarkListView);

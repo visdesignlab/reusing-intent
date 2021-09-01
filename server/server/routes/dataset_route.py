@@ -59,6 +59,7 @@ def get_data(rid: str):
                     "labelColumn": label_column,
                     "columns": columns,
                     "id": rid,
+                    "version": record.version,
                 }
             ),
             200,

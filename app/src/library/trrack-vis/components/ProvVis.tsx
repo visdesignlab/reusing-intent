@@ -6,14 +6,23 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable guard-for-in */
 /* eslint-disable no-unused-vars */
-import { isChildNode } from '@visdesignlab/trrack';
+import {
+  DiffNode,
+  isChildNode,
+  NodeID,
+  Nodes,
+  Provenance,
+  ProvenanceNode,
+  StateNode,
+} from '@visdesignlab/trrack';
 import * as d3 from 'd3';
 import { observer } from 'mobx-react';
-import { useEffect, useState } from 'react';
+import React, { ReactChild, useEffect, useState } from 'react';
 import { NodeGroup } from 'react-move';
 import { Popup, Tab } from 'semantic-ui-react';
 import { style } from 'typestyle';
 
+import { BundleMap, OriginMap } from '../Utils/BundleMap';
 import { EventConfig } from '../Utils/EventConfig';
 import findBundleParent from '../Utils/findBundleParent';
 import translate from '../Utils/translate';
@@ -34,53 +43,53 @@ const container = style({
   overflow: 'auto',
 });
 
-// type ProvVisProps<T, S extends string, A> = {
-//   root: NodeID;
-//   sideOffset?: number;
-//   iconOnly?: boolean;
-//   current: NodeID;
-//   nodeMap: Nodes<T, S, A>;
-//   approvedFunction: (id: NodeID) => void;
-//   rejectedFunction: (id: NodeID) => void;
-//   addToWorkflow: (id: NodeID) => void;
-//   nodeCreationMap: OriginMap;
-//   currentDataset: string;
-//   backboneGutter?: number;
-//   gutter?: number;
-//   verticalSpace?: number;
-//   annotationHeight?: number;
-//   clusterVerticalSpace?: number;
-//   regularCircleRadius?: number;
-//   backboneCircleRadius?: number;
-//   regularCircleStroke?: number;
-//   backboneCircleStroke?: number;
-//   topOffset?: number;
-//   textSize?: number;
-//   height?: number;
-//   width?: number;
-//   linkWidth?: number;
-//   duration?: number;
-//   clusterLabels?: boolean;
-//   bundleMap?: BundleMap;
-//   eventConfig?: EventConfig<S>;
-//   changeCurrent?: (id: NodeID) => void;
-//   brushCallback?: (selected: string[]) => void;
-//   popupContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
-//   annotationContent?: (nodeId: StateNode<T, S, A>) => ReactChild;
+type ProvVisProps<T, S extends string> = {
+  root: NodeID;
+  sideOffset?: number;
+  iconOnly?: boolean;
+  current: NodeID;
+  nodeMap: Nodes<T, S>;
+  approvedFunction: (id: NodeID) => void;
+  rejectedFunction: (id: NodeID) => void;
+  addToWorkflow: (id: NodeID) => void;
+  nodeCreationMap: OriginMap;
+  currentDataset: string;
+  backboneGutter?: number;
+  gutter?: number;
+  verticalSpace?: number;
+  annotationHeight?: number;
+  clusterVerticalSpace?: number;
+  regularCircleRadius?: number;
+  backboneCircleRadius?: number;
+  regularCircleStroke?: number;
+  backboneCircleStroke?: number;
+  topOffset?: number;
+  textSize?: number;
+  height?: number;
+  width?: number;
+  linkWidth?: number;
+  duration?: number;
+  clusterLabels?: boolean;
+  bundleMap?: BundleMap;
+  eventConfig?: EventConfig<S>;
+  changeCurrent?: (id: NodeID) => void;
+  brushCallback?: (selected: string[]) => void;
+  popupContent?: (nodeId: StateNode<T, S>) => ReactChild;
+  annotationContent?: (nodeId: StateNode<T, S>) => ReactChild;
 
-//   undoRedoButtons?: boolean;
-//   bookmarkToggle?: boolean;
-//   bookmarkListView?: boolean;
-//   editAnnotations?: boolean;
-//   prov?: Provenance<T, S, A>;
-//   ephemeralUndo?: boolean;
-// };
-
-export type StratifiedMap<T, S, A> = {
-  [key: string]: d3.HierarchyNode<any>;
+  undoRedoButtons?: boolean;
+  bookmarkToggle?: boolean;
+  bookmarkListView?: boolean;
+  editAnnotations?: boolean;
+  prov?: Provenance<T, S>;
+  ephemeralUndo?: boolean;
 };
 
-export type StratifiedList<T, S, A> = d3.HierarchyNode<any>[];
+export type StratifiedMap<T, S> = {
+  [key: string]: d3.HierarchyNode<ProvenanceNode<T, S>>;
+};
+
+export type StratifiedList<T, S> = d3.HierarchyNode<ProvenanceNode<T, S>>[];
 
 function ProvVis<T, S extends string, A>({
   nodeMap,
@@ -93,6 +102,7 @@ function ProvVis<T, S extends string, A>({
   gutter = 15,
   backboneGutter = 20,
   verticalSpace = 50,
+  annotationHeight = 100,
   clusterVerticalSpace = 50,
   regularCircleRadius = 4,
   backboneCircleRadius = 5,
@@ -106,7 +116,6 @@ function ProvVis<T, S extends string, A>({
   clusterLabels = true,
   bundleMap = {},
   eventConfig,
-  brushCallback,
   popupContent,
   annotationContent,
   approvedFunction,
@@ -117,11 +126,10 @@ function ProvVis<T, S extends string, A>({
   editAnnotations = false,
   prov,
   ephemeralUndo = false,
-}: any) {
+}: ProvVisProps<T, S>) {
   const [first, setFirst] = useState(true);
   const [bookmark, setBookmark] = useState<any>(null);
   const [annotationOpen, setAnnotationOpen] = useState(-1);
-  const [annotationHeight, setAnnotationHeight] = useState(35);
 
   let list: string[] = [];
   const eventTypes = new Set<string>();
@@ -147,7 +155,7 @@ function ProvVis<T, S extends string, A>({
           group.push(curr.id);
 
           if (curr.children.length === 1 && nodeMap[curr.children[0]].actionType === 'Ephemeral') {
-            curr = nodeMap[curr.children[0]] as any;
+            curr = nodeMap[curr.children[0]] as DiffNode<T, S>;
           } else {
             break;
           }
@@ -215,7 +223,7 @@ function ProvVis<T, S extends string, A>({
     setFirst(false);
   }, []);
 
-  const nodeList: any = Object.values(nodeMap).filter(() => true);
+  const nodeList = Object.values(nodeMap).filter(() => true);
 
   const copyList = Array.from(nodeList);
 
@@ -232,7 +240,7 @@ function ProvVis<T, S extends string, A>({
   }
 
   const strat = d3
-    .stratify<any>()
+    .stratify<ProvenanceNode<T, S>>()
     .id((d) => d.id)
     .parentId((d) => {
       if (d.id === root) return null;
@@ -244,7 +252,7 @@ function ProvVis<T, S extends string, A>({
           Object.keys(bundleMap).includes(d.id) &&
           !expandedClusterList.includes(d.id)
         ) {
-          let curr: any = d;
+          let curr = d;
 
           // eslint-disable-next-line no-constant-condition
           while (true) {
@@ -257,9 +265,9 @@ function ProvVis<T, S extends string, A>({
               return localCurr.parent;
             }
 
-            const temp = copyList.filter((c: any) => c.id === localCurr.parent)[0];
+            const temp = copyList.filter((c) => c.id === localCurr.parent)[0];
 
-            if (isChildNode(temp as any)) {
+            if (isChildNode(temp)) {
               curr = temp;
             }
           }
@@ -320,8 +328,8 @@ function ProvVis<T, S extends string, A>({
 
   // //console.log(JSON.parse(JSON.stringify(stratifiedTree)));
 
-  const stratifiedList: StratifiedList<T, S, A> = stratifiedTree.descendants();
-  const stratifiedMap: StratifiedMap<T, S, A> = {};
+  const stratifiedList: StratifiedList<T, S> = stratifiedTree.descendants();
+  const stratifiedMap: StratifiedMap<T, S> = {};
 
   stratifiedList.forEach((c) => {
     stratifiedMap[c.id!] = c;
@@ -346,9 +354,9 @@ function ProvVis<T, S extends string, A>({
   const xOffset = gutter;
   const yOffset = verticalSpace;
 
-  function regularGlyph(node: any) {
+  function regularGlyph(node: ProvenanceNode<T, S>) {
     if (eventConfig) {
-      const { eventType } = node.metadata;
+      const { eventType }: { eventType: any } = node.metadata;
 
       if (
         eventType &&
@@ -375,9 +383,9 @@ function ProvVis<T, S extends string, A>({
     return y;
   }
 
-  function bundleGlyph(node: any) {
+  function bundleGlyph(node: ProvenanceNode<T, S>) {
     if (eventConfig) {
-      const { eventType } = node.metadata;
+      const { eventType }: { eventType: any } = node.metadata;
 
       if (eventType && eventType in eventConfig && eventType !== 'Root') {
         return eventConfig[eventType].bundleGlyph;
@@ -426,7 +434,7 @@ function ProvVis<T, S extends string, A>({
         <BookmarkListView
           currentNode={current}
           eventConfig={eventConfig}
-          graph={prov ? prov.graph : undefined}
+          graph={prov ? (prov.graph as any) : undefined}
         />
       </g>
     </svg>
@@ -436,7 +444,7 @@ function ProvVis<T, S extends string, A>({
     <div>
       <div id="undoRedoDiv">
         <UndoRedoButton
-          graph={prov ? prov.graph : undefined}
+          graph={prov ? (prov.graph as any) : undefined}
           redoCallback={() => {
             if (prov) {
               if (ephemeralUndo) {
@@ -561,7 +569,6 @@ function ProvVis<T, S extends string, A>({
                             prov={prov}
                             radius={backboneCircleRadius}
                             rejectedFunction={rejectedFunction}
-                            setAnnotationHeight={setAnnotationHeight}
                             setAnnotationOpen={setAnnotationOpen}
                             setBookmark={setBookmark}
                             setExemptList={setExpandedClusterList}
@@ -665,9 +672,9 @@ function ProvVis<T, S extends string, A>({
     },
     {
       menuItem: {
-        key: 'Bookmarks',
+        key: 'Bookmarks/Annotations',
         icon: 'bookmark',
-        content: 'Bookmarks',
+        content: 'Bookmarks/Annotations',
       },
       render: () => <Tab.Pane attached={false}>{bookmarkTabView}</Tab.Pane>,
     },

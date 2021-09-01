@@ -1,27 +1,65 @@
-import { makeAutoObservable, reaction, runInAction } from 'mobx';
+import { isChildNode } from '@visdesignlab/trrack';
+import { action, makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { addCategory } from './queries/mutateCategoryColumn';
 import { queryData } from './queries/queryData';
 import RootStore from './RootStore';
 import { Data } from './types/Dataset';
-import { Project, Projects } from './types/Project';
+import { Project } from './types/Project';
+import { NodeStatus } from './types/Provenance';
 
 export default class ProjectStore {
   root: RootStore;
-  project: Project | null = null;
+  project_id: string | null = null;
   dataset_id: string | null = null;
   _data: { [id: string]: Data } = {};
-  projects: Projects = [];
+  projects: { [id: string]: Project } = {};
 
   constructor(root: RootStore) {
     this.root = root;
-    makeAutoObservable(this);
+    makeAutoObservable(this, {
+      setCurrentProject: action,
+    });
     reaction(
       () => this.project,
       (project) => {
         if (project) this.getData(project);
       },
     );
+
+    reaction(
+      () => Object.values(this.provenance.graph.nodes).length,
+      () => {
+        const { current } = this.provenance;
+
+        if (isChildNode(current)) {
+          const artifact: NodeStatus = {
+            original_record: this.dataset_id || '',
+            status: {},
+          };
+
+          this.project?.datasets.forEach((dataset) => {
+            if (dataset.id === this.dataset_id) {
+              artifact.status[dataset.id] = 'Accepted';
+            } else {
+              artifact.status[dataset.id] = 'Unknown';
+            }
+          });
+
+          this.provenance.addArtifact(artifact);
+        }
+      },
+    );
+  }
+
+  get provenance() {
+    return this.root.provenance;
+  }
+
+  get project() {
+    if (!this.project_id) return null;
+
+    return this.projects[this.project_id];
   }
 
   get data() {
@@ -34,10 +72,51 @@ export default class ProjectStore {
     return this.root.query;
   }
 
-  setCurrentProject = (project: Project) => {
+  approveNode = (nodeId: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
+
+    artifact = JSON.parse(JSON.stringify(artifact));
+
+    if (artifact) {
+      artifact.status[this.dataset_id || ''] = 'Accepted';
+      this.provenance.addArtifact(artifact, nodeId);
+    }
+  };
+
+  rejectNode = (nodeId: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
+
+    artifact = JSON.parse(JSON.stringify(artifact));
+
+    if (artifact) {
+      artifact.status[this.dataset_id || ''] = 'Rejected';
+      this.provenance.addArtifact(artifact, nodeId);
+    }
+  };
+
+  datasetVersionFromKey = (key: string | null) => {
+    if (!key) return '';
+
+    const { version = '' } = this._data[key] || {};
+
+    return version;
+  };
+
+  setProjects = (projects: Project[]) => {
+    const prj: { [id: string]: Project } = {};
+    projects.forEach((proj) => {
+      prj[proj.id] = proj;
+    });
+
+    runInAction(() => {
+      this.projects = prj;
+    });
+  };
+
+  setCurrentProject = (project_id: string) => {
     localStorage.removeItem('aggOpt');
 
-    this.project = project;
+    this.project_id = project_id;
   };
 
   setDatasetId = (id: string) => {
