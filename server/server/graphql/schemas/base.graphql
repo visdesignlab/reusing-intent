@@ -1,0 +1,22 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+scalar Interaction
+
+type Query {
+  hello: String!
+  projects: ProjectsResult!
+  data(record_id: ID!): DataResult!
+  predictions(record_id: ID!, interactions: [Interaction]): PredictionsResult!
+}
+
+type Mutation {
+  createProject(projectName: String!): ProjectResult!
+  addCategoryColumn(
+    projectId: ID!
+    columnName: String!
+    options: String!
+  ): CategoryResult!
+}

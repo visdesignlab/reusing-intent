@@ -1,0 +1,28 @@
+type ProjectsResult {
+  success: Boolean!
+  errors: [String]
+  projects: [Project]
+}
+
+type ProjectResult {
+  success: Boolean!
+  errors: [String]
+  project: Project
+}
+
+type Project {
+  id: ID!
+  name: String!
+  datasets: [Dataset]!
+}
+
+type CategoryResult {
+  success: Boolean!
+  errors: [String]
+  id: ID!
+  columnInfo: ColumnInfo
+  numericColumns: [String]
+  categoricalColumns: [String]
+  labelColumn: String
+  columns: [String]
+}

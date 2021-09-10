@@ -4,8 +4,8 @@ import { scaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
 
-import translate from '../../Utils/Translate';
-import { RANK_BAR_FOREGROUND } from '../ColorSpecs';
+import { RANK_BAR_FOREGROUND } from '../../utils/ColorSpec';
+import translate from '../../utils/transform';
 
 type Props = {
   height?: number;

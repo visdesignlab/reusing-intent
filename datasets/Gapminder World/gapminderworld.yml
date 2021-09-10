@@ -4,34 +4,34 @@ columns:
     fullname: Child Mortality Rate
     short: A
     unit: 0-5 year old dying per 1000 born
-    dataType: numeric
+    data_type: numeric
   gdp:
     fullname: GDP
     short: B
     unit: per capita (2010 US$)
-    dataType: numeric
+    data_type: numeric
   life_exp:
     fullname: Life Expectancy
     short: C
     unit: Years
-    dataType: numeric
+    data_type: numeric
   tfr:
     fullname: Total Fertility Rate
     short: D
     unit: babies per woman
-    dataType: numeric
+    data_type: numeric
   population:
     fullname: Population
     short: E
     unit: number of people
-    dataType: numeric
+    data_type: numeric
   continent:
     fullname: Continent
     short: F
     unit: null
-    dataType: categorical
+    data_type: categorical
   country:
     fullname: Country
     short: G
     unit: null
-    dataType: label
+    data_type: label

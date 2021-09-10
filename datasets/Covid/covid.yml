@@ -1,0 +1,107 @@
+label_column: location
+columns:
+  location:
+    fullname: Country
+    short: A
+    unit: null
+    data_type: label
+  region:
+    fullname: Continent
+    short: B
+    unit: null
+    data_type: categorical
+  total_cases_per_million:
+    fullname: Total Cases
+    short: C
+    unit: per million
+    data_type: numeric
+  new_cases_per_million:
+    fullname: New Cases
+    short: C
+    unit: per million
+    data_type: numeric
+  total_deaths_per_million:
+    fullname: Total Deaths
+    short: D
+    unit: per million
+    data_type: numeric
+  new_deaths_per_million:
+    fullname: Total Deaths
+    short: D
+    unit: per million
+    data_type: numeric
+  population:
+    fullname: Population
+    short: E
+    unit: number of people
+    data_type: numeric
+  population_density:
+    fullname: Population Density
+    short: F
+    unit: null
+    data_type: numeric
+  icu_patients_per_million:
+    fullname: ICU Patients
+    short: G
+    unit: per million
+    data_type: numeric
+  hosp_patients_per_million:
+    fullname: Hospital Patients
+    short: H
+    unit: per million
+    data_type: numeric
+  stringency_index:
+    fullname: Stringency Index
+    short: I
+    unit: null
+    data_type: numeric
+  reproduction_rate:
+    fullname: Reproduction Rate
+    short: J
+    unit: null
+    data_type: numeric
+  total_tests_per_thousand:
+    fullname: Total Tests
+    short: K
+    unit: per thousand
+    data_type: numeric
+  positive_rate:
+    fullname: Positive Rate
+    short: L
+    unit: null
+    data_type: numeric
+  total_vaccinations_per_hundred:
+    fullname: Total Vaccinations
+    short: M
+    unit: per hundred
+    data_type: numeric
+  people_vaccinated_per_hundred:
+    fullname: People Vaccinated
+    short: N
+    unit: per hundred
+    data_type: numeric
+  people_fully_vaccinated_per_hundred:
+    fullname: People Fully Vaccinated
+    short: O
+    unit: per hundred
+    data_type: numeric
+  gdp_per_capita:
+    fullname: GDP
+    short: P
+    unit: per capita
+    data_type: numeric
+  life_expectancy:
+    fullname: GDP
+    short: Q
+    unit: years
+    data_type: numeric
+  human_development_index:
+    fullname: HDI
+    short: R
+    unit: null
+    data_type: numeric
+  excess_mortality:
+    fullname: Excess Mortality
+    short: S
+    unit: null
+    data_type: numeric

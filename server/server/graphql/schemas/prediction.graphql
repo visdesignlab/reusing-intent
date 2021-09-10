@@ -1,0 +1,25 @@
+type PredictionsResult {
+  success: Boolean!
+  errors: [String]
+  predictions: [Prediction]
+}
+
+scalar AlgorithmInfo
+
+scalar AlgorithmParams
+
+scalar MembershipStat
+
+type Prediction {
+  intent: String!
+  algorithm: String!
+  info: AlgorithmInfo!
+  params: AlgorithmParams!
+  hash: String!
+  dimensions: [String]!
+  rank_jaccard: Float!
+  rank_auto_complete: Float!
+  rank_nb: Float!
+  members: [String]!
+  membership_stats: MembershipStat!
+}
