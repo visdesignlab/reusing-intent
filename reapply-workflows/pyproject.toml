@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "reapply-workflows"
-version = "1.0.0"
+version = "1.1.0"
 description = ""
 authors = ["Kiran Gadhave <kirangadhave2@gmail.com>"]
 
