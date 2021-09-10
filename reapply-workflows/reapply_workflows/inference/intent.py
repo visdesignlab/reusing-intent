@@ -18,7 +18,7 @@ class Intent:
         algorithm: str,
         dimensions: str,
         params: Any,
-        info: Any,
+        info: Any = None,
         output: str = "",
         **kwargs
     ):

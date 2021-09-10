@@ -35,7 +35,7 @@ export const apolloClient = new ApolloClient({
 
 whyDidYouRender(React, {
   trackAllPureComponents: true,
-  exclude: [/XGrid|RowCells|GridCell|Explore|Projects/],
+  exclude: [/XGrid|RowCells|GridCell/],
 });
 
 const App = () => {

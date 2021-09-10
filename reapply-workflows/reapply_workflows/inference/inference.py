@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 import pandas as pd
 
@@ -41,11 +41,34 @@ class Inference:
             preds = Prediction.from_intent(intent, self.data, self.user_selections)
             predictions.extend(preds)
 
-        sorted_predictions = sorted(
-            predictions, key=lambda x: x.rank_jaccard, reverse=True
+        sorted_predictions = sort_and_keep_unique(predictions)
+
+        high_ranking_preds = list(
+            filter(lambda x: x["rank_jaccard"] > 0.5, sorted_predictions)
         )
 
-        return list(sorted_predictions)
+        if len(high_ranking_preds) >= 20:
+            predictions = high_ranking_preds
+        else:
+            predictions = sorted_predictions[:20]
+
+        return predictions
+
+
+def sort_and_keep_unique(predictions: List[Prediction]):
+    preds = list(map(lambda x: x.to_dict(), predictions))
+
+    preds = pd.DataFrame(preds)
+
+    # preds.rank_jaccard = preds.rank_jaccard.round(5)
+
+    grouped_preds = preds.groupby(["intent", "algorithm", "rank_jaccard"])
+
+    preds = grouped_preds.apply(lambda group: group.iloc[0, :]).reset_index(drop=True)
+
+    preds = preds.sort_values(by="rank_jaccard", ascending=False).reset_index(drop=True)
+
+    return list(preds.T.to_dict().values())
 
 
 def compute_intents(data: pd.DataFrame, _dimensions: List[str]) -> List[Intent]:

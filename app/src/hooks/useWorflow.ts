@@ -20,6 +20,6 @@ function useWorkflowFromURL() {
     });
   }, [wf, workflow, history]);
 
-  return { history, location, workflow };
+  return { history, location, workflowId: workflow };
 }
 export default useWorkflowFromURL;

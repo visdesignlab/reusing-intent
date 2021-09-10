@@ -1,24 +1,34 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Chip,
   createStyles,
+  FormControlLabel,
   IconButton,
   makeStyles,
   Paper,
+  Switch,
   Theme,
   useTheme,
 } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
+import AspectRatioIcon from '@material-ui/icons/AspectRatio';
 import CloseIcon from '@material-ui/icons/Close';
 import { SpeedDial, SpeedDialAction, SpeedDialIcon } from '@material-ui/lab';
+import { symbol, symbolCross, symbolTriangle } from 'd3';
 import { observer } from 'mobx-react';
 import { useCallback, useContext, useState } from 'react';
 
 import { GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import { CUSTOM_CATEGORY_ASSIGNMENT } from '../stores/ExploreStore';
 import { useStore } from '../stores/RootStore';
+import translate from '../utils/transform';
 
 import AddScatterplotDialog from './AddScatterplotDialog';
+import PCP from './PCP/PCP';
+import { createComet } from './Scatterplot/CompareMarks';
 import Scatterplot, { ScatterplotPoint } from './Scatterplot/Scatterplot';
+import useScatterplotStyle from './Scatterplot/styles';
+import Symbol from './SidePanel/Symbol';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,8 +37,8 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       display: 'grid',
       overflow: 'hidden',
-      gridTemplateRows: 'min-content auto',
-      gridTemplateAreas: "'version' 'vis'",
+      gridTemplateRows: 'min-content min-content auto',
+      gridTemplateAreas: "'version' 'compare' 'vis'",
     }),
     chips: {
       gridArea: 'version',
@@ -38,6 +48,12 @@ const useStyles = makeStyles((theme: Theme) =>
       '& > *': {
         margin: theme.spacing(0.5),
       },
+    },
+    compare: {
+      gridArea: 'compare',
+      display: 'flex',
+      justifyContent: 'center',
+      flexDirection: 'row',
     },
     speedDial: {
       position: 'absolute',
@@ -81,11 +97,23 @@ const Visualization = () => {
   const {
     projectStore: { project, dataset_id, setDatasetId },
     exploreStore: {
-      state: { scatterplots, freeformSelections },
+      state: { scatterplots, freeformSelections, pcps },
       selectPointsFreeform,
+      compareTarget,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      changes: { updated, added, removed },
+      setCompareTarget,
       brushType,
+      compareData,
+      showGlobalScale,
+      setShowGlobalScale,
       dataPoints,
+      aggregateDataPoints,
       unselectPointsFreeform,
+      setHighlightMode,
+      setHighlightPredicate,
+      compareMode,
+      switchCompareMode,
       removeScatterplot,
       handleBrushSelection,
       data,
@@ -102,6 +130,7 @@ const Visualization = () => {
     useContext(GlobalPlotAttributeContext) || {};
 
   const [showDialog, setShowDialog] = useState(false);
+  const spStyles = useScatterplotStyle();
 
   const styles = useStyles({ dimension: spContainerDimension, showCategory });
 
@@ -127,14 +156,44 @@ const Visualization = () => {
 
   if (!data) return <div>Loading</div>;
 
+  const pcp = pcps.map((view) => {
+    return (
+      <div key={view.id} className={styles.paperContainer}>
+        <Paper className={styles.paper}>
+          <PCP size={spContainerDimension - 2 * theme.spacing(1)} view={view} />
+        </Paper>
+      </div>
+    );
+  });
+
   const sps = scatterplots.map((view) => {
     const { x, y } = view;
 
     let points: ScatterplotPoint[] = [];
-    const aggregatePoints: ScatterplotPoint[] = [];
+    let aggregatePoints: ScatterplotPoint[] = [];
 
     if (data) {
-      points = dataPoints.map((d) => {
+      const dps = compareMode ? compareData.data : dataPoints;
+      const aggDps = compareMode ? [] : aggregateDataPoints;
+
+      aggregatePoints = aggDps.map((d) => {
+        let selectedCategory =
+          showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-';
+
+        if (d[CUSTOM_CATEGORY_ASSIGNMENT]) {
+          selectedCategory = d[CUSTOM_CATEGORY_ASSIGNMENT];
+        }
+
+        return {
+          x: d[x] as number,
+          y: d[y] as number,
+          label: d[data.labelColumn] as string,
+          category: selectedCategory,
+          ...d,
+        };
+      });
+
+      points = dps.map((d) => {
         let selectedCategory =
           showCategory && selectedCategoryColumn ? (d[selectedCategoryColumn] as string) : '-';
 
@@ -195,14 +254,95 @@ const Visualization = () => {
           {project.datasets.map((d) => (
             <Chip
               key={d.id}
-              color={dataset_id === d.id ? 'primary' : 'default'}
+              color={
+                dataset_id === d.id
+                  ? 'primary'
+                  : compareMode && compareTarget === d.id
+                  ? 'secondary'
+                  : 'default'
+              }
+              disabled={compareMode && d.id === dataset_id}
               label={d.version}
-              onClick={() => setDatasetId(d.id)}
+              onClick={() => {
+                if (compareMode) {
+                  setCompareTarget(d.id);
+                } else {
+                  setDatasetId(d.id);
+                }
+              }}
             />
           ))}
+          <FormControlLabel
+            control={<Switch onChange={() => switchCompareMode(!compareMode)} />}
+            label="Compare"
+          />
+        </div>
+        <div className={styles.compare}>
+          {compareMode && (
+            <>
+              <Symbol
+                label="Added"
+                path={symbol().type(symbolTriangle).size(100)() || ''}
+                onMouseEnter={() => {
+                  setHighlightMode(true);
+                  setHighlightPredicate((point) => {
+                    return added.includes(point.id);
+                  });
+                }}
+                onMouseLeave={() => {
+                  setHighlightMode(false);
+                  setHighlightPredicate(null);
+                }}
+              />
+              <Symbol
+                label="Removed"
+                path={symbol().type(symbolCross).size(100)() || ''}
+                transform="rotate(45)"
+                onMouseEnter={() => {
+                  setHighlightMode(true);
+                  setHighlightPredicate((point) => {
+                    return removed.includes(point.id);
+                  });
+                }}
+                onMouseLeave={() => {
+                  setHighlightMode(false);
+                  setHighlightPredicate(null);
+                }}
+              />
+              <Symbol
+                label="Updated"
+                shape={
+                  <g transform={translate(5, 10)}>
+                    <path
+                      className={spStyles.movedLine}
+                      d={createComet(0, 15, 0, 0)}
+                      // fill="gray"
+                      // opacity="0.8"
+                    />
+                    <circle className={spStyles.movedPoint} r="4" />
+                    <circle className={spStyles.movedPoint} r="4" transform={translate(15, 0)} />
+                  </g>
+                }
+                width="40"
+                onMouseEnter={() => {
+                  setHighlightMode(true);
+                  setHighlightPredicate((point) => {
+                    return updated.includes(point.id);
+                  });
+                }}
+                onMouseLeave={() => {
+                  setHighlightMode(false);
+                  setHighlightPredicate(null);
+                }}
+              />
+            </>
+          )}
         </div>
         <div className={styles.visContainer}>
-          <div className={styles.vis}>{sps}</div>
+          <div className={styles.vis}>
+            {pcp}
+            {sps}
+          </div>
         </div>
       </div>
       <SpeedDial
@@ -219,6 +359,13 @@ const Visualization = () => {
           tooltipTitle="Add"
           tooltipOpen
           onClick={() => setShowDialog(true)}
+        />
+        <SpeedDialAction
+          icon={<AspectRatioIcon />}
+          tooltipPlacement="right"
+          tooltipTitle={showGlobalScale ? 'Fit' : 'Global'}
+          tooltipOpen
+          onClick={() => setShowGlobalScale(!showGlobalScale)}
         />
       </SpeedDial>
       <AddScatterplotDialog show={showDialog} onClose={() => setShowDialog(false)} />

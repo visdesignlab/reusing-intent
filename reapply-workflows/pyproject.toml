@@ -10,6 +10,8 @@ numpy = "^1.20.3"
 pandas = "^1.2.4"
 scikit-learn = "^0.24.2"
 paretoset = "^1.2.0"
+firebase-admin = "^5.0.2"
+asciitree = "^0.3.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

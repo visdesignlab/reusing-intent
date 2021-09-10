@@ -43,6 +43,7 @@ const PredictionsTable = () => {
     exploreStore: {
       predictions: { isLoading, values },
       setHighlightMode,
+      setHoveredPrediction,
       setHighlightPredicate,
       setColorPredicate,
       handleIntentSelection,
@@ -72,6 +73,7 @@ const PredictionsTable = () => {
           <ListItem
             key={pred.hash}
             onMouseEnter={() => {
+              setHoveredPrediction(pred);
               setHighlightMode(true);
               setHighlightPredicate((point) => {
                 const {
@@ -98,6 +100,7 @@ const PredictionsTable = () => {
               setShowMatchesLegend(true);
             }}
             onMouseLeave={() => {
+              setHoveredPrediction(null);
               setHighlightMode(false);
               setHighlightPredicate(null);
               setColorPredicate(null);

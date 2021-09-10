@@ -8,7 +8,7 @@ authors = ["Kiran Gadhave <kirangadhave2@gmail.com>"]
 python = "^3.7.1"
 reapply-workflows = {path = "../reapply-workflows/", develop = true}
 Flask = "^2.0.1"
-SQLAlchemy = "^1.4.15"
+SQLAlchemy = "1.4.22"
 ariadne = "^0.13.0"
 Flask-SQLAlchemy = "^2.5.1"
 psycopg2 = "^2.8.6"

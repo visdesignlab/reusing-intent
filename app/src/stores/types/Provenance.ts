@@ -1,13 +1,15 @@
 import { Provenance, ProvenanceGraph } from '@visdesignlab/trrack';
 
-import { Interactions } from '../../types/Interactions';
+import { Interaction } from '../../types/Interactions';
 
 export type State = {
-  interactions: Interactions;
+  interaction: Interaction;
 };
 
 export const initState: State = {
-  interactions: [],
+  interaction: {
+    i_type: 'Root',
+  },
 };
 
 export type ReapplyEvents =

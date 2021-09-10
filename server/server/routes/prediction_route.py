@@ -27,14 +27,7 @@ def get_predictions():
 
         predictions = inference.predict()
 
-        high_ranking_preds = list(filter(lambda x: x.rank_jaccard > 0.5, predictions))
-
-        if len(high_ranking_preds) >= 20:
-            predictions = high_ranking_preds
-        else:
-            predictions = predictions[:20]
-
-        return jsonify(list(map(lambda x: x.to_dict(), predictions)))
+        return jsonify(predictions)
     except Exception as e:
         raise e
         return handle_exception(e)

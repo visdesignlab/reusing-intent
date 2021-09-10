@@ -6,13 +6,19 @@ import { ReapplyEvents, State } from './../types/Provenance';
 
 function createNewAction() {
   return createAction<State, [Interaction], ReapplyEvents>((state: State, interaction) => {
-    state.interactions.push(interaction);
+    state.interaction = interaction;
   }).saveStateMode('Complete');
+}
+
+export function addInteractionCreator(event: ReapplyEvents, label: string) {
+  return createNewAction().setEventType(event).setLabel(label);
 }
 
 export const addScatterplot = createNewAction()
   .setEventType('Add Scatterplot')
   .setLabel('Add Scatterplot');
+
+export const addPCP = createNewAction().setEventType('Add Scatterplot').setLabel('Add PCP');
 
 export const removeScatterplot = createNewAction()
   .setEventType('Remove Scatterplot')

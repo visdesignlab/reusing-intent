@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { NodeID } from '@visdesignlab/trrack';
+import { initProvenance, isChildNode, NodeID } from '@visdesignlab/trrack';
 import { extent } from 'd3';
 import { action, makeAutoObservable, reaction, runInAction, toJS, when } from 'mobx';
 
@@ -10,7 +10,8 @@ import {
   BrushCollection,
 } from '../components/Brushes/Rectangular Brush/Types/Brush';
 import { ScatterplotPoint } from '../components/Scatterplot/Scatterplot';
-import { ScatterplotSpec, Selection } from '../types/Interactions';
+import { checkIfWorkflowExists, loadWorkflowFromFirebase } from '../Firebase/firebase';
+import { PCPSpec, ScatterplotSpec, Selection } from '../types/Interactions';
 import { Prediction, predictionToIntent } from '../types/Prediction';
 import { getAggregateID, getPlotId } from '../utils/IDGens';
 
@@ -21,6 +22,7 @@ import {
   addBrush,
   addFilter,
   addIntentSelection,
+  addPCP,
   addPointSelection,
   addScatterplot,
   assignCategory,
@@ -29,10 +31,12 @@ import {
   removeScatterplot,
   updateBrush,
 } from './provenance/actions';
+import { queryCompare } from './queries/queryCompare';
 import { queryPrediction } from './queries/queryPrediction';
+import { queryProjects } from './queries/queryProjects';
 import RootStore from './RootStore';
 import { DataPoint } from './types/Dataset';
-import { ReapplyGraph } from './types/Provenance';
+import { initState, NodeStatus, ReapplyProvenance } from './types/Provenance';
 import {
   defaultViewState,
   getDimensions,
@@ -43,6 +47,7 @@ import {
   View,
   ViewState,
 } from './ViewState';
+import WorkflowStore from './WorkflowStore';
 
 export const CUSTOM_LABEL = 'customlabel';
 export const CUSTOM_CATEGORY_ASSIGNMENT = 'customCategoryAssignment';
@@ -62,6 +67,27 @@ export const BrushSizeMap: { [key in FreeFormBrushType]: BrushSize } = {
 export type HighlightPredicate = (point: ScatterplotPoint) => boolean;
 export type ColorPredicate = (point: ScatterplotPoint) => string;
 
+export type CompareData = {
+  data: DataPoint[];
+  compare: {
+    [node: string]: {
+      changes: {
+        added: string[];
+        removed: string[];
+        updated: string[];
+        updateMap: { source: string; target: string; id: string }[];
+        results: string[];
+      };
+      state: ViewState;
+    };
+  };
+};
+
+const defaultCompareData: CompareData = {
+  data: [],
+  compare: {},
+};
+
 export default class ExploreStore {
   root: RootStore;
   plotType: 'scatterplot' | 'pcp' | 'none' = 'none';
@@ -78,6 +104,14 @@ export default class ExploreStore {
     isLoading: boolean;
     values: Prediction[];
   } = { isLoading: false, values: [] };
+  provenance: ReapplyProvenance;
+  workflow: WorkflowStore<typeof this.provenance.graph> | null = null;
+  compareMode = false;
+  compareTarget: string | null = null;
+  compareData: CompareData = defaultCompareData;
+  hoveredPrediction: Prediction | null = null;
+  import = false;
+  showGlobalScale = false;
 
   // Vis state
   record: StateRecord = {};
@@ -86,15 +120,37 @@ export default class ExploreStore {
   constructor(root: RootStore) {
     this.root = root;
 
+    this.provenance = initProvenance(initState);
+    this.provenance.done();
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).printProvenanceTable = (keysToShow: string[] = ['id', 'label']) => {
+      // eslint-disable-next-line no-console
+      console.table(Object.values(toJS(this.provenance.graph.nodes)), keysToShow);
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).printProvenance = () => {
+      // eslint-disable-next-line no-console
+      console.log(this.provenance.state);
+    };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).printRawProvenance = () => {
+      // eslint-disable-next-line no-console
+      console.log(toJS(this.provenance.graph));
+    };
+
     makeAutoObservable(this, {
       // getState: action,
       updateRecord: action,
       stateHelper: action,
       refreshPrediction: action,
       toggleShowCategories: action,
+      setCompareTarget: action,
       switchBrush: action,
       toggleLabelLayer: action,
+      switchCompareMode: action,
       toggleHideAggregateMembers: action,
+      setHoveredPrediction: action,
     });
 
     // If category is toggled on first time, load the default category column and dispose self
@@ -121,12 +177,19 @@ export default class ExploreStore {
     );
 
     reaction(
+      () => toJS(this.provenance.graph),
+      (graph) => {
+        if (this.workflow) this.workflow.updateGraph(graph);
+      },
+    );
+
+    reaction(
       () => ({
-        dataset_id: this.datasetId,
+        dataset_id: this.dataset_id,
         provenance: Object.values(this.provenance.graph.nodes).length,
       }),
       ({ dataset_id }) => {
-        if (dataset_id) this.updateRecord(dataset_id, this.provenance.graph as any);
+        if (dataset_id) this.updateRecord(dataset_id, this.provenance.graph);
       },
     );
 
@@ -140,6 +203,43 @@ export default class ExploreStore {
       const btype = localStorage.getItem('btype');
       this.switchBrush(((btype as unknown) || this.brushType) as BrushType);
     }
+
+    reaction(
+      () => ({
+        mode: this.compareMode,
+        target: this.compareTarget,
+      }),
+      ({ mode, target }) => {
+        if (!mode || !target || !this.dataset_id) return;
+        this.getCompareData(this.dataset_id, target);
+      },
+    );
+
+    reaction(
+      () => Object.values(this.provenance.graph.nodes).length,
+      () => {
+        if (this.import) return;
+
+        const { current } = this.provenance;
+
+        if (isChildNode(current)) {
+          const artifact: NodeStatus = {
+            original_record: this.dataset_id || '',
+            status: {},
+          };
+
+          this.root.projectStore.project?.datasets.forEach((dataset) => {
+            if (dataset.id === this.dataset_id) {
+              artifact.status[dataset.id] = 'Accepted';
+            } else {
+              artifact.status[dataset.id] = 'Unknown';
+            }
+          });
+
+          this.provenance.addArtifact(artifact);
+        }
+      },
+    );
   }
 
   // Getters
@@ -147,8 +247,12 @@ export default class ExploreStore {
     return this.root.query;
   }
 
-  get datasetId() {
+  get dataset_id() {
     return this.root.projectStore.dataset_id;
+  }
+
+  get base_dataset_id() {
+    return this.dataset_id;
   }
 
   get data() {
@@ -168,6 +272,7 @@ export default class ExploreStore {
       if (!art) return;
 
       const { artifact } = art;
+
       const datasetKey = this.root.projectStore.datasetVersionFromKey(artifact.original_record);
       const source: Source = {
         createdIn: datasetKey,
@@ -185,17 +290,41 @@ export default class ExploreStore {
   }
 
   get rangeMap() {
-    if (!this.data) return {};
-
-    const { columnInfo, values = [] } = this.data;
+    const datas = Object.values(this.root.projectStore._data);
 
     const m: { [k: string]: { min: number; max: number } } = {};
 
-    Object.keys(columnInfo).forEach((col) => {
-      const [min = -1, max = -1] = extent(values.map((v) => v[col]) as number[]);
+    if (this.showGlobalScale) {
+      datas.forEach((data) => {
+        const { columnInfo, values = [] } = data;
 
-      m[col] = { min, max };
-    });
+        Object.keys(columnInfo).forEach((col) => {
+          const [min = -1, max = -1] = extent(values.map((v) => v[col]) as number[]);
+
+          if (!m[col]) {
+            m[col] = { min, max };
+          } else {
+            m[col].min = m[col].min < min ? m[col].min : min;
+            m[col].max = m[col].max > max ? m[col].max : max;
+          }
+        });
+      });
+    } else {
+      if (!this.data) return m;
+      const values = this.dataPoints;
+      const { columnInfo } = this.data;
+
+      Object.keys(columnInfo).forEach((col) => {
+        const [min = -1, max = -1] = extent(values.map((v) => v[col]) as number[]);
+
+        if (!m[col]) {
+          m[col] = { min, max };
+        } else {
+          m[col].min = m[col].min < min ? m[col].min : min;
+          m[col].max = m[col].max > max ? m[col].max : max;
+        }
+      });
+    }
 
     return m;
   }
@@ -230,6 +359,8 @@ export default class ExploreStore {
     if (applyTransforms) {
       Object.entries(state.labels).forEach(([label, ids]) => {
         ids.forEach((id) => {
+          if (!data[id]) return;
+
           if (!data[id][CUSTOM_LABEL]) data[id][CUSTOM_LABEL] = [label];
           else data[id][CUSTOM_LABEL].push(label);
         });
@@ -254,9 +385,34 @@ export default class ExploreStore {
     return this.data.categoricalColumns.length > 0;
   }
 
+  get changes() {
+    const id = this.provenance.graph.current;
+    const compareRecord = this.compareData.compare[id];
+
+    if (!compareRecord)
+      return {
+        added: [],
+        removed: [],
+        updated: [],
+        updateMap: [],
+        results: [],
+      };
+
+    return compareRecord.changes;
+  }
+
   get state() {
     const id = this.provenance.graph.current;
-    const record = this.record[id];
+    let record = this.record[id];
+    const compareRecord = this.compareData.compare[id];
+
+    if (this.compareMode) {
+      if (!compareRecord) {
+        record = compareRecord;
+      } else {
+        record = compareRecord.state;
+      }
+    }
 
     return this.stateHelper(id, record);
   }
@@ -281,10 +437,6 @@ export default class ExploreStore {
 
     return { ...st, scatterplots, pcps };
   };
-
-  get provenance() {
-    return this.root.provenance;
-  }
 
   // Provenance Actions
   addScatterplot = (x?: string, y?: string) => {
@@ -317,6 +469,32 @@ export default class ExploreStore {
       };
 
       this.provenance.apply(addScatterplot(spec), `Adding scatterplot for ${x}-${y}`);
+    }
+  };
+
+  addPCP = (dimensions: string[] = []) => {
+    if (!this.data) return;
+
+    if (dimensions.length === 0) {
+      const spec: PCPSpec = {
+        i_type: 'ViewSpec',
+        id: getPlotId(),
+        type: 'PCP',
+        action: 'Create',
+        dimensions: this.data.numericColumns.slice(0, 4),
+      };
+
+      this.provenance.apply(addPCP(spec), 'Adding PCP');
+    } else {
+      const spec: PCPSpec = {
+        i_type: 'ViewSpec',
+        id: getPlotId(),
+        type: 'PCP',
+        action: 'Create',
+        dimensions,
+      };
+
+      this.provenance.apply(addPCP(spec), 'Adding PCP');
     }
   };
 
@@ -495,7 +673,80 @@ export default class ExploreStore {
   };
 
   // Mobx Actions
-  refreshPrediction = (state: ViewState) => {
+  switchCompareMode = (enable: boolean) => {
+    this.compareMode = enable;
+  };
+
+  setCompareTarget = (id: string) => {
+    this.compareTarget = id;
+  };
+
+  setHoveredPrediction = (pred: Prediction | null) => {
+    this.hoveredPrediction = pred;
+  };
+
+  loadWorkflow = async (id: string) => {
+    const workflowExists = await checkIfWorkflowExists(id);
+
+    if (!workflowExists) {
+      const project = this.root.projectStore.project;
+      runInAction(() => {
+        if (project) {
+          this.workflow = new WorkflowStore(
+            id,
+            project.id,
+            project.name,
+            toJS(this.provenance.graph),
+            null,
+            [],
+            'Default',
+          );
+          this.workflow.sync();
+        }
+      });
+    } else {
+      runInAction(() => {
+        this.import = true;
+      });
+
+      const projects = await this.query.fetchQuery('projects', () => queryProjects());
+
+      if (projects.length === 0) return;
+
+      const wf = await loadWorkflowFromFirebase(id);
+      const { id: wf_Id, project, project_name, graph, order, name, type } = wf;
+
+      this.root.projectStore.setProjects(projects);
+      this.root.projectStore.setCurrentProject(project);
+
+      if (!this.root.projectStore.project) return;
+      await this.root.projectStore.getData(this.root.projectStore.project);
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      Object.entries(graph.nodes).forEach(([id, node]: [any, any]) => {
+        const children = node.children;
+
+        if (!children) node.children = [];
+        graph.nodes[id] = node;
+      });
+
+      this.provenance.importProvenanceGraph(graph);
+      this.root.projectStore.setDatasetId(this.root.projectStore.projects[project].datasets[0].id);
+
+      this.updateRecord(this.dataset_id || '', this.provenance.graph);
+      this.refreshPrediction();
+      runInAction(() => {
+        this.workflow = new WorkflowStore(wf_Id, project, project_name, graph, name, order, type);
+      });
+
+      runInAction(() => {
+        this.import = false;
+      });
+    }
+  };
+
+  refreshPrediction = (_state?: ViewState) => {
+    const state = _state ? _state : this.state;
     const selections = getSelections(state);
     const dimensions = getDimensions(state);
     const dataValues = this.dataPoints;
@@ -517,14 +768,38 @@ export default class ExploreStore {
     });
 
     this.query
-      .fetchQuery(['predictions', this.datasetId, selections, dimensions, dataValues], () =>
-        queryPrediction(dataValues, dimensions, selections),
+      .fetchQuery(
+        ['predictions', this.dataset_id, selections, dimensions, dataValues],
+        () => queryPrediction(dataValues, dimensions, selections),
+        { retry: 100 },
       )
       .then((pred) => {
         runInAction(() => {
           this.predictions = { isLoading: false, values: pred };
         });
       });
+  };
+
+  approveNode = (nodeId: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
+
+    artifact = JSON.parse(JSON.stringify(artifact));
+
+    if (artifact) {
+      artifact.status[this.dataset_id || ''] = 'Accepted';
+      this.provenance.addArtifact(artifact, nodeId);
+    }
+  };
+
+  rejectNode = (nodeId: string) => {
+    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
+
+    artifact = JSON.parse(JSON.stringify(artifact));
+
+    if (artifact) {
+      artifact.status[this.dataset_id || ''] = 'Rejected';
+      this.provenance.addArtifact(artifact, nodeId);
+    }
   };
 
   toggleHideAggregateMembers = () => (this.hideAggregateMembers = !this.hideAggregateMembers);
@@ -568,7 +843,29 @@ export default class ExploreStore {
     localStorage.setItem('category-column', col);
   };
 
-  updateRecord = (dataset_id: string, graph: ReapplyGraph) => {
+  getCompareData = (base: string, target: string) => {
+    const graph = this.provenance.graph;
+    this.query
+      .fetchQuery(['compare', this.dataset_id, this.compareTarget, graph], () =>
+        queryCompare(
+          this.root.projectStore._data[base].values,
+          this.root.projectStore._data[target].values,
+          graph,
+        ),
+      )
+      .then((data) => {
+        runInAction(() => {
+          this.compareData = data;
+        });
+      });
+  };
+
+  setShowGlobalScale = (val: boolean) => {
+    this.showGlobalScale = val;
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  updateRecord = (dataset_id: string, graph: any) => {
     this.query
       .fetchQuery(['state', dataset_id, graph], () => queryState(this.rawDataPoints, graph))
       .then((rec) => {

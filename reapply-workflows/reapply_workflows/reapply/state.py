@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Any, Dict, List
 
 import numpy as np
@@ -124,7 +125,7 @@ class PCPView(View):
         self.brushSelections: Dict[str, List[str]] = {}
         self.dimensions = spec.dimensions
         self.brushes: BrushCollection = BrushCollection()
-        self.type = "Scatterplot"
+        self.type = "PCP"
         self.dimensions = spec.dimensions
 
     def toJSON(self):
@@ -148,6 +149,7 @@ class AggregateRecord:
         self.drop = drop
         self.values: List[str] = []
         self.aggregate = None
+        self.agg_record = None
 
     def apply_aggregation(self, data: pd.DataFrame):
         # ? Do we need this?
@@ -193,7 +195,7 @@ class State:
 
     @property
     def selections(self) -> List[str]:
-        sels = self.freeformSelections
+        sels = deepcopy(self.freeformSelections)
         for v in self.views.values():
             sels.extend(v.selections)
         return list(set(sels))
@@ -210,7 +212,9 @@ class State:
         del self.views[spec.id]
 
     def add_pcp_view(self, spec: PCPSpec):
-        self.views[spec.id] = PCPView(spec)
+        pcp = PCPView(spec)
+        self.views[spec.id] = pcp
+        print(pcp.__dict__)
 
     def add_point_selection(self, selection: PointSelection):
         if selection.action == "Selection":
@@ -233,14 +237,14 @@ class State:
         self.freeformSelections = list(set(sels))
 
     def apply_filter(self, filter: Filter):
-        selectedPoints = self.selections
+        selectedPoints = deepcopy(self.selections)
 
         toFilter: List[str] = []
 
         if filter.action == "In":
             toFilter = self.target[~self.target.id.isin(selectedPoints)].id.tolist()
         else:
-            toFilter = self.target[self.target.id.isin(selectedPoints)].id.tolist()
+            toFilter = selectedPoints
 
         self.filteredPoints.extend(toFilter)
         self.filteredPoints = list(set(self.filteredPoints))

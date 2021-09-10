@@ -3,6 +3,12 @@ from copy import deepcopy
 from typing import Dict, List
 
 import pandas as pd
+from reapply_workflows.compute.changes import (
+    Change,
+    get_changes_df,
+    get_changes_point_selection,
+    get_changes_selections,
+)
 from reapply_workflows.inference.interaction import (
     Aggregate,
     AlgorithmicSelection,
@@ -14,6 +20,7 @@ from reapply_workflows.inference.interaction import (
     PointSelection,
     RangeSelection,
     ScatterplotSpec,
+    Selection,
 )
 from reapply_workflows.reapply.state import State
 
@@ -30,12 +37,12 @@ class Node(object):
         children=[],
         parent="",
         artifacts=None,
-        **kwargs
+        **kwargs,
     ):
         self.id = id
         self.label = label
         self.metadata = metadata
-        self.interactions = Interactions(state["interactions"])
+        self.interactions = Interactions(state["interaction"])
         self.children_ids = children
         self.parent_id = parent
         self.artifacts = artifacts
@@ -62,16 +69,13 @@ class Node(object):
             if self.processed_state:
                 return self.processed_state
 
-        if len(self.interactions.order) == 0:
-            return State(target)
-
         if self.parent is None:
             self.processed_state = State(target)
             return self.processed_state
 
         state = self.parent.state(target, ignore_processed)
 
-        interaction = self.interactions.latest
+        interaction = self.interactions.interaction
 
         if isinstance(interaction, ScatterplotSpec):
             if interaction.action == "Add":
@@ -104,35 +108,86 @@ class Node(object):
     def state(self, target: pd.DataFrame, ignore_processed=False):
         return deepcopy(self._state(target, ignore_processed))
 
+    def apply(self, target: pd.DataFrame):
+        target = target.copy(deep=True)
+        state = self.state(target, ignore_processed=True)
+        selections = state.selections
+        filtered = state.filteredPoints
+        labels = state.labels
+        categories = state.categoryAssignments
+        aggregates = state.aggregates
+
+        if len(selections) > 0:
+            target["isSelected"] = False
+            target["isSelected"] = target.id.isin(selections)
+        if len(filtered) > 0:
+            target["isFiltered"] = False
+            target["isFiltered"] = target.id.isin(filtered)
+        if len(labels) > 0:
+            for k, v in labels.items():
+                lab = f"label_{k.strip()}"
+                target[lab] = False
+                target[lab] = target.id.isin(v)
+        if len(categories) > 0:
+            for category, assignments in categories.items():
+                target[category] = "Unassigned"
+                for option, values in assignments.items():
+                    target.loc[target.id.isin(values), category] = option.strip()  # type: ignore   # noqa
+        if len(aggregates) > 0:
+            for agg_id, record in aggregates.items():
+                target = target.append(record.aggregate, ignore_index=True)  # type: ignore # noqa
+
+        return target
+
     def compare(self, base: pd.DataFrame, target: pd.DataFrame):
         b_state = self.state(base, True)
         t_state = self.state(target, True)
         final_state = State(base)
 
-        added: List[str] = []
-        removed: List[str] = []
-        updated: List[str] = []
+        change: Change = Change()
 
         if self.parent is None:
             pass
         else:
-            interaction = self.interactions.latest
+            interaction = self.interactions.interaction
             final_state.views = b_state.views
             if isinstance(interaction, ScatterplotSpec):
-                added = target[~target.id.isin(base.id)].id.tolist()
-                removed = base[~base.id.isin(target.id)].id.tolist()
-                combined = pd.merge(
-                    base, target, how="outer", left_on="id", right_on="id"
-                )
-                updated = (
-                    combined[combined.iid_x != combined.iid_y].dropna().id.tolist()
-                )
+                change = get_changes_df(base, target)
+            elif isinstance(interaction, Selection):
+                b_selections: List[str] = []
+                t_selections: List[str] = []
+                if isinstance(interaction, RangeSelection):
+                    if interaction.action == "Remove":
+                        change = Change()
+                    else:
+                        b_selections = b_state.views[interaction.view].brushSelections[
+                            interaction.rangeId
+                        ]
+                        t_selections = t_state.views[interaction.view].brushSelections[
+                            interaction.rangeId
+                        ]
 
-        print(len(added), len(removed), len(updated))
+                        change = get_changes_selections(
+                            base,
+                            target,
+                            b_selections,
+                            t_selections,
+                        )
+                elif isinstance(interaction, PointSelection):
+                    ids = interaction.ids
+                    change = get_changes_point_selection(
+                        base[base.id.isin(ids)], target[target.id.isin(ids)], []
+                    )
+                elif isinstance(interaction, AlgorithmicSelection):
+                    b_selections = b_state.freeformSelections
+                    t_selections = t_state.freeformSelections
+                    change = get_changes_selections(
+                        base, target, b_selections, t_selections
+                    )
 
         return {
             "state": json.loads(
                 json.dumps(final_state.toJSON(), default=lambda x: x.toJSON())
             ),
-            "changes": {"added": added, "removed": removed, "updated": updated},
+            "changes": change.toJSON(),
         }

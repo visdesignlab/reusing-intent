@@ -131,6 +131,7 @@ const Marks: FC<Props> = ({
               type === 'Regular' ? (
                 <Box>
                   <pre>{JSON.stringify(point, null, 2)}</pre>
+                  {/* {point.label} */}
                 </Box>
               ) : (
                 ''

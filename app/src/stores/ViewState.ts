@@ -85,7 +85,7 @@ export function getDimensions(state: ViewState): string[] {
   const dims: string[] = [];
   Object.values(state.views).forEach((d) => {
     if (d.type === 'Scatterplot') dims.push(...[d.x, d.y]);
-    else dims.push(...d.dimensions);
+    // else dims.push(...d.dimensions);
   });
 
   return [...new Set(dims)];

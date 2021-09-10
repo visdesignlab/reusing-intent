@@ -15,7 +15,7 @@ import {
   Theme,
 } from '@material-ui/core';
 import { observer } from 'mobx-react';
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { AggMap, GlobalPlotAttributeContext } from '../../contexts/CategoryContext';
 import { useStore } from '../../stores/RootStore';
@@ -52,6 +52,21 @@ const AggregateDialog = ({ open, onSet, onClose }: Props) => {
 
   const [optionsMap, setOptionsMap] = useState<AggMap>({});
 
+  useEffect(() => {
+    if (!data) return;
+
+    if (Object.keys(optionsMap).length === 0) {
+      const { numericColumns } = data;
+      const opts: AggMap = {};
+
+      numericColumns.forEach((col) => {
+        opts[col] = 'Mean';
+      });
+
+      setOptionsMap(opts);
+    }
+  }, [optionsMap, data]);
+
   const options = ['Mean', 'Median', 'Sum', 'Min', 'Max'];
 
   if (!data) return <div>Loading...</div>;
@@ -73,7 +88,7 @@ const AggregateDialog = ({ open, onSet, onClose }: Props) => {
                 <Select
                   id={column}
                   labelId={`${column}_label`}
-                  value={optionsMap[column] || ''}
+                  value={optionsMap[column]}
                   onChange={(ev) => {
                     setOptionsMap(
                       // eslint-disable-next-line @typescript-eslint/no-explicit-any

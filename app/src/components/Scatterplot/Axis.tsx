@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { createStyles, makeStyles } from '@material-ui/core';
 import { ScaleLinear } from 'd3';
 import { observer } from 'mobx-react';
 import { useMemo } from 'react';
@@ -7,12 +8,21 @@ import translate from '../../utils/transform';
 
 type AxisType = 'left' | 'right' | 'top' | 'bottom';
 
+const useStyles = makeStyles(() =>
+  createStyles({
+    shadow: {
+      textShadow: '0 0 5px white',
+    },
+  }),
+);
+
 type Props = {
   scale: ScaleLinear<number, number>;
   transform?: string;
   type: AxisType;
   label: string | JSX.Element;
   margin: number;
+  showLabel?: boolean;
   tickFormatter?: (value: number) => string | number;
 };
 
@@ -32,10 +42,12 @@ const Axis = ({
   type,
   scale,
   margin,
+  showLabel = true,
   tickFormatter = defaultTickFormatter,
 }: Props) => {
+  const styles = useStyles();
   const tickLength = 6;
-  const pixelsPerTick = 30;
+  const pixelsPerTick = 50;
   const fontSize = 1;
   const tickFontHeight = fontSize * 14 * 1.2;
   const labelFontSize = 15;
@@ -112,9 +124,21 @@ const Axis = ({
       case 'bottom':
         return (
           <>
+            <text
+              dominantBaseline="middle"
+              fill="none"
+              fontSize={`${fontSize}rem`}
+              stroke="white"
+              strokeLinejoin="round"
+              strokeWidth="4"
+              textAnchor="end"
+              transform={translate(0, tickLength + tickFontHeight / 1.5)}
+            >
+              {value}
+            </text>
             <line stroke="currentColor" y2={tickLength} />
             <text
-              key={value}
+              className={styles.shadow}
               dominantBaseline="middle"
               fontSize={`${fontSize}rem`}
               textAnchor="middle"
@@ -127,9 +151,21 @@ const Axis = ({
       case 'left':
         return (
           <>
+            <text
+              dominantBaseline="middle"
+              fill="none"
+              fontSize={`${fontSize}rem`}
+              stroke="white"
+              strokeLinejoin="round"
+              strokeWidth="4"
+              textAnchor="end"
+              transform={translate(-10, 0)}
+            >
+              {value}
+            </text>
             <line stroke="currentColor" transform={translate(-tickLength, 0)} x1={tickLength} />
             <text
-              key={value}
+              className={styles.shadow}
               dominantBaseline="middle"
               fontSize={`${fontSize}rem`}
               textAnchor="end"
@@ -142,9 +178,21 @@ const Axis = ({
       case 'top':
         return (
           <>
+            <text
+              dominantBaseline="middle"
+              fill="none"
+              fontSize={`${fontSize}rem`}
+              stroke="white"
+              strokeLinejoin="round"
+              strokeWidth="4"
+              textAnchor="end"
+              transform={translate(0, -(tickLength + tickFontHeight / 1.5))}
+            >
+              {value}
+            </text>
             <line stroke="currentColor" transform={translate(0, -tickLength)} y2={tickLength} />
             <text
-              key={value}
+              className={styles.shadow}
               dominantBaseline="middle"
               fontSize={`${fontSize}rem`}
               textAnchor="middle"
@@ -157,9 +205,21 @@ const Axis = ({
       case 'right':
         return (
           <>
+            <text
+              dominantBaseline="middle"
+              fill="none"
+              fontSize={`${fontSize}rem`}
+              stroke="white"
+              strokeLinejoin="round"
+              strokeWidth="4"
+              textAnchor="end"
+              transform={translate(10, 0)}
+            >
+              {value}
+            </text>
             <line stroke="currentColor" x1={tickLength} />
             <text
-              key={value}
+              className={styles.shadow}
               dominantBaseline="middle"
               fontSize={`${fontSize}rem`}
               textAnchor="start"
@@ -181,14 +241,16 @@ const Axis = ({
         </g>
       ))}
       {/* Axis Label */}
-      <text
-        dominantBaseline={labelAnchor(type)}
-        fontSize={labelFontSize}
-        textAnchor="middle"
-        transform={labelTransform(type)}
-      >
-        {label}
-      </text>
+      {showLabel && (
+        <text
+          dominantBaseline={labelAnchor(type)}
+          fontSize={labelFontSize}
+          textAnchor="middle"
+          transform={labelTransform(type)}
+        >
+          {label}
+        </text>
+      )}
     </g>
   );
 };

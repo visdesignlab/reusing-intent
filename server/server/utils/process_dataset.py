@@ -101,7 +101,7 @@ def process(project: str, version: str, dataset, source_metadata=None):
     #     data_json, combinations, rec.id
     # )
     # skyline_tracker = precompute_skylines.delay(data_json, combinations, rec.id)
-    # linear_tracker = precompute_linear_regression.delay(data_json, combinations, rec.id)
+    # linear_tracker = precompute_linear_regression.delay(data_json, combinations, rec.id) #noqa
     # polynomial_tracker = precompute_polynomial_regression.delay(
     #     data_json, combinations, rec.id
     # )

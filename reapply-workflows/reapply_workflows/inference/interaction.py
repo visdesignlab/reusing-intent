@@ -26,7 +26,10 @@ class ViewSpec(BaseInteraction):
     def __init__(self, interaction):
         self.id = interaction["id"]
         self.type = interaction["type"]
-        self.dimensions = interaction["dimensions"]
+        if "dimensions" in interaction:
+            self.dimensions = interaction["dimensions"]
+        else:
+            self.dimensions = []
         self.__interaction__ = interaction
 
     def apply(
@@ -46,7 +49,10 @@ class ScatterplotSpec(ViewSpec):
         self.id = interaction["id"]
         self.type = interaction["type"]
         self.action = interaction["action"]
-        self.dimensions: List[str] = interaction["dimensions"]
+        if "dimensions" in interaction:
+            self.dimensions = interaction["dimensions"]
+        else:
+            self.dimensions = []
         if len(self.dimensions) == 2:
             self.x = self.dimensions[0]
             self.y = self.dimensions[1]
@@ -222,50 +228,37 @@ def getInteraction(interaction) -> Any:
 
 
 class Interactions:
-    def __init__(self, interactions):
-        if type(interactions) is not list:
-            raise Exception("Only accepts list of interactions")
-
-        self.order = []
-
-        for i in interactions:
-            self.order.append(getInteraction(i))
-
-    @property
-    def latest(self) -> BaseInteraction:
-        return self.order[-1]
+    def __init__(self, interaction):
+        self.interaction = getInteraction(interaction)
 
     def inferSelectionsAndDimensions(self, data):
-        data = data.copy(deep=True)
-        dimensions: List[str] = []
-        freeform = []
-        brushSelections = {}
+        pass
 
-        for interaction in self.order:
-            if isinstance(interaction, ViewSpec):
-                dims = interaction.dimensions
-                dimensions.extend(dims)
-            elif isinstance(interaction, Selection):
-                freeform, brushSelections = interaction.selections(
-                    data, freeform, brushSelections
-                )
-            elif isinstance(interaction, Filter):
-                action = interaction.action
-                sels = compute_selections(freeform, brushSelections)
-                if action == "In":
-                    data = data[data.id.isin(sels)]
-                else:
-                    data = data[~data.id.isin(sels)]
+        # for interaction in self.order:
+        #     if isinstance(interaction, ViewSpec):
+        #         dims = interaction.dimensions
+        #         dimensions.extend(dims)
+        #     elif isinstance(interaction, Selection):
+        #         freeform, brushSelections = interaction.selections(
+        #             data, freeform, brushSelections
+        #         )
+        #     elif isinstance(interaction, Filter):
+        #         action = interaction.action
+        #         sels = compute_selections(freeform, brushSelections)
+        #         if action == "In":
+        #             data = data[data.id.isin(sels)]
+        #         else:
+        #             data = data[~data.id.isin(sels)]
 
-                freeform = []
-                brushSelections = {}
-            else:
-                freeform = []
-                brushSelections = {}
+        #         freeform = []
+        #         brushSelections = {}
+        #     else:
+        #         freeform = []
+        #         brushSelections = {}
 
-        selections = compute_selections(freeform, brushSelections)
+        # selections = compute_selections(freeform, brushSelections)
 
-        return dimensions, selections
+        # return dimensions, selections
 
 
 def compute_selections(freeform, brushSelections):

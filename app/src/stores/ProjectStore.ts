@@ -1,4 +1,3 @@
-import { isChildNode } from '@visdesignlab/trrack';
 import { action, makeAutoObservable, reaction, runInAction } from 'mobx';
 
 import { addCategory } from './queries/mutateCategoryColumn';
@@ -6,7 +5,6 @@ import { queryData } from './queries/queryData';
 import RootStore from './RootStore';
 import { Data } from './types/Dataset';
 import { Project } from './types/Project';
-import { NodeStatus } from './types/Provenance';
 
 export default class ProjectStore {
   root: RootStore;
@@ -26,34 +24,6 @@ export default class ProjectStore {
         if (project) this.getData(project);
       },
     );
-
-    reaction(
-      () => Object.values(this.provenance.graph.nodes).length,
-      () => {
-        const { current } = this.provenance;
-
-        if (isChildNode(current)) {
-          const artifact: NodeStatus = {
-            original_record: this.dataset_id || '',
-            status: {},
-          };
-
-          this.project?.datasets.forEach((dataset) => {
-            if (dataset.id === this.dataset_id) {
-              artifact.status[dataset.id] = 'Accepted';
-            } else {
-              artifact.status[dataset.id] = 'Unknown';
-            }
-          });
-
-          this.provenance.addArtifact(artifact);
-        }
-      },
-    );
-  }
-
-  get provenance() {
-    return this.root.provenance;
   }
 
   get project() {
@@ -71,28 +41,6 @@ export default class ProjectStore {
   get query() {
     return this.root.query;
   }
-
-  approveNode = (nodeId: string) => {
-    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
-
-    artifact = JSON.parse(JSON.stringify(artifact));
-
-    if (artifact) {
-      artifact.status[this.dataset_id || ''] = 'Accepted';
-      this.provenance.addArtifact(artifact, nodeId);
-    }
-  };
-
-  rejectNode = (nodeId: string) => {
-    let { artifact = null } = this.provenance.getLatestArtifact(nodeId) || {};
-
-    artifact = JSON.parse(JSON.stringify(artifact));
-
-    if (artifact) {
-      artifact.status[this.dataset_id || ''] = 'Rejected';
-      this.provenance.addArtifact(artifact, nodeId);
-    }
-  };
 
   datasetVersionFromKey = (key: string | null) => {
     if (!key) return '';
@@ -141,7 +89,7 @@ export default class ProjectStore {
     }
   };
 
-  getData = (project: Project) => {
+  getData = async (project: Project) => {
     const { datasets } = project;
 
     const dataset_requests: Promise<Data>[] = [];
@@ -151,7 +99,9 @@ export default class ProjectStore {
       dataset_requests.push(data);
     });
 
-    Promise.all(dataset_requests)
+    const promise = Promise.all(dataset_requests);
+
+    promise
       .then((datasets) => {
         const datas: { [r: string]: Data } = {};
         datasets.forEach((data) => {
@@ -164,5 +114,7 @@ export default class ProjectStore {
       .catch((err) => {
         throw new Error(err);
       });
+
+    return promise;
   };
 }

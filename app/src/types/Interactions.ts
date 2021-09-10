@@ -5,12 +5,17 @@ import { Intent } from './Prediction';
 type BaseInteraction = {
   i_type:
     | 'ViewSpec'
+    | 'Root'
     | 'Selection'
     | 'Filter'
     | 'Label'
     | 'Categorize'
     | 'Aggregate'
     | 'ReplaceAggregate';
+};
+
+type RootInteraction = {
+  i_type: 'Root';
 };
 
 // View Specifications
@@ -131,6 +136,13 @@ export type Aggregate = {
 };
 
 // Interactions Type
-export type Interaction = ViewSpec | Selection | Filter | Label | Categorize | Aggregate;
+export type Interaction =
+  | ViewSpec
+  | Selection
+  | Filter
+  | Label
+  | Categorize
+  | Aggregate
+  | RootInteraction;
 
 export type Interactions = Interaction[];

@@ -1,23 +1,47 @@
-from typing import List
+import firebase_admin
+import requests
+from firebase_admin import credentials, db
+from reapply_workflows.reapply.project import Project
 
-from ..inference.interaction import Interactions
-from ..reapply.record import Record
+CRED_PATH = (
+    "https://drive.google.com/uc?export=download&id=1IoGdcHbFIPNhNK26qxdHd8X1JC8tpKjm"
+)
+
+
+def get_credentials():
+    r = requests.get(CRED_PATH).json()
+    return credentials.Certificate(r)
+
+
+def init_firebase():
+    cred = get_credentials()
+    try:
+        firebase_admin.get_app()
+    except:  # noqa
+        firebase_admin.initialize_app(
+            cred, {"databaseURL": "https://reusing-intent-default-rtdb.firebaseio.com/"}
+        )
 
 
 class Reapply:
-    def apply(self, interactions, data):
-        inters = Interactions(interactions)
-        inters.inferSelectionsAndDimensions(data)
+    def __init__(self):
+        # print("Initializing with", CRED_PATH)
+        init_firebase()
 
-        records: List[Record] = []
-
-        for i in inters.order:
-            rec = records[-1] if len(records) > 0 else Record(data)
-
-            new_rec = i.apply(rec)
-            records.append(new_rec)
-
-        return records
+    def load(self, name: str):
+        ref = db.reference("/")
+        all_workflows = ref.get()
+        all_workflows = [all_workflows[k] for k in all_workflows]
+        workflows = list(
+            filter(
+                lambda x: "type" in x
+                and x["type"] == "Custom"
+                and "project_name" in x
+                and x["project_name"] == name,
+                all_workflows,
+            )
+        )
+        return Project(workflows)
 
 
 # def apply(self, record: Record):

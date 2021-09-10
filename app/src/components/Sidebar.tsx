@@ -102,7 +102,9 @@ const Sidebar = ({ projects }: Props) => {
                     }}
                     nodeId={d.id}
                     showLaunch
-                    onClick={() => setDatasetId(d.id)}
+                    onClick={() => {
+                      setDatasetId(d.id);
+                    }}
                   />
                 );
               })}

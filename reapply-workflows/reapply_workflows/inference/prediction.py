@@ -5,9 +5,25 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from scipy.spatial import ConvexHull
 
 from ..utils.jaccard_similarity import jaccard_similarity
 from .intent import Intent
+
+
+def get_hull(data):
+    try:
+        vals = data.values
+        hull = ConvexHull(vals)
+        if data.shape[0] >= 3:
+            vals = data.values
+            hull = ConvexHull(vals)
+            hull = vals[hull.vertices, :].tolist()
+            return hull
+    except Exception as ex:
+        print(ex)
+
+    return []
 
 
 # Modify app/src/types/Prediction.ts in conjunction
@@ -68,7 +84,7 @@ class Prediction:
                     pred.rank_jaccard = jaccard_similarity(pred.members, selections)
                     pred.membership_stats = get_stats(pred.members, selections)
                     pred.info["members"] = selected
-                    pred.info["test"] = cluster_vals.tolist()
+                    pred.info["hull"] = get_hull(data.loc[mask, intent.dimensions])
                     preds.append(pred)
                 return preds
         elif intent.algorithm == "Isolation Forest":
@@ -92,6 +108,7 @@ class Prediction:
                 pred.rank_jaccard = jaccard_similarity(pred.members, selections)
                 pred.membership_stats = get_stats(pred.members, selections)
                 pred.info["selected_center"] = pred.info["centers"][cluster_id]
+                pred.info["hull"] = get_hull(data[intent.dimensions][mask])
                 preds.append(pred)
             return preds
         elif intent.algorithm == "TheilSenRegressor":
@@ -145,6 +162,7 @@ class Prediction:
             pred.members = skyline
             pred.rank_jaccard = jaccard_similarity(pred.members, selections)
             pred.membership_stats = get_stats(pred.members, selections)
+            pred.info["edges"] = skyline
             return [pred]
         return []
 

@@ -49,6 +49,10 @@ def regression(
         i_X = X[inlier_mask]
         i_Y = Y[inlier_mask]
 
+        if i_X.shape[0] == 0:
+            inlier_mask = inlier_mask.astype(int)
+            break
+
         reg.fit(i_X, i_Y)
         ts = reg.predict(X)
 

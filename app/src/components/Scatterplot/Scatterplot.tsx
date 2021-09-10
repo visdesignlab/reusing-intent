@@ -16,8 +16,10 @@ import BrushComponent, {
 import { BrushAffectType, BrushCollection } from '../Brushes/Rectangular Brush/Types/Brush';
 
 import Axis from './Axis';
+import CompareMarks from './CompareMarks';
 import Legend from './Legend';
 import Marks from './Marks';
+import Overlay from './Overlay';
 import useScatterplotStyle from './styles';
 
 const useStyles = makeStyles(() =>
@@ -31,6 +33,7 @@ const useStyles = makeStyles(() =>
 
 export type ScatterplotPoint = {
   id: string;
+  iid: string;
   label: string;
   x: number;
   y: number;
@@ -93,7 +96,13 @@ const Scatterplot = ({
   // Dimensions Calculated
 
   const {
-    exploreStore: { highlightMode, highlightPredicate, colorPredicate, showMatchesLegend },
+    exploreStore: {
+      highlightMode,
+      highlightPredicate,
+      colorPredicate,
+      showMatchesLegend,
+      compareMode,
+    },
   } = useStore();
 
   // Get Scales
@@ -170,7 +179,7 @@ const Scatterplot = ({
         </clipPath>
       </defs>
       <g transform={translate(margin)}>
-        {showMatchesLegend && <Legend offset={dimension - 100} />}
+        {showMatchesLegend && <Legend offset={dimension - 25} />}
         <BrushComponent
           bottom={dimension}
           brushes={view.brushes}
@@ -221,17 +230,29 @@ const Scatterplot = ({
           xScale={xScale}
           yScale={yScale}
         />
-        <Marks
-          brushSelections={view.brushSelections}
-          colorPredicate={colorPredicate}
-          datapoints={points}
-          freeformSelections={selections}
-          highlightMode={highlightMode}
-          highlightPredicate={highlightPredicate}
-          symbolMap={showCategories ? categoryMap : null}
-          xScale={xScale}
-          yScale={yScale}
-        />
+        {compareMode ? (
+          <CompareMarks
+            dataPoints={points}
+            highlightMode={highlightMode}
+            highlightPredicate={highlightPredicate}
+            type="Regular"
+            xScale={xScale}
+            yScale={yScale}
+          />
+        ) : (
+          <Marks
+            brushSelections={view.brushSelections}
+            colorPredicate={colorPredicate}
+            datapoints={points}
+            freeformSelections={selections}
+            highlightMode={highlightMode}
+            highlightPredicate={highlightPredicate}
+            symbolMap={showCategories ? categoryMap : null}
+            xScale={xScale}
+            yScale={yScale}
+          />
+        )}
+        <Overlay xScale={xScale} yScale={yScale} />
       </g>
     </svg>
   );

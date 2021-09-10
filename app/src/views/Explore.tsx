@@ -1,18 +1,19 @@
-import { createStyles, makeStyles } from '@material-ui/core';
+import { createStyles, Drawer, Fab, makeStyles, Theme } from '@material-ui/core';
+import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { schemeSet1, symbols, SymbolType } from 'd3';
 import { observer } from 'mobx-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Redirect } from 'react-router-dom';
 
 import PredictionsTable from '../components/Predictions/PredictionsTable';
 import ProvenanceTree from '../components/ProvenanceTree';
 import SidePanel from '../components/SidePanel';
 import Visualization from '../components/Visualization';
+import WorkflowMenu from '../components/WorkflowMenu';
 import { AggMap, GlobalPlotAttributeContext } from '../contexts/CategoryContext';
 import useWorkflowFromURL from '../hooks/useWorflow';
 import { useStore } from '../stores/RootStore';
 
-const useStyles = makeStyles(() => {
+const useStyles = makeStyles((theme: Theme) => {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const c: any = {};
 
@@ -28,7 +29,16 @@ const useStyles = makeStyles(() => {
       width: '100vw',
       overflow: 'hidden',
     },
+    workflowButton: {
+      position: 'absolute',
+      right: theme.spacing(2),
+      bottom: theme.spacing(16),
+      'z-index': 100000,
+    },
     subroot: {
+      overflow: 'hidden',
+    },
+    drawer: {
       overflow: 'hidden',
     },
     ...c,
@@ -37,28 +47,39 @@ const useStyles = makeStyles(() => {
 
 const Explore = () => {
   const styles = useStyles();
-  const { workflow, location } = useWorkflowFromURL();
   const {
-    setWorkflowId,
     projectStore: { dataset_id },
     exploreStore: {
       addScatterplot,
+      addPCP,
       data,
+      workflow,
+      provenance,
+      loadWorkflow,
       showCategories,
       selectedCategoryColumn,
       changeCategoryColumn,
-      state: { views, labels },
+      state: { labels },
     },
   } = useStore();
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
   const [aggregateOptions, setAggregateOptions] = useState<AggMap | null>(null);
+  const [showWorkflowMenu, setShowWorkflowMenu] = useState(false);
+
+  const { workflowId } = useWorkflowFromURL();
 
   const aggOpt = localStorage.getItem('aggOpt');
 
   useEffect(() => {
-    if (workflow) setWorkflowId(workflow);
-  }, [workflow, setWorkflowId]);
+    if (!workflowId) return;
+
+    if (!workflow) {
+      loadWorkflow(workflowId);
+    } else if (workflow.id !== workflowId) {
+      loadWorkflow(workflowId);
+    }
+  }, [workflowId, loadWorkflow, workflow]);
 
   useEffect(() => {
     if (JSON.stringify(aggregateOptions) !== aggOpt) {
@@ -107,14 +128,15 @@ const Explore = () => {
     return catMap;
   }, [categories]);
 
-  const n_plots = Object.keys(views).length;
-
   useEffect(() => {
-    if (data !== null && n_plots === 0) addScatterplot();
-  }, [n_plots, addScatterplot, data]);
+    if (data !== null && provenance.current.label === 'Root') addScatterplot();
+    // if (data !== null && provenance.current.label === 'Root') addPCP();
+  }, [addScatterplot, data, provenance, addPCP]);
 
   if (!dataset_id) {
-    return <Redirect to={{ pathname: '/project', search: location.search }} />;
+    if (workflowId) return <div>Loading</div>;
+
+    return <div>Please go to projects</div>;
   }
 
   return (
@@ -140,6 +162,19 @@ const Explore = () => {
           <div>
             <ProvenanceTree />
           </div>
+          {!showWorkflowMenu && (
+            <Fab className={styles.workflowButton} onClick={() => setShowWorkflowMenu(true)}>
+              <AccountTreeIcon />
+            </Fab>
+          )}
+          <Drawer
+            anchor="right"
+            className={styles.drawer}
+            open={showWorkflowMenu}
+            onClose={() => setShowWorkflowMenu(false)}
+          >
+            <WorkflowMenu />
+          </Drawer>
         </GlobalPlotAttributeContext.Provider>
       </div>
     </>

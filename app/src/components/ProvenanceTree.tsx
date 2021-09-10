@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { observer } from 'mobx-react';
@@ -8,13 +9,10 @@ import { useStore } from '../stores/RootStore';
 
 import { eventConfig } from './utils/EventConfig';
 
-function addToWorkflow(id: string) {}
-
 const ProvenanceTree = () => {
   const {
-    provenance,
-    projectStore: { datasetVersionFromKey, dataset_id, approveNode, rejectNode },
-    exploreStore: { nodeCreationMap },
+    projectStore: { datasetVersionFromKey, dataset_id },
+    exploreStore: { nodeCreationMap, provenance, approveNode, rejectNode, workflow },
   } = useStore();
   const { graph } = provenance;
 
@@ -23,6 +21,15 @@ const ProvenanceTree = () => {
       provenance.goToNode(nodeId);
     },
     [provenance],
+  );
+
+  const addToWorkflow = useCallback(
+    (id: string) => {
+      if (workflow && !workflow.doesCurrentHaveWorkflow) {
+        workflow.addToWorkflow(id);
+      }
+    },
+    [workflow],
   );
 
   return (
