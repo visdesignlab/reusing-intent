@@ -1,11 +1,11 @@
 import { makeStyles } from '@material-ui/core';
 
-import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from '../ColorSpecs';
+import { IPNS, ISNP, MATCHES, NON_UNION, UNION } from '../../utils/ColorSpec';
 
 const useScatterplotStyle = makeStyles({
   newColor: {
     stroke: 'blue !important',
-    fill: 'blue !important'
+    fill: 'blue !important',
   },
   removedColor: {
     stroke: 'red !important',
@@ -13,11 +13,13 @@ const useScatterplotStyle = makeStyles({
   newMark: {
     strokeWidth: '1',
     fill: 'black',
+    opacity: 0.5,
   },
   removedMark: {
-    stroke: 'black',
-    strokeWidth: '3',
+    stroke: 'none',
+    strokeWidth: '0.5',
     strokeLinecap: 'round',
+    opacity: 0.5,
     fill: 'black',
   },
   movedLine: {
@@ -28,10 +30,15 @@ const useScatterplotStyle = makeStyles({
     strokeLinecap: 'round',
   },
   movedPoint: {
-    fill: 'gray !important',
+    fill: 'black',
+    opacity: 0.5,
   },
   regularMark: {
     fill: 'black',
+  },
+  regularLine: {
+    stroke: 'black',
+    strokeOpacity: 0.2,
   },
   nonUnionMark: {
     fill: NON_UNION,
@@ -39,6 +46,10 @@ const useScatterplotStyle = makeStyles({
   unionMark: {
     fill: UNION,
     stroke: UNION,
+  },
+  unionLine: {
+    stroke: UNION,
+    strokeOpacity: 0.8,
   },
   regularForceMark: {
     fill: 'black !important',
@@ -58,6 +69,12 @@ const useScatterplotStyle = makeStyles({
   ipns: {
     fill: `${IPNS} !important`,
     opacity: 1,
+  },
+  dullMark: {
+    opacity: 0.2,
+  },
+  forceDullMark: {
+    opacity: '0.1 !important',
   },
 });
 

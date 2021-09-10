@@ -122,7 +122,6 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
 venv/
 ENV/
 env.bak/
@@ -210,3 +209,8 @@ yarn.lock
 dump.rdb
 .eslintcache
 database
+
+!lint-staged.config.js
+!commitlint.config.js
+!env/
+cred.ts

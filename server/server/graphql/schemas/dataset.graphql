@@ -1,0 +1,20 @@
+type Dataset {
+  id: ID!
+  version: String!
+  project_id: String!
+}
+
+scalar Data
+scalar ColumnInfo
+
+type DataResult {
+  success: Boolean!
+  errors: [String]
+  id: ID!
+  values: Data
+  columnInfo: ColumnInfo
+  numericColumns: [String]
+  categoricalColumns: [String]
+  labelColumn: String
+  columns: [String]
+}

@@ -7,14 +7,16 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "app": "cd app && yarn install",
-    "setup:python": "poetry install",
-    "setup": "echo 'Setting up frontend' && yarn app && yarn setup:python",
-    "start:server": "poetry run python run.py",
-    "start:app": "cd app && yarn start",
-    "start:worker": "poetry run celery -A backend.server.celery.init.celery worker  "
+    "install:reapply-workflows": "cd reapply-workflows && poetry install",
+    "install:server": "cd server && poetry install",
+    "install:all": "yarn install:reapply-workflows && yarn install:server",
+    "list:env": "cd server && echo 'Server' && poetry env info && cd ../reapply-workflows && echo '\n\nLibrary' && poetry env info"
   },
-  "dependencies": {
-    "firebase-admin": "^9.5.0"
+  "devDependencies": {
+    "@commitlint/cli": "^12.1.1",
+    "@commitlint/config-conventional": "^12.1.1",
+    "git-cz": "^4.7.6",
+    "husky": "^6.0.0",
+    "lint-staged": "^10.5.4"
   }
 }

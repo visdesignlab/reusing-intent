@@ -1,0 +1,50 @@
+{
+  "interactions": [
+    {
+      "i_type": "ViewSpec",
+      "id": "plot1627525242586",
+      "type": "Scatterplot",
+      "action": "Add",
+      "x": "cmr",
+      "y": "gdp"
+    },
+    {
+      "i_type": "Selection",
+      "type": "Brush",
+      "brushId": "brush1627525244154",
+      "action": "Add",
+      "spec": {
+        "i_type": "ViewSpec",
+        "id": "plot1627525242586",
+        "type": "Scatterplot",
+        "action": "Add",
+        "x": "cmr",
+        "y": "gdp"
+      },
+      "dimensions": ["cmr", "gdp"],
+      "extents": {
+        "cmr": [21.546230426413477, 191.4884269582054],
+        "gdp": [0, 9458.092485549136]
+      }
+    },
+    {
+      "i_type": "Selection",
+      "type": "Brush",
+      "brushId": "brush1627525244154",
+      "action": "Update",
+      "spec": {
+        "i_type": "ViewSpec",
+        "id": "plot1627525242586",
+        "type": "Scatterplot",
+        "action": "Add",
+        "x": "cmr",
+        "y": "gdp"
+      },
+      "dimensions": ["cmr", "gdp"],
+      "extents": {
+        "cmr": [109.55201077323429, 279.49420730502607],
+        "gdp": [0, 9458.092485549136]
+      }
+    }
+  ]
+}

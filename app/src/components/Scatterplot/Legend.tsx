@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react';
-import React, { FC } from 'react';
+import { FC } from 'react';
 
-import translate from '../../Utils/Translate';
-import { IPNS, ISNP, MATCHES } from '../ColorSpecs';
+import { IPNS, ISNP, MATCHES } from '../../utils/ColorSpec';
+import translate from '../../utils/transform';
 
 type Props = {
   offset?: number;
